@@ -1,3 +1,5 @@
+import { Text } from "@mantine/core";
+
 export default function HomePage() {
-  return <div>Home page</div>;
+  return <Text>Home page</Text>;
 }
