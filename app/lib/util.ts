@@ -44,6 +44,7 @@ const ID_MAPPING = {
     "Quetzal: Free Spirit": "Quetzal",
     "Reina Roja: Freedom Fighter": "Reina Roja",
     "René \"Loup\" Arcemont: Party Animal": "Loup",
+    "Rene \"Loup\" Arcemont: Party Animal": "Loup",
     "Rielle \"Kit\" Peddler: Transhuman": "Kit",
     "Saraswati Mnemonics: Endless Exploration": "Saraswati",
     "Sebastião Souza Pessoa: Activist Organizer": "Seb",
