@@ -120,7 +120,7 @@ export function IdentityStats({
                     key={corp}
                     pos="relative"
                     onMouseOver={() => {
-                      setHoveredCoords({ row: i, col: j });
+                      games.length > 0 && setHoveredCoords({ row: i, col: j });
                     }}
                     onMouseLeave={() => {
                       setHoveredCoords({ row: -1, col: -1 });
