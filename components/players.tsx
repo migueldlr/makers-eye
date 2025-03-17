@@ -248,12 +248,17 @@ export function Players({
     return out;
   }, [tournament, roundsAugmented]);
 
-  const selectedPlayers =
-    tournament.players?.map(
-      (player) =>
-        playerFilter.length === 0 ||
-        (player?.name ?? "").toLowerCase().includes(playerFilter.toLowerCase())
-    ) ?? [];
+  const selectedPlayers = useMemo(
+    () =>
+      tournament.players?.map(
+        (player) =>
+          playerFilter.length === 0 ||
+          (player?.name ?? "")
+            .toLowerCase()
+            .includes(playerFilter.toLowerCase())
+      ) ?? [],
+    [tournament]
+  );
 
   const scrollNext = useCallback(() => {
     let newIndex = index;
