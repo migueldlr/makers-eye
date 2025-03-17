@@ -14,7 +14,6 @@ import {
   TableThead,
   TableTr,
   Text,
-  Tooltip,
 } from "@mantine/core";
 import {
   AugmentedRound,
@@ -25,7 +24,6 @@ import {
   groupRoundsByCorp,
   groupRoundsByRunner,
 } from "../lib/tournament";
-import { Player, Tournament } from "../lib/types";
 import { shortenId } from "../lib/util";
 import { useState } from "react";
 
@@ -69,9 +67,7 @@ export function IdentityStats({
         <TableTr>
           <FillerTd count={2} />
           {allCorps.map((corp, i) => {
-            const label = playersByCorp[corp]
-              .map((player) => player.name)
-              .join(", ");
+            const players = playersByCorp[corp].map((player) => player.name);
             return (
               <TableTh
                 key={corp}
@@ -80,13 +76,29 @@ export function IdentityStats({
                   ...(i === hoveredCoords.col && hoverStyle),
                 }}
               >
-                <Tooltip label={label}>
-                  <Center>
-                    <Text style={{ writingMode: "sideways-lr" }}>
-                      {shortenId(corp)}
-                    </Text>
-                  </Center>
-                </Tooltip>
+                <HoverCard>
+                  <HoverCardTarget>
+                    <Center>
+                      <Text style={{ writingMode: "sideways-lr" }}>
+                        {shortenId(corp)}
+                      </Text>
+                    </Center>
+                  </HoverCardTarget>
+                  <HoverCardDropdown>
+                    <Stack gap="xs">
+                      <Text>
+                        {players.length} player{players.length > 1 ? "s" : ""}
+                      </Text>
+                      {players.map((player, i) => {
+                        return (
+                          <Text size="sm" key={i}>
+                            {player}
+                          </Text>
+                        );
+                      })}
+                    </Stack>
+                  </HoverCardDropdown>
+                </HoverCard>
               </TableTh>
             );
           })}
@@ -113,9 +125,7 @@ export function IdentityStats({
             (game) => game.result === "runnerWin"
           );
           const corpWins = games.filter((game) => game.result === "corpWin");
-          const label = playersByRunner[runner]
-            .map((player) => player.name)
-            .join(", ");
+          const players = playersByRunner[runner].map((player) => player.name);
           return (
             <TableTr key={runner}>
               <TableTd
@@ -124,9 +134,25 @@ export function IdentityStats({
                   ...(i === hoveredCoords.row && hoverStyle),
                 }}
               >
-                <Tooltip label={label}>
-                  <Text>{shortenId(runner)}</Text>
-                </Tooltip>
+                <HoverCard>
+                  <HoverCardTarget>
+                    <Text>{shortenId(runner)}</Text>
+                  </HoverCardTarget>
+                  <HoverCardDropdown>
+                    <Stack gap="xs">
+                      <Text>
+                        {players.length} player{players.length > 1 ? "s" : ""}
+                      </Text>
+                      {players.map((player, i) => {
+                        return (
+                          <Text size="sm" key={i}>
+                            {player}
+                          </Text>
+                        );
+                      })}
+                    </Stack>
+                  </HoverCardDropdown>
+                </HoverCard>
               </TableTd>
               <TableTd style={{ cursor: "default" }}>
                 {runnerWins.length}-{corpWins.length}
