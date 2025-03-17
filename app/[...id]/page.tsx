@@ -1,5 +1,5 @@
 import { Player, Tournament } from "../../lib/types";
-import { Container, Stack, Title } from "@mantine/core";
+import { Center, Container, Stack, Title } from "@mantine/core";
 import { Players } from "../../components/players";
 import { IdentityStats } from "../../components/identitystats";
 import { createPlayerMap, augmentRounds } from "../../lib/tournament";
@@ -24,13 +24,14 @@ export default async function Page({
   const playerMap = createPlayerMap(tournament);
 
   const roundsAugmented = augmentRounds(tournament, isAesops, playerMap);
-  console.log(roundsAugmented[2]);
 
   return (
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
-        <IdentityStats roundsAugmented={roundsAugmented} />
+        <Center>
+          <IdentityStats roundsAugmented={roundsAugmented} />
+        </Center>
         <Players
           tournament={tournament}
           roundsAugmented={roundsAugmented}

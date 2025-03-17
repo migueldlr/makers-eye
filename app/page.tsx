@@ -13,7 +13,6 @@ import { useState } from "react";
 
 function parseUrl(url: string) {
   const parsed = new URL(url);
-  console.log(parsed.hostname);
   if (parsed.hostname.includes("aesops")) {
     return ["aesops", parsed.pathname.split("/")[1]];
   }

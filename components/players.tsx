@@ -275,7 +275,6 @@ export function Players({
     }
     setIndex(newIndex);
     setTimeout(() => {
-      console.log("trying to scroll");
       targetRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "center",
