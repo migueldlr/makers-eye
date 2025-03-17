@@ -209,40 +209,35 @@ const FANCY_SEARCH_ENABLED = false;
 
 export function Players({
   tournament,
-  isAesops,
+  roundsAugmented,
+  playerMap,
 }: {
   tournament: Tournament;
-  isAesops: boolean;
+  roundsAugmented: AugmentedRound[];
+  playerMap: Record<number, Player>;
 }) {
   const [playerFilter, setPlayerFilter] = useState("");
   const [index, setIndex] = useState(-1);
-  const [scroll, scrollTo] = useWindowScroll();
+  const [_scroll, scrollTo] = useWindowScroll();
   const targetRef = useRef<HTMLDivElement>(null);
-
-  const playerMap = useMemo(() => createPlayerMap(tournament), [tournament]);
-
-  const rounds_augmented = useMemo(
-    () => augmentRounds(tournament, isAesops, playerMap),
-    [tournament, isAesops, playerMap]
-  );
 
   const roundsPerPlayer = useMemo(() => {
     const out: Record<number, AugmentedRound[]> = {};
     for (const player of tournament?.players ?? []) {
       if (!player.id) continue;
-      out[player.id] = rounds_augmented.filter((round) =>
+      out[player.id] = roundsAugmented.filter((round) =>
         round.some((game) => playerInGame(game, player))
       );
     }
     return out;
-  }, [tournament, rounds_augmented]);
+  }, [tournament, roundsAugmented]);
 
   const gamesPerPlayer = useMemo(() => {
     const out: Record<number, (AugmentedGame | null)[]> = {};
     for (const player of tournament?.players ?? []) {
       if (!player.id) continue;
 
-      const rounds = rounds_augmented.filter((round) =>
+      const rounds = roundsAugmented.filter((round) =>
         round.some((game) => playerInGame(game, player))
       );
       const games = rounds.map((round) => {
@@ -251,7 +246,7 @@ export function Players({
       out[player.id] = games;
     }
     return out;
-  }, [tournament, rounds_augmented]);
+  }, [tournament, roundsAugmented]);
 
   const selectedPlayers =
     tournament.players?.map(

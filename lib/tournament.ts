@@ -1,3 +1,4 @@
+import { it } from "node:test";
 import {
   CobraGame,
   Player,
@@ -6,8 +7,9 @@ import {
   AesopsGame,
   Tournament,
 } from "./types";
+import { mergeObjects } from "./util";
 
-export type Result = "corpWin" | "runnerWin" | "draw";
+export type Result = "corpWin" | "runnerWin" | "draw" | "bye";
 export type PlayerResult = "win" | "loss" | "draw" | "bye";
 
 export type AugmentedGame = CobraGame & {
@@ -20,6 +22,13 @@ export type AugmentedRound = AugmentedGame[];
 
 export function getGameResult(game: CobraGame): Result {
   const { player1, player2 } = game;
+
+  if (
+    (player1?.id as unknown as string) === "(BYE)" ||
+    (player2?.id as unknown as string) === "(BYE)"
+  ) {
+    return "bye";
+  }
   if (
     (player1?.role === "runner" &&
       ((player1 as SwissGameResult).runnerScore === 3 ||
@@ -159,4 +168,49 @@ export function createPlayerMap(tournament: Tournament) {
     playerMap[player.id] = player;
   });
   return playerMap;
+}
+
+export function groupGamesByRunner(games: AugmentedGame[]) {
+  return games.reduce((acc, game) => {
+    const runner = game.runner?.runnerIdentity ?? "";
+    if (!runner) return acc;
+    if (!acc[runner]) {
+      acc[runner] = [];
+    }
+    acc[runner].push(game);
+    return acc;
+  }, {} as Record<string, AugmentedGame[]>);
+}
+
+export function groupRoundsByRunner(rounds: AugmentedRound[]) {
+  const runnerToGames: Record<string, AugmentedGame[]> = {};
+  return rounds.reduce((acc, round) => {
+    return mergeObjects(acc, groupGamesByRunner(round));
+  }, runnerToGames);
+}
+
+export function groupGamesByCorp(games: AugmentedGame[]) {
+  return games.reduce((acc, game) => {
+    const corp = game.corp?.corpIdentity ?? "";
+    if (!corp) return acc;
+    if (!acc[corp]) {
+      acc[corp] = [];
+    }
+    acc[corp].push(game);
+    return acc;
+  }, {} as Record<string, AugmentedGame[]>);
+}
+
+export function groupRoundsByCorp(rounds: AugmentedRound[]) {
+  const corpToGames: Record<string, AugmentedGame[]> = {};
+  return rounds.reduce((acc, round) => {
+    return mergeObjects(acc, groupGamesByCorp(round));
+  }, corpToGames);
+}
+
+export function getUniqueCorps(rounds: AugmentedRound[]) {
+  const corps = rounds.flatMap((round) =>
+    round.map((game) => game.corp?.corpIdentity).filter((x) => x != null)
+  );
+  return Array.from(new Set(corps));
 }

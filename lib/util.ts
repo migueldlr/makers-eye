@@ -6,6 +6,7 @@ const ID_MAPPING = {
   "Akiko Nisei: Head Case": "Akiko",
   "Alice Merchant: Clan Agitator": "Alice",
   "Ampère: Cybernetics For Anyone": "Ampère",
+  "Ampere: Cybernetics For Anyone": "Ampère",
   "Arissana Rocha Nahu: Street Artist": "Arissana",
   "Asa Group: Security Through Vigilance": "Asa",
   'Ayla "Bios" Rahim: Simulant Specialist': "Ayla",
@@ -15,6 +16,7 @@ const ID_MAPPING = {
   "Earth Station: SEA Headquarters": "Earth Station",
   "Epiphany Analytica: Nations Undivided": "Epiphany",
   "Esâ Afontov: Eco-Insurrectionist": "Esâ",
+  "Esa Afontov: Eco-Insurrectionist": "Esâ",
   "Freedom Khumalo: Crypto-Anarchist": "Freedom",
   "GameNET: Where Dreams are Real": "GameNET",
   "Haas-Bioroid: Architects of Tomorrow": "AoT",
@@ -48,10 +50,12 @@ const ID_MAPPING = {
   'Rielle "Kit" Peddler: Transhuman': "Kit",
   "Saraswati Mnemonics: Endless Exploration": "Saraswati",
   "Sebastião Souza Pessoa: Activist Organizer": "Seb",
+  "Sebastiao Souza Pessoa: Activist Organizer": "Seb",
   "Sportsmetal: Go Big or Go Home": "Sportsmetal",
   "SSO Industries: Fueling Innovation": "SSO",
   "Steve Cambridge: Master Grifter": "Steve",
   "Tāo Salonga: Telepresence Magician": "Tāo",
+  "Tao Salonga: Telepresence Magician": "Tāo",
   "The Outfit: Family Owned and Operated": "Outfit",
   "Thule Subsea: Safety Below": "Thule",
   "Thunderbolt Armaments: Peace Through Power": "Thunderbolt",
@@ -64,3 +68,23 @@ export const shortenId = (id?: string) => {
   if (id == null) return "";
   return ID_MAPPING[id as keyof typeof ID_MAPPING] ?? id;
 };
+
+export function mergeObjects<T>(
+  a: Record<string, T[]>,
+  b: Record<string, T[]>
+) {
+  const merged: Record<string, T[]> = {};
+  for (const key in a) {
+    if (a[key] && b[key]) {
+      merged[key] = [...a[key], ...b[key]];
+    } else if (a[key]) {
+      merged[key] = a[key];
+    }
+  }
+  for (const key in b) {
+    if (!merged[key]) {
+      merged[key] = b[key];
+    }
+  }
+  return merged;
+}
