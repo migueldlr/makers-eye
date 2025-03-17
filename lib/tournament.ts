@@ -138,7 +138,7 @@ export function augmentRounds(
   playerMap: Record<number, Player>
 ) {
   const rounds_augmented: AugmentedRound[] =
-    tournament.rounds?.map((round) =>
+    tournament.rounds?.map((round, roundNumber) =>
       round.map((rawGame) => {
         const game = isAesops
           ? aesopsGameToCobraGame(rawGame)
@@ -153,6 +153,7 @@ export function augmentRounds(
           result,
           runner: game.player1?.role === "runner" ? player1 : player2,
           corp: game.player1?.role === "corp" ? player1 : player2,
+          round: roundNumber + 1,
         };
 
         return out;

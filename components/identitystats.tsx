@@ -2,7 +2,11 @@
 
 import {
   Center,
+  HoverCard,
+  HoverCardDropdown,
+  HoverCardTarget,
   Overlay,
+  Stack,
   Table,
   TableTbody,
   TableTd,
@@ -27,10 +31,8 @@ import { useState } from "react";
 
 export function IdentityStats({
   roundsAugmented,
-  playerMap,
 }: {
   roundsAugmented: AugmentedRound[];
-  playerMap: Record<number, Player>;
 }) {
   const [hoveredCoords, setHoveredCoords] = useState<{
     row: number;
@@ -140,18 +142,16 @@ export function IdentityStats({
 
                 const hovered =
                   hoveredCoords.row === i && hoveredCoords.col === j;
-                const label = games
-                  .map(
-                    (game) =>
-                      `${game.runner.name} vs ${game.corp.name} (${
-                        game.result === "runnerWin"
-                          ? "runner win"
-                          : game.result === "corpWin"
-                          ? "corp win"
-                          : "draw"
-                      })`
-                  )
-                  .join(", ");
+                const results = games.map(
+                  (game) =>
+                    `R${game.round} ${game.runner.name} vs ${game.corp.name} (${
+                      game.result === "runnerWin"
+                        ? "runner win"
+                        : game.result === "corpWin"
+                        ? "corp win"
+                        : "draw"
+                    })`
+                );
 
                 const hasTies = games.some((game) => game.result === "draw");
 
@@ -173,15 +173,28 @@ export function IdentityStats({
                     {games.length === 0 ? (
                       <Overlay backgroundOpacity={0} />
                     ) : (
-                      <Tooltip label={label}>
-                        <Text size="sm">
-                          {runnerWins.length}-{corpWins.length}
-                          {hasTies &&
-                            `-${
-                              games.length - runnerWins.length - corpWins.length
-                            }`}
-                        </Text>
-                      </Tooltip>
+                      <HoverCard>
+                        <HoverCardTarget>
+                          <Text size="sm">
+                            {runnerWins.length}-{corpWins.length}
+                            {hasTies &&
+                              `-${
+                                games.length -
+                                runnerWins.length -
+                                corpWins.length
+                              }`}
+                          </Text>
+                        </HoverCardTarget>
+                        <HoverCardDropdown>
+                          <Stack gap="xs">
+                            {results.map((result, i) => (
+                              <Text size="sm" key={i}>
+                                {result}
+                              </Text>
+                            ))}
+                          </Stack>
+                        </HoverCardDropdown>
+                      </HoverCard>
                     )}
                   </TableTd>
                 );
