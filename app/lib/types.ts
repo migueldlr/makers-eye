@@ -9,6 +9,8 @@
 
 export type Round = Game[];
 
+export type Game = CobraGame | AesopsGame;
+
 /**
  * tournament results
  */
@@ -108,11 +110,11 @@ export interface EliminationPlayer {
 /**
  * a game's result
  */
-export interface Game {
+export interface CobraGame {
   table?: number;
   player1?: SwissGameResult | EliminationGameResult;
   player2?: SwissGameResult | EliminationGameResult;
-  eliminationGame?: boolean;
+  eliminationGame: boolean;
   /**
    * true if this was an intentional draw
    */
@@ -131,6 +133,29 @@ export interface Game {
   gameWonBy?: "ap" | "mill" | "flatline";
   [k: string]: unknown;
 }
+
+export type AesopsGame = AesopsSwissGame | AesopsEliminationGame;
+
+export interface AesopsSwissGame {
+  tableNumber?: number;
+  corpPlayer?: number;
+  runnerPlayer?: number;
+  corpIdentity?: string;
+  runnerIdentity?: string;
+  corpScore?: string;
+  runnerScore?: string;
+  intentionalDraw?: boolean;
+  eliminationGame: false;
+}
+
+export interface AesopsEliminationGame {
+  tableNumber?: number;
+  corpPlayer?: number;
+  runnerPlayer?: number;
+  winner_id?: number;
+  loser_id?: number;
+  eliminationGame: true;
+}
 /**
  * a swiss game's result for one player
  */
@@ -142,11 +167,11 @@ export interface SwissGameResult {
   /**
    * this player's runner score
    */
-  runnerScore: number;
+  runnerScore: null | number;
   /**
    * this player's corp score
    */
-  corpScore: number;
+  corpScore: null | number;
   [k: string]: unknown;
 }
 /**

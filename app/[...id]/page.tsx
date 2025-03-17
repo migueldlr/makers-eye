@@ -1,4 +1,8 @@
 import {
+  AesopsEliminationGame,
+  AesopsGame,
+  AesopsSwissGame,
+  CobraGame,
   EliminationGameResult,
   Game,
   Player,
@@ -20,14 +24,18 @@ import {
   Text,
   Tooltip,
 } from "@mantine/core";
+import { shortenId } from "../lib/util";
 
-interface AugmentedGame extends Game {
-  result: "corpWin" | "runnerWin" | "draw";
+type Result = "corpWin" | "runnerWin" | "draw";
+type PlayerResult = "win" | "loss" | "draw" | "bye";
+
+type AugmentedRound = (CobraGame & {
   runner: Player;
   corp: Player;
-}
+  result: Result;
+})[];
 
-function getGameResult(game: Game): "corpWin" | "runnerWin" | "draw" {
+function getGameResult(game: CobraGame): Result {
   const { player1, player2 } = game;
   if (
     (player1?.role === "runner" &&
@@ -54,22 +62,26 @@ function getGameResult(game: Game): "corpWin" | "runnerWin" | "draw" {
   return "draw";
 }
 
-function getIfPlayerWon(player: Player, game: Game): "win" | "loss" | "draw" {
-  let result: "win" | "loss" | "draw" = "loss";
-  if (game.intentionalDraw || game.player1?.combinedScore === 1)
-    result = "draw";
-  if (
-    (game.player1?.id === player.id &&
-      (game.player1?.combinedScore === 3 || game.player1?.winner)) ||
-    (game.player2?.id === player.id &&
-      (game.player2?.combinedScore === 3 || game.player2?.winner))
-  )
-    result = "win";
+function getIfPlayerWon(player: Player, game: CobraGame): PlayerResult {
+  let { player1, player2 } = game;
 
-  return result;
+  if (player2?.id === player.id) {
+    player1 = game.player2;
+    player2 = game.player1;
+  }
+
+  if (game.intentionalDraw || player1?.combinedScore === 1) return "draw";
+  if (player2?.id == null) return "bye";
+  if (
+    player1?.id === player.id &&
+    (player1?.combinedScore === 3 || player1?.winner)
+  )
+    return "win";
+
+  return "loss";
 }
 
-function getPlayerSide(player: Player, game: Game): "runner" | "corp" {
+function getPlayerSide(player: Player, game: CobraGame): "runner" | "corp" {
   let { player1, player2 } = game;
 
   if (player2?.id === player.id) {
@@ -84,37 +96,63 @@ function getPlayerSide(player: Player, game: Game): "runner" | "corp" {
   return "corp";
 }
 
-function WinLossDraw({ player, game }: { player: Player; game?: Game }) {
-  if (game == null)
-    return (
-      <div>
-        <Code>-</Code>
-      </div>
-    );
-  let result = "loss";
-  if (game.intentionalDraw || game.player1?.combinedScore === 1)
-    result = "draw";
-  if (
-    (game.player1?.id === player.id &&
-      (game.player1?.combinedScore === 3 || game.player1?.winner)) ||
-    (game.player2?.id === player.id &&
-      (game.player2?.combinedScore === 3 || game.player2?.winner))
-  )
-    result = "win";
-
+function WinLossDraw({ result }: { result: PlayerResult }) {
   return (
-    <div>
+    <div style={{ cursor: "pointer" }}>
       {result === "win" ? (
         <Code c="#2bdd66">W</Code>
       ) : result === "loss" ? (
         <Code c="#f21616">L</Code>
       ) : result === "draw" ? (
         <Code>D</Code>
+      ) : result === "bye" ? (
+        <Code c="#2bdd66">B</Code>
       ) : (
         <Code>?</Code>
       )}
     </div>
   );
+}
+
+function playerInGame(game: CobraGame, player: Player) {
+  return game.player1?.id === player.id || game.player2?.id === player.id;
+}
+
+function aesopsGameToCobraGame(game: AesopsGame): CobraGame {
+  if (game.eliminationGame) {
+    return {
+      table: game.tableNumber,
+      player1: {
+        role: "corp",
+        id: game.corpPlayer ?? 0,
+        winner: game.winner_id === game.corpPlayer,
+      },
+      player2: {
+        role: "runner",
+        id: game.runnerPlayer ?? 0,
+        winner: game.winner_id === game.runnerPlayer,
+      },
+      eliminationGame: true,
+    };
+  }
+  return {
+    table: game.tableNumber,
+    player1: {
+      id: game.corpPlayer ?? 0,
+      role: "corp",
+      runnerScore: null,
+      corpScore: +(game.corpScore ?? 0),
+      combinedScore: +(game.corpScore ?? 0),
+    },
+    player2: {
+      id: game.runnerPlayer ?? 0,
+      role: "runner",
+      runnerScore: +(game.runnerScore ?? 0),
+      corpScore: null,
+      combinedScore: +(game.runnerScore ?? 0),
+    },
+    eliminationGame: false,
+  };
 }
 
 function SideRow({
@@ -124,7 +162,7 @@ function SideRow({
   playerMap,
 }: {
   player: Player;
-  rounds?: AugmentedGame[][];
+  rounds?: AugmentedRound[];
   side: "runner" | "corp";
   playerMap: Record<number, Player>;
 }) {
@@ -132,9 +170,7 @@ function SideRow({
     <>
       {rounds?.map((round, i) => {
         const game = round.find((game) => {
-          return (
-            game.player1?.id === player.id || game.player2?.id === player.id
-          );
+          return playerInGame(game, player);
         });
 
         if (!game) return null;
@@ -146,15 +182,33 @@ function SideRow({
           player2 = game.player1;
         }
 
-        const result = getGameResult(game);
+        // const result = getGameResult(game);
         const playerResult = getIfPlayerWon(player, game);
         const playerSide = getPlayerSide(player, game);
 
-        if (playerSide !== side) return <div></div>;
+        if (playerSide !== side) return <div key={i}></div>;
+
+        const playerIdentity = shortenId(
+          side === "runner" ? player.runnerIdentity : player.corpIdentity
+        );
+        const enemy = playerMap[player2?.id ?? 0] ?? null;
+        const enemyIdentity = shortenId(
+          side === "runner" ? enemy?.corpIdentity : enemy?.runnerIdentity
+        );
+
+        const label = `R${i + 1} ${
+          playerResult === "win"
+            ? "Win"
+            : playerResult === "loss"
+            ? "Loss"
+            : playerResult === "bye"
+            ? "Bye"
+            : "Draw"
+        }: ${playerIdentity} vs ${enemyIdentity} (${enemy?.name ?? "unknown"})`;
 
         return (
-          <Tooltip key={i} label={`${result} ${side}`}>
-            <WinLossDraw key={i} game={game} player={player} />
+          <Tooltip key={i} label={label}>
+            <WinLossDraw result={playerResult} />
           </Tooltip>
         );
       })}
@@ -174,6 +228,7 @@ export default async function Page({
     aesops: `https://www.aesopstables.net/`,
   };
   const site = id[0] as keyof typeof urls;
+  const isAesops = site === "aesops";
 
   const data = await fetch(`${urls[site]}${id[1]}.json`);
   const tournament = (await data.json()) as Tournament;
@@ -184,33 +239,39 @@ export default async function Page({
     playerMap[player.id] = player;
   });
 
-  const rounds_augmented: AugmentedGame[][] =
+  const rounds_augmented: AugmentedRound[] =
     tournament.rounds?.map((round) =>
-      round.map((game) => {
+      round.map((rawGame) => {
+        const game = isAesops
+          ? aesopsGameToCobraGame(rawGame)
+          : (rawGame as CobraGame);
+        const result = getGameResult(game);
+
         const player1 = playerMap[game.player1?.id ?? 0];
         const player2 = playerMap[game.player2?.id ?? 0];
 
-        const result = getGameResult(game);
-
-        const addedData = {
+        const out = {
+          ...game,
           result,
           runner: game.player1?.role === "runner" ? player1 : player2,
           corp: game.player1?.role === "corp" ? player1 : player2,
-        };
-
-        const out: AugmentedGame = {
-          ...game,
-          ...addedData,
         };
 
         return out;
       })
     ) || [];
 
+  console.log(rounds_augmented);
+
+  const allIds = tournament.players?.map((player) => `${player.id}`) || [];
+
   return (
     <Container>
-      <Accordion multiple>
+      <Accordion multiple defaultValue={allIds}>
         {tournament.players?.map((player) => {
+          const numRounds = rounds_augmented.filter((round) =>
+            round.some((game) => playerInGame(game, player))
+          ).length;
           return (
             <AccordionItem key={player.id} value={`${player.id}`}>
               <AccordionControl>
@@ -218,15 +279,7 @@ export default async function Page({
               </AccordionControl>
               <AccordionPanel>
                 <SimpleGrid
-                  cols={
-                    rounds_augmented.filter((round) =>
-                      round.some(
-                        (game) =>
-                          game.player1?.id === player.id ||
-                          game.player2?.id === player.id
-                      )
-                    ).length
-                  }
+                  cols={numRounds}
                   w="fit-content"
                   spacing="xs"
                   verticalSpacing="xs"
