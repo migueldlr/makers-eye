@@ -29,9 +29,7 @@ export default async function Page({
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
-        <Center>
-          <IdentityStats roundsAugmented={roundsAugmented} />
-        </Center>
+        <IdentityStats roundsAugmented={roundsAugmented} />
         <Players
           tournament={tournament}
           roundsAugmented={roundsAugmented}
