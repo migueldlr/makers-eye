@@ -98,25 +98,29 @@ function SideRow({
   );
 }
 
-export const WinLossDraw = forwardRef<HTMLDivElement, { result: PlayerResult }>(
-  ({ result }, ref) => {
-    return (
-      <div style={{ cursor: "pointer" }} ref={ref}>
-        {result === "win" ? (
-          <Code c="#2bdd66">W</Code>
-        ) : result === "loss" ? (
-          <Code c="#f21616">L</Code>
-        ) : result === "draw" ? (
-          <Code>D</Code>
-        ) : result === "bye" ? (
-          <Code c="#2bdd66">B</Code>
-        ) : (
-          <Code>?</Code>
-        )}
-      </div>
-    );
-  }
-);
+export const WinLossDraw = ({
+  result,
+  ref,
+}: {
+  result: PlayerResult;
+  ref?: Ref<HTMLDivElement>;
+}) => {
+  return (
+    <div style={{ cursor: "pointer" }} ref={ref}>
+      {result === "win" ? (
+        <Code c="#2bdd66">W</Code>
+      ) : result === "loss" ? (
+        <Code c="#f21616">L</Code>
+      ) : result === "draw" ? (
+        <Code>D</Code>
+      ) : result === "bye" ? (
+        <Code c="#2bdd66">B</Code>
+      ) : (
+        <Code>?</Code>
+      )}
+    </div>
+  );
+};
 
 function TitleWithMatch({
   text,
@@ -257,7 +261,7 @@ export function Players({
             .toLowerCase()
             .includes(playerFilter.toLowerCase())
       ) ?? [],
-    [tournament]
+    [tournament, playerFilter]
   );
 
   const scrollNext = useCallback(() => {
