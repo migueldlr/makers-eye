@@ -201,6 +201,28 @@ export function groupGamesByCorp(games: AugmentedGame[]) {
   }, {} as Record<string, AugmentedGame[]>);
 }
 
+export function groupPlayersByCorp(
+  gamesByCorp: Record<string, AugmentedGame[]>
+) {
+  return Object.entries(gamesByCorp).reduce((acc, [corp, games]) => {
+    const players = games.map((game) => game.corp);
+    const uniquePlayers = Array.from(new Set(players));
+    acc[corp] = uniquePlayers;
+    return acc;
+  }, {} as Record<string, Player[]>);
+}
+
+export function groupPlayersByRunner(
+  gamesByRunner: Record<string, AugmentedGame[]>
+) {
+  return Object.entries(gamesByRunner).reduce((acc, [runner, games]) => {
+    const players = games.map((game) => game.runner);
+    const uniquePlayers = Array.from(new Set(players));
+    acc[runner] = uniquePlayers;
+    return acc;
+  }, {} as Record<string, Player[]>);
+}
+
 export function groupRoundsByCorp(rounds: AugmentedRound[]) {
   const corpToGames: Record<string, AugmentedGame[]> = {};
   return rounds.reduce((acc, round) => {

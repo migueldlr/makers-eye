@@ -10,24 +10,27 @@ import {
   TableThead,
   TableTr,
   Text,
+  Tooltip,
 } from "@mantine/core";
 import {
   AugmentedRound,
   getUniqueCorps,
   groupGamesByCorp,
+  groupPlayersByCorp,
+  groupPlayersByRunner,
   groupRoundsByCorp,
   groupRoundsByRunner,
 } from "../lib/tournament";
-import { Tournament } from "../lib/types";
+import { Player, Tournament } from "../lib/types";
 import { shortenId } from "../lib/util";
 import { useState } from "react";
 
 export function IdentityStats({
-  tournament,
   roundsAugmented,
+  playerMap,
 }: {
-  tournament: Tournament;
   roundsAugmented: AugmentedRound[];
+  playerMap: Record<number, Player>;
 }) {
   const [hoveredCoords, setHoveredCoords] = useState<{
     row: number;
@@ -38,6 +41,11 @@ export function IdentityStats({
   });
   const gamesByRunner = Object.entries(groupRoundsByRunner(roundsAugmented));
   const gamesByCorp = Object.entries(groupRoundsByCorp(roundsAugmented));
+
+  const playersByCorp = groupPlayersByCorp(groupRoundsByCorp(roundsAugmented));
+  const playersByRunner = groupPlayersByRunner(
+    groupRoundsByRunner(roundsAugmented)
+  );
   const allCorps = getUniqueCorps(roundsAugmented);
 
   function FillerTd({ count }: { count: number }) {
@@ -58,20 +66,27 @@ export function IdentityStats({
       <TableThead>
         <TableTr>
           <FillerTd count={2} />
-          {allCorps.map((corp, i) => (
-            <TableTh
-              key={corp}
-              style={{
-                ...(i === hoveredCoords.col && hoverStyle),
-              }}
-            >
-              <Center>
-                <Text style={{ writingMode: "sideways-lr" }}>
-                  {shortenId(corp)}
-                </Text>
-              </Center>
-            </TableTh>
-          ))}
+          {allCorps.map((corp, i) => {
+            const label = playersByCorp[corp]
+              .map((player) => player.name)
+              .join(", ");
+            return (
+              <TableTh
+                key={corp}
+                style={{
+                  ...(i === hoveredCoords.col && hoverStyle),
+                }}
+              >
+                <Tooltip label={label}>
+                  <Center>
+                    <Text style={{ writingMode: "sideways-lr" }}>
+                      {shortenId(corp)}
+                    </Text>
+                  </Center>
+                </Tooltip>
+              </TableTh>
+            );
+          })}
         </TableTr>
       </TableThead>
       <TableTbody>
@@ -95,10 +110,15 @@ export function IdentityStats({
             (game) => game.result === "runnerWin"
           );
           const corpWins = games.filter((game) => game.result === "corpWin");
+          const label = playersByRunner[runner]
+            .map((player) => player.name)
+            .join(", ");
           return (
             <TableTr key={runner}>
               <TableTd style={{ ...(i === hoveredCoords.row && hoverStyle) }}>
-                {shortenId(runner)}
+                <Tooltip label={label}>
+                  <Text>{shortenId(runner)}</Text>
+                </Tooltip>
               </TableTd>
               <TableTd>
                 {runnerWins.length}-{corpWins.length}
