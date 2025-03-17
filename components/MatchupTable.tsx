@@ -27,7 +27,7 @@ import {
 import { shortenId } from "../lib/util";
 import { useState } from "react";
 
-export function IdentityStats({
+export function MatchupTable({
   roundsAugmented,
 }: {
   roundsAugmented: AugmentedRound[];

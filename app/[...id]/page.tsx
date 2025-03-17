@@ -1,7 +1,7 @@
-import { Player, Tournament } from "../../lib/types";
-import { Center, Container, Stack, Title } from "@mantine/core";
+import { Tournament } from "../../lib/types";
+import { Container, Stack, Title } from "@mantine/core";
 import { Players } from "../../components/players";
-import { IdentityStats } from "../../components/identitystats";
+import { MatchupTable } from "../../components/MatchupTable";
 import { createPlayerMap, augmentRounds } from "../../lib/tournament";
 
 export default async function Page({
@@ -29,7 +29,7 @@ export default async function Page({
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
-        <IdentityStats roundsAugmented={roundsAugmented} />
+        <MatchupTable roundsAugmented={roundsAugmented} />
         <Players
           tournament={tournament}
           roundsAugmented={roundsAugmented}
