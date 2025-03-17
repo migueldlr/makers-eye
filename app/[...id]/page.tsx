@@ -1,12 +1,8 @@
 import {
-  AesopsEliminationGame,
   AesopsGame,
-  AesopsSwissGame,
   CobraGame,
   EliminationGameResult,
-  Game,
   Player,
-  Round,
   SwissGameResult,
   Tournament,
 } from "../lib/types";
@@ -17,11 +13,7 @@ import {
   AccordionPanel,
   Code,
   Container,
-  Grid,
-  Group,
   SimpleGrid,
-  Stack,
-  Text,
   Tooltip,
 } from "@mantine/core";
 import { shortenId } from "../lib/util";
@@ -182,7 +174,6 @@ function SideRow({
           player2 = game.player1;
         }
 
-        // const result = getGameResult(game);
         const playerResult = getIfPlayerWon(player, game);
         const playerSide = getPlayerSide(player, game);
 
