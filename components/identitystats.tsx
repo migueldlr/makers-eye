@@ -74,6 +74,7 @@ export function IdentityStats({
               <TableTh
                 key={corp}
                 style={{
+                  cursor: "default",
                   ...(i === hoveredCoords.col && hoverStyle),
                 }}
               >
@@ -98,7 +99,7 @@ export function IdentityStats({
             );
             const corpWins = games.filter((game) => game.result === "corpWin");
             return (
-              <TableTd key={corp}>
+              <TableTd key={corp} style={{ cursor: "default" }}>
                 {runnerWins.length}-{corpWins.length}
               </TableTd>
             );
@@ -115,12 +116,17 @@ export function IdentityStats({
             .join(", ");
           return (
             <TableTr key={runner}>
-              <TableTd style={{ ...(i === hoveredCoords.row && hoverStyle) }}>
+              <TableTd
+                style={{
+                  cursor: "default",
+                  ...(i === hoveredCoords.row && hoverStyle),
+                }}
+              >
                 <Tooltip label={label}>
                   <Text>{shortenId(runner)}</Text>
                 </Tooltip>
               </TableTd>
-              <TableTd>
+              <TableTd style={{ cursor: "default" }}>
                 {runnerWins.length}-{corpWins.length}
               </TableTd>
               {allCorps.map((corp, j) => {
@@ -134,6 +140,20 @@ export function IdentityStats({
 
                 const hovered =
                   hoveredCoords.row === i && hoveredCoords.col === j;
+                const label = games
+                  .map(
+                    (game) =>
+                      `${game.runner.name} vs ${game.corp.name} (${
+                        game.result === "runnerWin"
+                          ? "runner win"
+                          : game.result === "corpWin"
+                          ? "corp win"
+                          : "draw"
+                      })`
+                  )
+                  .join(", ");
+
+                const hasTies = games.some((game) => game.result === "draw");
 
                 return (
                   <TableTd
@@ -146,18 +166,22 @@ export function IdentityStats({
                       setHoveredCoords({ row: -1, col: -1 });
                     }}
                     style={{
-                      ...(games.length > 0 && {
-                        cursor: "default",
-                      }),
+                      cursor: "default",
                       ...(games.length !== 0 && hovered && hoverStyle),
                     }}
                   >
                     {games.length === 0 ? (
                       <Overlay backgroundOpacity={0} />
                     ) : (
-                      <Text size="sm">
-                        {runnerWins.length} - {corpWins.length}
-                      </Text>
+                      <Tooltip label={label}>
+                        <Text size="sm">
+                          {runnerWins.length}-{corpWins.length}
+                          {hasTies &&
+                            `-${
+                              games.length - runnerWins.length - corpWins.length
+                            }`}
+                        </Text>
+                      </Tooltip>
                     )}
                   </TableTd>
                 );
