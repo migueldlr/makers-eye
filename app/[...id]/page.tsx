@@ -14,6 +14,8 @@ import {
   Code,
   Container,
   SimpleGrid,
+  Text,
+  Title,
   Tooltip,
 } from "@mantine/core";
 import { shortenId } from "../lib/util";
@@ -147,6 +149,35 @@ function aesopsGameToCobraGame(game: AesopsGame): CobraGame {
   };
 }
 
+function augmentRounds(
+  tournament: Tournament,
+  isAesops: boolean,
+  playerMap: Record<number, Player>
+) {
+  const rounds_augmented: AugmentedRound[] =
+    tournament.rounds?.map((round) =>
+      round.map((rawGame) => {
+        const game = isAesops
+          ? aesopsGameToCobraGame(rawGame)
+          : (rawGame as CobraGame);
+        const result = getGameResult(game);
+
+        const player1 = playerMap[game.player1?.id ?? 0];
+        const player2 = playerMap[game.player2?.id ?? 0];
+
+        const out = {
+          ...game,
+          result,
+          runner: game.player1?.role === "runner" ? player1 : player2,
+          corp: game.player1?.role === "corp" ? player1 : player2,
+        };
+
+        return out;
+      })
+    ) || [];
+  return rounds_augmented;
+}
+
 function SideRow({
   rounds,
   player,
@@ -230,34 +261,12 @@ export default async function Page({
     playerMap[player.id] = player;
   });
 
-  const rounds_augmented: AugmentedRound[] =
-    tournament.rounds?.map((round) =>
-      round.map((rawGame) => {
-        const game = isAesops
-          ? aesopsGameToCobraGame(rawGame)
-          : (rawGame as CobraGame);
-        const result = getGameResult(game);
-
-        const player1 = playerMap[game.player1?.id ?? 0];
-        const player2 = playerMap[game.player2?.id ?? 0];
-
-        const out = {
-          ...game,
-          result,
-          runner: game.player1?.role === "runner" ? player1 : player2,
-          corp: game.player1?.role === "corp" ? player1 : player2,
-        };
-
-        return out;
-      })
-    ) || [];
-
-  console.log(rounds_augmented);
-
+  const rounds_augmented = augmentRounds(tournament, isAesops, playerMap);
   const allIds = tournament.players?.map((player) => `${player.id}`) || [];
 
   return (
-    <Container>
+    <Container pt="md">
+      <Title order={2}>{tournament.name}</Title>
       <Accordion multiple defaultValue={allIds}>
         {tournament.players?.map((player) => {
           const numRounds = rounds_augmented.filter((round) =>
