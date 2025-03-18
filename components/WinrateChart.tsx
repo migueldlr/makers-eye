@@ -108,7 +108,7 @@ export function WinrateChart({
   const wrDomain = [0, 100];
   const cutDomain = ([, dataMax]: [number, number]): [number, number] => [
     0,
-    Math.floor(dataMax),
+    Math.ceil(dataMax),
   ];
   const wrLabel = "WR (%)";
   const cutLabel = "Cut Conversion";
@@ -141,7 +141,7 @@ export function WinrateChart({
         withRightYAxis
         rightYAxisLabel="Cut Conversion"
         rightYAxisProps={{
-          domain: [0, (dataMax: number) => Math.floor(dataMax)],
+          domain: cutDomain,
         }}
         data={data}
         dataKey="id"
