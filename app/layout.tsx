@@ -9,7 +9,7 @@ import {
 import { theme } from "../theme";
 
 export const metadata = {
-  title: "Tournament Analysis",
+  title: "Cataloguer - Netrunner tournament analysis",
   description: "I am using Mantine with Next.js!",
 };
 
