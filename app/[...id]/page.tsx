@@ -7,6 +7,7 @@ import { WinrateChart } from "../../components/WinrateChart";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { BackButton } from "../../components/BackButton";
 import { ConversionChart } from "../../components/ConversionChart";
+import { RepresentationChart } from "../../components/RepresentationChart";
 
 export default async function Page({
   params,
@@ -33,11 +34,13 @@ export default async function Page({
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
+        <RepresentationChart tournament={tournament} side="runner" />
         <WinrateChart
           tournament={tournament}
           roundsAugmented={roundsAugmented}
           side="runner"
         />
+        <RepresentationChart tournament={tournament} side="corp" />
         <WinrateChart
           tournament={tournament}
           roundsAugmented={roundsAugmented}

@@ -17,6 +17,7 @@ import {
   TableThead,
   TableTr,
   Text,
+  Title,
   Tooltip,
 } from "@mantine/core";
 import {
@@ -93,6 +94,7 @@ export function MatchupTable({
 
   return (
     <Stack>
+      <Title order={4}>Matchup spread</Title>
       <Table>
         <TableThead>
           <TableTr>

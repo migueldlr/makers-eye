@@ -367,3 +367,32 @@ export function cutConversionById(
   });
   return out;
 }
+
+export function representationById(
+  allPlayers: Player[],
+  eliminationPlayers: Player[],
+  side: "runner" | "corp",
+  games: "cut" | "swiss"
+) {
+  const cutPlayersById =
+    side === "corp"
+      ? getCutPlayersByCorp(eliminationPlayers, allPlayers)
+      : getCutPlayersByRunner(eliminationPlayers, allPlayers);
+  const playersGroupedById =
+    side === "corp"
+      ? groupPlayersByCorpUsingPlayers(allPlayers ?? [])
+      : groupPlayersByRunnerUsingPlayers(allPlayers ?? []);
+  return Object.entries(
+    games === "cut" ? cutPlayersById : playersGroupedById
+  ).map(([id, players]) => {
+    return {
+      name: id,
+      value: players.length,
+      color: factionToColor(idToFaction(shortenId(id))),
+      rawPlayers: players,
+      percentage:
+        players.length /
+        (games === "cut" ? eliminationPlayers : allPlayers).length,
+    };
+  });
+}
