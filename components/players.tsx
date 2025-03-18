@@ -14,6 +14,7 @@ import {
   ActionIcon,
   Transition,
   Group,
+  Title,
 } from "@mantine/core";
 import {
   forwardRef,
@@ -132,11 +133,11 @@ function TitleWithMatch({
   enabled: boolean;
 }) {
   if (query.length === 0 || !enabled) {
-    return <Text>{text}</Text>;
+    return <Title order={4}>{text}</Title>;
   }
   const parts = text.split(new RegExp(`(${query})`, "gi"));
   return (
-    <Text>
+    <Title>
       {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase() ? (
           <b key={i}>{part}</b>
@@ -144,7 +145,7 @@ function TitleWithMatch({
           <span key={i}>{part}</span>
         )
       )}
-    </Text>
+    </Title>
   );
 }
 
@@ -184,6 +185,9 @@ function PlayerCard_raw(
           query={query}
           enabled={selected}
         />
+        <Text>
+          {shortenId(player.corpIdentity)} + {shortenId(player.runnerIdentity)}
+        </Text>
         <SimpleGrid
           cols={rounds.length}
           w="fit-content"

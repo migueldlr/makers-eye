@@ -63,7 +63,8 @@ export function getIfPlayerWon(player: Player, game: CobraGame): PlayerResult {
   }
 
   if (game.intentionalDraw || player1?.combinedScore === 1) return "draw";
-  if (player2?.id == null) return "bye";
+  if (player2?.id == null || (player2.id as unknown as string) === "(BYE)")
+    return "bye";
   if (
     player1?.id === player.id &&
     (player1?.combinedScore === 3 || player1?.winner)
