@@ -110,7 +110,7 @@ export function WinrateChart({
     0,
     Math.floor(dataMax),
   ];
-  const wrLabel = side === "corp" ? "Corp WR (%)" : "Runner WR (%)";
+  const wrLabel = "WR (%)";
   const cutLabel = "Cut Conversion";
 
   return (
