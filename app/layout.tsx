@@ -10,7 +10,7 @@ import { theme } from "../theme";
 
 export const metadata = {
   title: "Cataloguer - Netrunner tournament analysis",
-  description: "I am using Mantine with Next.js!",
+  description: "",
 };
 
 export default function RootLayout({ children }: { children: any }) {
