@@ -33,10 +33,16 @@ export default async function Page({
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
-        <ConversionChart tournament={tournament} side="runner" />
-        <WinrateChart roundsAugmented={roundsAugmented} side="runner" />
-        <ConversionChart tournament={tournament} side="corp" />
-        <WinrateChart roundsAugmented={roundsAugmented} side="corp" />
+        <WinrateChart
+          tournament={tournament}
+          roundsAugmented={roundsAugmented}
+          side="runner"
+        />
+        <WinrateChart
+          tournament={tournament}
+          roundsAugmented={roundsAugmented}
+          side="corp"
+        />
         <MatchupTable roundsAugmented={roundsAugmented} />
         <Players
           tournament={tournament}
