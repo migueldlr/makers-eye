@@ -97,51 +97,88 @@ export function MatchupTable({
         <TableThead>
           <TableTr>
             <FillerTd count={2} />
-            {allSideTwoIds.map((sideTwoId, i) => {
-              const players = playersBySideTwoId[sideTwoId].map(
-                (player) => player.name
-              );
-              return (
-                <TableTh
-                  key={sideTwoId}
-                  style={{
-                    cursor: "default",
-                    ...(i === hoveredCoords.col && HOVER_STYLE),
-                  }}
-                >
-                  <HoverCard>
-                    <HoverCardTarget>
-                      <Center>
-                        <Text style={{ writingMode: "sideways-lr" }}>
-                          {shortenId(sideTwoId)}
-                        </Text>
-                      </Center>
-                    </HoverCardTarget>
-                    <HoverCardDropdown>
-                      <Stack gap="xs">
-                        <Text>
-                          {players.length} player
-                          {players.length > 1 ? "s" : ""}
-                        </Text>
-                        {players.map((player, i) => {
-                          return (
-                            <Text size="sm" key={i}>
-                              {player}
-                            </Text>
-                          );
-                        })}
-                      </Stack>
-                    </HoverCardDropdown>
-                  </HoverCard>
-                </TableTh>
-              );
-            })}
+            {allSideTwoIds
+              .sort(
+                (a, b) =>
+                  playersBySideTwoId[b].length - playersBySideTwoId[a].length
+              )
+              .map((sideTwoId, i) => {
+                const players = playersBySideTwoId[sideTwoId].map(
+                  (player) => player.name
+                );
+                return (
+                  <TableTh
+                    key={sideTwoId}
+                    style={{
+                      cursor: "default",
+                      ...(i === hoveredCoords.col && HOVER_STYLE),
+                    }}
+                  >
+                    <HoverCard>
+                      <HoverCardTarget>
+                        <Center>
+                          <Text style={{ writingMode: "sideways-lr" }}>
+                            {shortenId(sideTwoId)}
+                          </Text>
+                        </Center>
+                      </HoverCardTarget>
+                      <HoverCardDropdown>
+                        <Stack gap="xs">
+                          <Text>
+                            {players.length} player
+                            {players.length > 1 ? "s" : ""}
+                          </Text>
+                          {players.map((player, i) => {
+                            return (
+                              <Text size="sm" key={i}>
+                                {player}
+                              </Text>
+                            );
+                          })}
+                        </Stack>
+                      </HoverCardDropdown>
+                    </HoverCard>
+                  </TableTh>
+                );
+              })}
           </TableTr>
         </TableThead>
         <TableTbody>
           <TableTr>
             <FillerTd count={2} />
-            {Object.entries(gamesBySideTwoId).map(([sideTwoId, games]) => {
+            {Object.entries(gamesBySideTwoId)
+              .sort(
+                ([a], [b]) =>
+                  playersBySideTwoId[b].length - playersBySideTwoId[a].length
+              )
+              .map(([sideTwoId, games]) => {
+                const runnerWins = games.filter(
+                  (game) => game.result === "runnerWin"
+                );
+                const corpWins = games.filter(
+                  (game) => game.result === "corpWin"
+                );
+                const [sideOneWins, sideTwoWins] =
+                  mainSide === "runner"
+                    ? [runnerWins, corpWins]
+                    : [corpWins, runnerWins];
+                return (
+                  <TableTd key={sideTwoId} style={{ cursor: "default" }}>
+                    {sideOneWins.length}-{sideTwoWins.length}
+                  </TableTd>
+                );
+              })}
+          </TableTr>
+          {Object.entries(gamesBySideOneId)
+            .sort(
+              ([a], [b]) =>
+                playersBySideOneId[b].length - playersBySideOneId[a].length
+            )
+            .map(([sideOneId, games], i) => {
+              const groupedGames =
+                mainSide === "runner"
+                  ? groupGamesByCorp(games)
+                  : groupGamesByRunner(games);
               const runnerWins = games.filter(
                 (game) => game.result === "runnerWin"
               );
@@ -152,139 +189,130 @@ export function MatchupTable({
                 mainSide === "runner"
                   ? [runnerWins, corpWins]
                   : [corpWins, runnerWins];
+              const players = playersBySideOneId[sideOneId].map(
+                (player) => player.name
+              );
               return (
-                <TableTd key={sideTwoId} style={{ cursor: "default" }}>
-                  {sideOneWins.length}-{sideTwoWins.length}
-                </TableTd>
+                <TableTr key={sideOneId}>
+                  <TableTd
+                    style={{
+                      cursor: "default",
+                      ...(i === hoveredCoords.row && HOVER_STYLE),
+                    }}
+                  >
+                    <HoverCard>
+                      <HoverCardTarget>
+                        <Text>{shortenId(sideOneId)}</Text>
+                      </HoverCardTarget>
+                      <HoverCardDropdown>
+                        <Stack gap="xs">
+                          <Text>
+                            {players.length} player
+                            {players.length > 1 ? "s" : ""}
+                          </Text>
+                          {players.map((player, i) => {
+                            return (
+                              <Text size="sm" key={i}>
+                                {player}
+                              </Text>
+                            );
+                          })}
+                        </Stack>
+                      </HoverCardDropdown>
+                    </HoverCard>
+                  </TableTd>
+                  <TableTd style={{ cursor: "default" }}>
+                    {sideOneWins.length}-{sideTwoWins.length}
+                  </TableTd>
+                  {allSideTwoIds
+                    .sort(
+                      (a, b) =>
+                        playersBySideTwoId[b].length -
+                        playersBySideTwoId[a].length
+                    )
+                    .map((sideTwoId, j) => {
+                      const games = groupedGames[sideTwoId] ?? [];
+                      const runnerWins = games.filter(
+                        (game) => game.result === "runnerWin"
+                      );
+                      const corpWins = games.filter(
+                        (game) => game.result === "corpWin"
+                      );
+                      const [sideOneWins, sideTwoWins] =
+                        mainSide === "runner"
+                          ? [runnerWins, corpWins]
+                          : [corpWins, runnerWins];
+
+                      const hovered =
+                        hoveredCoords.row === i && hoveredCoords.col === j;
+                      const results = games.map((game) => {
+                        const [sideOneName, sideTwoName] =
+                          mainSide === "runner"
+                            ? [game.runner.name, game.corp.name]
+                            : [game.corp.name, game.runner.name];
+                        return `R${
+                          game.round
+                        } ${sideOneName} vs ${sideTwoName} (${
+                          game.result === "runnerWin"
+                            ? "runner win"
+                            : game.result === "corpWin"
+                            ? "corp win"
+                            : "draw"
+                        })`;
+                      });
+
+                      const hasTies = games.some(
+                        (game) => game.result === "draw"
+                      );
+
+                      return (
+                        <TableTd
+                          key={sideTwoId}
+                          pos="relative"
+                          onMouseOver={() => {
+                            games.length > 0 &&
+                              setHoveredCoords({ row: i, col: j });
+                          }}
+                          onMouseLeave={() => {
+                            setHoveredCoords({ row: -1, col: -1 });
+                          }}
+                          style={{
+                            cursor: "default",
+                            ...(games.length !== 0 && hovered && HOVER_STYLE),
+                          }}
+                        >
+                          {games.length === 0 ? (
+                            <Overlay backgroundOpacity={0} />
+                          ) : (
+                            <HoverCard>
+                              <HoverCardTarget>
+                                <Text size="sm">
+                                  {sideOneWins.length}-{sideTwoWins.length}
+                                  {hasTies &&
+                                    `-${
+                                      games.length -
+                                      sideOneWins.length -
+                                      sideTwoWins.length
+                                    }`}
+                                </Text>
+                              </HoverCardTarget>
+                              <HoverCardDropdown>
+                                <Stack gap="xs">
+                                  {results.map((result, i) => (
+                                    <Text size="sm" key={i}>
+                                      {result}
+                                    </Text>
+                                  ))}
+                                </Stack>
+                              </HoverCardDropdown>
+                            </HoverCard>
+                          )}
+                        </TableTd>
+                      );
+                    })}
+                </TableTr>
               );
             })}
-          </TableTr>
-          {Object.entries(gamesBySideOneId).map(([sideOneId, games], i) => {
-            const groupedGames =
-              mainSide === "runner"
-                ? groupGamesByCorp(games)
-                : groupGamesByRunner(games);
-            const runnerWins = games.filter(
-              (game) => game.result === "runnerWin"
-            );
-            const corpWins = games.filter((game) => game.result === "corpWin");
-            const [sideOneWins, sideTwoWins] =
-              mainSide === "runner"
-                ? [runnerWins, corpWins]
-                : [corpWins, runnerWins];
-            const players = playersBySideOneId[sideOneId].map(
-              (player) => player.name
-            );
-            return (
-              <TableTr key={sideOneId}>
-                <TableTd
-                  style={{
-                    cursor: "default",
-                    ...(i === hoveredCoords.row && HOVER_STYLE),
-                  }}
-                >
-                  <HoverCard>
-                    <HoverCardTarget>
-                      <Text>{shortenId(sideOneId)}</Text>
-                    </HoverCardTarget>
-                    <HoverCardDropdown>
-                      <Stack gap="xs">
-                        <Text>
-                          {players.length} player{players.length > 1 ? "s" : ""}
-                        </Text>
-                        {players.map((player, i) => {
-                          return (
-                            <Text size="sm" key={i}>
-                              {player}
-                            </Text>
-                          );
-                        })}
-                      </Stack>
-                    </HoverCardDropdown>
-                  </HoverCard>
-                </TableTd>
-                <TableTd style={{ cursor: "default" }}>
-                  {sideOneWins.length}-{sideTwoWins.length}
-                </TableTd>
-                {allSideTwoIds.map((sideTwoId, j) => {
-                  const games = groupedGames[sideTwoId] ?? [];
-                  const runnerWins = games.filter(
-                    (game) => game.result === "runnerWin"
-                  );
-                  const corpWins = games.filter(
-                    (game) => game.result === "corpWin"
-                  );
-                  const [sideOneWins, sideTwoWins] =
-                    mainSide === "runner"
-                      ? [runnerWins, corpWins]
-                      : [corpWins, runnerWins];
-
-                  const hovered =
-                    hoveredCoords.row === i && hoveredCoords.col === j;
-                  const results = games.map((game) => {
-                    const [sideOneName, sideTwoName] =
-                      mainSide === "runner"
-                        ? [game.runner.name, game.corp.name]
-                        : [game.corp.name, game.runner.name];
-                    return `R${game.round} ${sideOneName} vs ${sideTwoName} (${
-                      game.result === "runnerWin"
-                        ? "runner win"
-                        : game.result === "corpWin"
-                        ? "corp win"
-                        : "draw"
-                    })`;
-                  });
-
-                  const hasTies = games.some((game) => game.result === "draw");
-
-                  return (
-                    <TableTd
-                      key={sideTwoId}
-                      pos="relative"
-                      onMouseOver={() => {
-                        games.length > 0 &&
-                          setHoveredCoords({ row: i, col: j });
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredCoords({ row: -1, col: -1 });
-                      }}
-                      style={{
-                        cursor: "default",
-                        ...(games.length !== 0 && hovered && HOVER_STYLE),
-                      }}
-                    >
-                      {games.length === 0 ? (
-                        <Overlay backgroundOpacity={0} />
-                      ) : (
-                        <HoverCard>
-                          <HoverCardTarget>
-                            <Text size="sm">
-                              {sideOneWins.length}-{sideTwoWins.length}
-                              {hasTies &&
-                                `-${
-                                  games.length -
-                                  sideOneWins.length -
-                                  sideTwoWins.length
-                                }`}
-                            </Text>
-                          </HoverCardTarget>
-                          <HoverCardDropdown>
-                            <Stack gap="xs">
-                              {results.map((result, i) => (
-                                <Text size="sm" key={i}>
-                                  {result}
-                                </Text>
-                              ))}
-                            </Stack>
-                          </HoverCardDropdown>
-                        </HoverCard>
-                      )}
-                    </TableTd>
-                  );
-                })}
-              </TableTr>
-            );
-          })}
         </TableTbody>
       </Table>
       <Group justify="end">
