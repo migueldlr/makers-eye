@@ -237,3 +237,10 @@ export function getUniqueCorps(rounds: AugmentedRound[]) {
   );
   return Array.from(new Set(corps));
 }
+
+export function getUniqueRunners(rounds: AugmentedRound[]) {
+  const runners = rounds.flatMap((round) =>
+    round.map((game) => game.runner?.runnerIdentity).filter((x) => x != null)
+  );
+  return Array.from(new Set(runners));
+}
