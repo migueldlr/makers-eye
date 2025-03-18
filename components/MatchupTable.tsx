@@ -98,6 +98,9 @@ export function MatchupTable({
           <TableTr>
             <FillerTd count={2} />
             {allSideTwoIds
+              .sort((a, b) => {
+                return a < b ? -1 : a > b ? 1 : 0;
+              })
               .sort(
                 (a, b) =>
                   playersBySideTwoId[b].length - playersBySideTwoId[a].length
@@ -147,6 +150,9 @@ export function MatchupTable({
           <TableTr>
             <FillerTd count={2} />
             {Object.entries(gamesBySideTwoId)
+              .sort(([a], [b]) => {
+                return a < b ? -1 : a > b ? 1 : 0;
+              })
               .sort(
                 ([a], [b]) =>
                   playersBySideTwoId[b].length - playersBySideTwoId[a].length
@@ -170,6 +176,9 @@ export function MatchupTable({
               })}
           </TableTr>
           {Object.entries(gamesBySideOneId)
+            .sort(([a], [b]) => {
+              return a < b ? -1 : a > b ? 1 : 0;
+            })
             .sort(
               ([a], [b]) =>
                 playersBySideOneId[b].length - playersBySideOneId[a].length
@@ -225,6 +234,9 @@ export function MatchupTable({
                     {sideOneWins.length}-{sideTwoWins.length}
                   </TableTd>
                   {allSideTwoIds
+                    .sort((a, b) => {
+                      return a < b ? -1 : a > b ? 1 : 0;
+                    })
                     .sort(
                       (a, b) =>
                         playersBySideTwoId[b].length -

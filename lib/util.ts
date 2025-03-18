@@ -64,9 +64,91 @@ const ID_MAPPING = {
   "Zahya Sadeghi: Versatile Smuggler": "Zahya",
 };
 
+const FACTION_MAPPING = {
+  "419": "Criminal",
+  "A Teia": "Jinteki",
+  Acme: "NBN",
+  AgInfusion: "Jinteki",
+  Akiko: "Shaper",
+  Alice: "Anarch",
+  Ampère: "Neutral",
+  Arissana: "Shaper",
+  Asa: "HB",
+  Ayla: "Shaper",
+  Az: "Criminal",
+  Azmari: "NBN",
+  Padma: "Shaper",
+  "Earth Station": "Weyland",
+  Epiphany: "NBN",
+  Esâ: "Anarch",
+  Freedom: "Anarch",
+  GameNET: "NBN",
+  AoT: "HB",
+  PD: "HB",
+  Hosh: "Anarch",
+  Hyoubu: "Jinteki",
+  Issuaq: "Jinteki",
+  Jemison: "Weyland",
+  PE: "Jinteki",
+  RH: "Jinteki",
+  Kabonesa: "Shaper",
+  Ken: "Criminal",
+  Lat: "Shaper",
+  Liza: "Criminal",
+  Los: "Criminal",
+  Mercury: "Criminal",
+  MirrorMorph: "HB",
+  Mti: "Jinteki",
+  Gnat: "Anarch",
+  "R+": "NBN",
+  NEH: "NBN",
+  Nova: "Neutral",
+  Nuvem: "Weyland",
+  Sable: "Criminal",
+  Ob: "Weyland",
+  Pravdivost: "NBN",
+  Quetzal: "Anarch",
+  "Reina Roja": "Anarch",
+  Loup: "Anarch",
+  Kit: "Shaper",
+  Saraswati: "Jinteki",
+  Seb: "Anarch",
+  Sportsmetal: "HB",
+  SSO: "Weyland",
+  Steve: "Criminal",
+  Tāo: "Shaper",
+  Outfit: "Weyland",
+  Thule: "HB",
+  Thunderbolt: "HB",
+  BABW: "Weyland",
+  BtL: "Weyland",
+  Zahya: "Criminal",
+};
+
+const FACTION_COLORS = {
+  Anarch: "#d9693f",
+  Criminal: "#3862df",
+  Shaper: "#60a260",
+  HB: "#8854b9",
+  Jinteki: "#b14157",
+  NBN: "#FFDE00",
+  Weyland: "#458c45",
+  Neutral: "gray",
+};
+
 export const shortenId = (id?: string) => {
   if (id == null) return "";
   return ID_MAPPING[id as keyof typeof ID_MAPPING] ?? id;
+};
+
+export const idToFaction = (id?: string) => {
+  if (id == null) return "";
+  return FACTION_MAPPING[id as keyof typeof FACTION_MAPPING] ?? id;
+};
+
+export const factionToColor = (faction?: string) => {
+  if (faction == null) return "";
+  return FACTION_COLORS[faction as keyof typeof FACTION_COLORS] ?? faction;
 };
 
 export function mergeObjects<T>(

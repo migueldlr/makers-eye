@@ -1,8 +1,11 @@
 import { Tournament } from "../../lib/types";
-import { Container, Stack, Title } from "@mantine/core";
+import { Container, Group, NavLink, Stack, Title } from "@mantine/core";
 import { Players } from "../../components/players";
 import { MatchupTable } from "../../components/MatchupTable";
 import { createPlayerMap, augmentRounds } from "../../lib/tournament";
+import { WinrateChart } from "../../components/WinrateChart";
+import { IconArrowLeft } from "@tabler/icons-react";
+import { BackButton } from "../../components/BackButton";
 
 export default async function Page({
   params,
@@ -29,12 +32,15 @@ export default async function Page({
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
+        <WinrateChart roundsAugmented={roundsAugmented} side="runner" />
+        <WinrateChart roundsAugmented={roundsAugmented} side="corp" />
         <MatchupTable roundsAugmented={roundsAugmented} />
         <Players
           tournament={tournament}
           roundsAugmented={roundsAugmented}
           playerMap={playerMap}
         />
+        <BackButton />
       </Stack>
     </Container>
   );

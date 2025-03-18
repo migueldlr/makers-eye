@@ -9,12 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mantine/charts": "^7.17.2",
     "@mantine/core": "7.17.2",
     "@mantine/hooks": "7.17.2",
     "@tabler/icons-react": "^3.31.0",
     "next": "15.2.2",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "recharts": "2"
   },
   "devDependencies": {
     "@types/node": "22.10.7",
