@@ -181,7 +181,7 @@ function PlayerCard_raw(
     >
       <Stack gap="xs">
         <TitleWithMatch
-          text={`${player.rank} ${player.name}`}
+          text={`${player.rank}. ${player.name}`}
           query={query}
           enabled={selected}
         />
@@ -197,13 +197,13 @@ function PlayerCard_raw(
           <SideRow
             player={player}
             games={games}
-            side="runner"
+            side="corp"
             playerMap={playerMap}
           />
           <SideRow
             player={player}
             games={games}
-            side="corp"
+            side="runner"
             playerMap={playerMap}
           />
         </SimpleGrid>

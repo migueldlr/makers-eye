@@ -36,7 +36,7 @@ const ID_MAPPING = {
   "MirrorMorph: Endless Iteration": "MirrorMorph",
   "Mti Mwekundu: Life Improved": "Mti",
   'Nathaniel "Gnat" Hall: One-of-a-Kind': "Gnat",
-  "NBN: Reality Plus": "NBN",
+  "NBN: Reality Plus": "R+",
   "Near-Earth Hub: Broadcast Center": "NEH",
   "Nova Initiumia: Catalyst & Impetus": "Nova",
   "Nuvem SA: Law of the Land": "Nuvem",
