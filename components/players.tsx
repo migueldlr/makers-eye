@@ -322,7 +322,9 @@ export function Players({
 
   return (
     <>
-      <Title order={4}>Players</Title>
+      <Title order={4} id="players">
+        Players
+      </Title>
       {FANCY_SEARCH_ENABLED ? searchHelper : null}
       {FANCY_SEARCH_ENABLED ? searchInput : null}
       {tournament.players?.map((player, i) => {

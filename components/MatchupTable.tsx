@@ -94,7 +94,9 @@ export function MatchupTable({
 
   return (
     <Stack>
-      <Title order={4}>Matchup spread</Title>
+      <Title order={4} id="matchups">
+        Matchup spread
+      </Title>
       <Table>
         <TableThead>
           <TableTr>

@@ -112,7 +112,7 @@ export function RepresentationChart({
 
   return (
     <>
-      <Title order={4}>
+      <Title order={4} id={`${side}-representation`}>
         {side === "corp" ? "Corp" : "Runner"} representation
       </Title>
       <DonutChart

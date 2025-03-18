@@ -115,7 +115,9 @@ export function WinrateChart({
 
   return (
     <Stack mb="xl">
-      <Title order={4}>{side === "corp" ? "Corp" : "Runner"} performance</Title>
+      <Title order={4} id={`${side}-performance`}>
+        {side === "corp" ? "Corp" : "Runner"} performance
+      </Title>
       <BarChart
         h={300}
         xAxisProps={{

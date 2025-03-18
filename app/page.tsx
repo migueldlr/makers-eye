@@ -33,7 +33,7 @@ export default function HomePage() {
       <Center>
         <Stack>
           <TextInput
-            label="URL"
+            label="Tournament URL"
             value={value}
             onChange={(e) => {
               setHasError(false);
@@ -62,6 +62,11 @@ export default function HomePage() {
           >
             Go
           </Button>
+          <Center>
+            <Text mt="43vh" c="gray.7">
+              created by spiderbro
+            </Text>
+          </Center>
         </Stack>
       </Center>
     </Container>
