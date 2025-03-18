@@ -3,7 +3,6 @@
 import { BarChart } from "@mantine/charts";
 
 import {
-  AugmentedGame,
   AugmentedRound,
   groupGamesByCorp,
   groupGamesByRunner,
@@ -11,42 +10,9 @@ import {
   groupPlayersByRunner,
   groupRoundsByCorp,
   groupRoundsByRunner,
+  winrateById,
 } from "../lib/tournament";
-import { factionToColor, idToFaction, shortenId } from "../lib/util";
-import { Player } from "../lib/types";
 import { Paper, Text } from "@mantine/core";
-
-function winrateById(
-  gamesById: Record<string, AugmentedGame[]>,
-  playersById: Record<string, Player[]>,
-  side: "runner" | "corp"
-) {
-  return Object.entries(gamesById)
-    .sort(([a], [b]) => {
-      return a < b ? -1 : a > b ? 1 : 0;
-    })
-    .sort(([a], [b]) => playersById[b].length - playersById[a].length)
-    .map(([id, games]) => {
-      const wins = games.filter(
-        (game) =>
-          (game.result === "corpWin" && side === "corp") ||
-          (game.result === "runnerWin" && side === "runner")
-      ).length;
-      const losses = games.filter(
-        (game) =>
-          (game.result === "corpWin" && side === "runner") ||
-          (game.result === "runnerWin" && side === "corp")
-      ).length;
-      return {
-        id: shortenId(id),
-        wins,
-        losses,
-        winrate: (wins / (wins + losses)) * 100,
-        color: factionToColor(idToFaction(shortenId(id))),
-        games: games.length,
-      };
-    });
-}
 
 function ChartTooltip({
   label,

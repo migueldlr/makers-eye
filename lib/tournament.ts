@@ -7,7 +7,7 @@ import {
   AesopsGame,
   Tournament,
 } from "./types";
-import { mergeObjects } from "./util";
+import { factionToColor, idToFaction, mergeObjects, shortenId } from "./util";
 
 export type Result = "corpWin" | "runnerWin" | "draw" | "bye";
 export type PlayerResult = "win" | "loss" | "draw" | "bye";
@@ -245,3 +245,79 @@ export function getUniqueRunners(rounds: AugmentedRound[]) {
   );
   return Array.from(new Set(runners));
 }
+
+export function winrateById(
+  gamesById: Record<string, AugmentedGame[]>,
+  playersById: Record<string, Player[]>,
+  side: "runner" | "corp"
+) {
+  return Object.entries(gamesById)
+    .sort(([a], [b]) => {
+      return a < b ? -1 : a > b ? 1 : 0;
+    })
+    .sort(([a], [b]) => playersById[b].length - playersById[a].length)
+    .map(([id, games]) => {
+      const wins = games.filter(
+        (game) =>
+          (game.result === "corpWin" && side === "corp") ||
+          (game.result === "runnerWin" && side === "runner")
+      ).length;
+      const losses = games.filter(
+        (game) =>
+          (game.result === "corpWin" && side === "runner") ||
+          (game.result === "runnerWin" && side === "corp")
+      ).length;
+      return {
+        id: shortenId(id),
+        wins,
+        losses,
+        winrate: (wins / (wins + losses)) * 100,
+        color: factionToColor(idToFaction(shortenId(id))),
+        games: games.length,
+      };
+    });
+}
+
+export function getCutPlayersByCorp(
+  eliminationPlayers: Player[],
+  players: Player[]
+): Record<string, Player[]> {
+  const cutPlayersById: Record<string, Player[]> = {};
+  eliminationPlayers.forEach((eliminationPlayer) => {
+    const player = players.find(
+      (player) => player.id === eliminationPlayer.id
+    )!;
+    const corpId = player.corpIdentity;
+    if (!corpId) return;
+    if (!cutPlayersById[corpId]) {
+      cutPlayersById[corpId] = [];
+    }
+    cutPlayersById[corpId].push(player);
+  });
+  return cutPlayersById;
+}
+
+export function getCutPlayersByRunner(
+  eliminationPlayers: Player[],
+  players: Player[]
+): Record<string, Player[]> {
+  const cutPlayersById: Record<string, Player[]> = {};
+  eliminationPlayers.forEach((eliminationPlayer) => {
+    const player = players.find(
+      (player) => player.id === eliminationPlayer.id
+    )!;
+    const runnerId = player.runnerIdentity;
+    if (!runnerId) return;
+    if (!cutPlayersById[runnerId]) {
+      cutPlayersById[runnerId] = [];
+    }
+    cutPlayersById[runnerId].push(player);
+  });
+  return cutPlayersById;
+}
+
+export function cutConversionById(
+  cutPlayersById: Record<string, Player[]>,
+  playersById: Record<string, Player[]>,
+  side: "runner" | "corp"
+) {}
