@@ -10,11 +10,11 @@ export function BackButton() {
     <Group justify="start" w="fit-content">
       <NavLink
         href="/"
-        label="Back"
+        label="Back to home"
         leftSection={<IconArrowLeft size={16} stroke={1.5} />}
         onClick={(e) => {
           e.preventDefault();
-          router.back();
+          router.push("/");
         }}
       />
     </Group>
