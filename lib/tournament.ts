@@ -225,6 +225,20 @@ export function groupPlayersByRunner(
   }, {} as Record<string, Player[]>);
 }
 
+export function groupPlayersByRunnerUsingPlayers(players: Player[]) {
+  return players.reduce((acc, player) => {
+    if (!player.runnerIdentity) return acc;
+    return mergeObjects(acc, { [player.runnerIdentity]: [player] });
+  }, {} as Record<string, Player[]>);
+}
+
+export function groupPlayersByCorpUsingPlayers(players: Player[]) {
+  return players.reduce((acc, player) => {
+    if (!player.corpIdentity) return acc;
+    return mergeObjects(acc, { [player.corpIdentity]: [player] });
+  }, {} as Record<string, Player[]>);
+}
+
 export function groupRoundsByCorp(rounds: AugmentedRound[]) {
   const corpToGames: Record<string, AugmentedGame[]> = {};
   return rounds.reduce((acc, round) => {
@@ -317,7 +331,39 @@ export function getCutPlayersByRunner(
 }
 
 export function cutConversionById(
-  cutPlayersById: Record<string, Player[]>,
-  playersById: Record<string, Player[]>,
+  cutPlayers: Player[],
+  players: Player[],
   side: "runner" | "corp"
-) {}
+) {
+  const playersById =
+    side === "corp"
+      ? groupPlayersByCorpUsingPlayers(players)
+      : groupPlayersByRunnerUsingPlayers(players);
+  const cutPlayersById =
+    side === "corp"
+      ? getCutPlayersByCorp(cutPlayers, players)
+      : getCutPlayersByRunner(cutPlayers, players);
+  const baseline = cutPlayers.length / players.length;
+
+  const out: {
+    id: string;
+    percentage: number;
+    relative: number;
+    color: string;
+    cutPlayers: number;
+    players: number;
+  }[] = [];
+  Object.entries(playersById).forEach(([id, players]) => {
+    const percentage =
+      (cutPlayersById[id] ?? []).length / playersById[id].length;
+    out.push({
+      id: shortenId(id),
+      percentage,
+      relative: percentage / baseline,
+      color: factionToColor(idToFaction(shortenId(id))),
+      cutPlayers: (cutPlayersById[id] ?? []).length,
+      players: players.length,
+    });
+  });
+  return out;
+}

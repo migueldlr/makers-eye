@@ -34,7 +34,7 @@ function ChartTooltip({
       </Text>
       <Text>WR {winrate.toFixed(0)}%</Text>
       <Text>
-        ({games} game{games > 0 ? "s" : ""})
+        ({games} game{games > 1 ? "s" : ""})
       </Text>
     </Paper>
   );

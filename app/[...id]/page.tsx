@@ -6,6 +6,7 @@ import { createPlayerMap, augmentRounds } from "../../lib/tournament";
 import { WinrateChart } from "../../components/WinrateChart";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { BackButton } from "../../components/BackButton";
+import { ConversionChart } from "../../components/ConversionChart";
 
 export default async function Page({
   params,
@@ -32,7 +33,9 @@ export default async function Page({
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
+        <ConversionChart tournament={tournament} side="runner" />
         <WinrateChart roundsAugmented={roundsAugmented} side="runner" />
+        <ConversionChart tournament={tournament} side="corp" />
         <WinrateChart roundsAugmented={roundsAugmented} side="corp" />
         <MatchupTable roundsAugmented={roundsAugmented} />
         <Players
