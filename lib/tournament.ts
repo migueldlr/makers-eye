@@ -8,7 +8,7 @@ import {
   Tournament,
 } from "./types";
 import { factionToColor, idToFaction, mergeObjects, shortenId } from "./util";
-import { StandingResult } from "./localtypes";
+import { RawMatch, Standing, StandingResult } from "./localtypes";
 
 export type Result = "corpWin" | "runnerWin" | "draw" | "bye";
 export type PlayerResult = "win" | "loss" | "draw" | "bye";
@@ -482,4 +482,34 @@ export function tournamentToStandings(
     standings.push(out);
   });
   return standings;
+}
+
+export function tournamentToMatches(
+  tournament: Tournament,
+  isAesops: boolean,
+  players: Standing[]
+): RawMatch[] {
+  const playerMap = createPlayerMap(tournament);
+  const roundsAugmented = augmentRounds(tournament, isAesops, playerMap);
+  const matches: RawMatch[] = [];
+
+  roundsAugmented.forEach((round, i) => {
+    const out = round.map((game) => {
+      const match: RawMatch = {
+        round: i + 1,
+        corp_id:
+          players.find((player) => player.name === game.corp?.name)?.id ?? null,
+        runner_id:
+          players.find((player) => player.name === game.runner?.name)?.id ??
+          null,
+        phase: game.eliminationGame ? "cut" : "swiss",
+        result: game.result,
+        table: game.table,
+      };
+      return match;
+    });
+    matches.push(...out);
+  });
+
+  return matches;
 }

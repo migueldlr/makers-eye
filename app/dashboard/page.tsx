@@ -21,10 +21,11 @@ import { normalizeUrl, parseUrl, URLS } from "@/lib/util";
 import {
   doesTournamentExist,
   proxyFetch,
+  uploadMatches,
   uploadStandings,
   uploadTournament,
 } from "./actions";
-import { tournamentToStandings } from "@/lib/tournament";
+import { tournamentToMatches, tournamentToStandings } from "@/lib/tournament";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {
   const [verified, setVerified] = useState(false);
@@ -126,7 +127,10 @@ export default function Dashboard() {
       tournamentToStandings(data, site === "aesops")
     );
 
-    console.log(standings);
+    const matches = await uploadMatches(
+      tournamentId,
+      tournamentToMatches(data, site === "aesops", standings)
+    );
   }
 
   if (!user) {

@@ -1,3 +1,5 @@
+import { Database } from "./supabase";
+
 export type StandingResult = {
   tournament: number;
   topCutRank?: number;
@@ -15,3 +17,7 @@ export type StandingResult = {
   strengthOfSchedule: number;
   extendedStrengthOfSchedule: number;
 };
+
+export type Match = Database["public"]["Tables"]["matches"]["Insert"];
+export type RawMatch = Omit<Match, "created_at" | "id" | "tournament_id">;
+export type Standing = Database["public"]["Tables"]["standings"]["Row"];

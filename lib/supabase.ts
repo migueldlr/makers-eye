@@ -34,6 +34,64 @@ export type Database = {
   }
   public: {
     Tables: {
+      matches: {
+        Row: {
+          corp_id: number | null
+          created_at: string
+          id: number
+          phase: string
+          result: string | null
+          round: number | null
+          runner_id: number | null
+          table: number | null
+          tournament_id: number
+        }
+        Insert: {
+          corp_id?: number | null
+          created_at?: string
+          id?: number
+          phase?: string
+          result?: string | null
+          round?: number | null
+          runner_id?: number | null
+          table?: number | null
+          tournament_id: number
+        }
+        Update: {
+          corp_id?: number | null
+          created_at?: string
+          id?: number
+          phase?: string
+          result?: string | null
+          round?: number | null
+          runner_id?: number | null
+          table?: number | null
+          tournament_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_corp_id_fkey"
+            columns: ["corp_id"]
+            isOneToOne: false
+            referencedRelation: "standings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "standings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standings: {
         Row: {
           corp_draws: number
@@ -65,7 +123,7 @@ export type Database = {
           match_points: number
           name?: string
           runner_draws?: number
-          runner_identity: string
+          runner_identity?: string
           runner_losses?: number
           runner_wins?: number
           sos: number

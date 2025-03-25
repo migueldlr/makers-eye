@@ -1,6 +1,6 @@
 "use server";
 
-import { StandingResult } from "@/lib/localtypes";
+import { RawMatch, StandingResult } from "@/lib/localtypes";
 import { Database } from "@/lib/supabase";
 import { Tournament } from "@/lib/types";
 import { createClient } from "@/utils/supabase/server";
@@ -61,10 +61,29 @@ export async function uploadStandings(
   return data;
 }
 
+export async function uploadMatches(tournamentId: number, matches: RawMatch[]) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("matches")
+    .insert(
+      matches.map((match) => {
+        const out: Database["public"]["Tables"]["matches"]["Insert"] = {
+          ...match,
+          tournament_id: tournamentId,
+        };
+        return out;
+      })
+    )
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
 export async function proxyFetch(url: string) {
-  console.log(url);
   const res = await fetch(url);
-  console.log(res);
   if (!res.ok) {
     throw new Error("Failed to fetch data");
   }
