@@ -1,5 +1,6 @@
 "use client";
 
+import LinkToDashboard from "@/components/LinkToDashboard";
 import {
   Button,
   Center,
@@ -62,6 +63,7 @@ export default function HomePage() {
           >
             Go
           </Button>
+          <LinkToDashboard />
           <Center>
             <Text mt="43vh" c="gray.7">
               created by spiderbro
