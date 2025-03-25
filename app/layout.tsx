@@ -7,6 +7,7 @@ import {
   mantineHtmlProps,
 } from "@mantine/core";
 import { theme } from "../theme";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata = {
   title: "Cataloguer - Netrunner tournament analysis",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: any }) {
         <MantineProvider theme={theme} defaultColorScheme="dark">
           {children}
         </MantineProvider>
+        <Analytics />
       </body>
     </html>
   );
