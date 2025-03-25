@@ -5,7 +5,13 @@ import { Database } from "@/lib/supabase";
 import { Tournament } from "@/lib/types";
 import { createClient } from "@/utils/supabase/server";
 
-export async function uploadTournament(tournament: Tournament, url: string) {
+export async function uploadTournament(
+  tournament: Tournament,
+  url: string,
+  meta: string,
+  region: string | null,
+  location: string | null
+) {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -13,9 +19,11 @@ export async function uploadTournament(tournament: Tournament, url: string) {
     .insert({
       name: tournament.name,
       url,
-      meta: "24.12",
       last_modified_at: new Date(),
       date: tournament.date,
+      meta,
+      region,
+      location,
     })
     .select();
   if (error) {
@@ -100,4 +108,14 @@ export async function doesTournamentExist(name: string) {
     throw new Error(error.message);
   }
   return data.some((tournament) => tournament.name === name);
+}
+
+export async function getTournaments() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("tournaments").select();
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
 }

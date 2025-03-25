@@ -163,26 +163,35 @@ export type Database = {
       tournaments: {
         Row: {
           created_at: string
+          date: string | null
           id: number
           last_modified_at: string | null
+          location: string | null
           meta: string
           name: string | null
+          region: string | null
           url: string | null
         }
         Insert: {
           created_at?: string
+          date?: string | null
           id?: number
           last_modified_at?: string | null
+          location?: string | null
           meta?: string
           name?: string | null
+          region?: string | null
           url?: string | null
         }
         Update: {
           created_at?: string
+          date?: string | null
           id?: number
           last_modified_at?: string | null
+          location?: string | null
           meta?: string
           name?: string | null
+          region?: string | null
           url?: string | null
         }
         Relationships: []

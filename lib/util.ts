@@ -193,3 +193,11 @@ export function normalizeUrl(url: string) {
   const [site, id] = parsed;
   return `${URLS[site as keyof typeof URLS]}${id}`;
 }
+
+export const DEFAULT_NONE = "<none>";
+
+export const REGION_OPTIONS = ["Americas", "EMEA", "APAC"];
+
+export const LOCATION_OPTIONS = ["Online", "Paper"];
+
+export const DEFAULT_META = "24.12";

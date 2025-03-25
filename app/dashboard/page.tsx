@@ -9,7 +9,11 @@ import {
   Stack,
   TextInput,
   Text,
-  Chip,
+  useCombobox,
+  Title,
+  Table,
+  Switch,
+  Radio,
   Code,
 } from "@mantine/core";
 import { signOut } from "../login/actions";
@@ -17,15 +21,25 @@ import { BackButton } from "@/components/BackButton";
 import { useEffect, useState } from "react";
 import { Tournament } from "@/lib/types";
 import { User } from "@supabase/supabase-js";
-import { normalizeUrl, parseUrl, URLS } from "@/lib/util";
+import {
+  DEFAULT_META,
+  LOCATION_OPTIONS,
+  normalizeUrl,
+  parseUrl,
+  REGION_OPTIONS,
+  URLS,
+} from "@/lib/util";
 import {
   doesTournamentExist,
+  getTournaments,
   proxyFetch,
   uploadMatches,
   uploadStandings,
   uploadTournament,
 } from "./actions";
 import { tournamentToMatches, tournamentToStandings } from "@/lib/tournament";
+import { SearchableSelect } from "@/components/SearchableSelect";
+import { Database } from "@/lib/supabase";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {
   const [verified, setVerified] = useState(false);
@@ -65,6 +79,91 @@ function VerificationChip({ tournament }: { tournament: Tournament }) {
   );
 }
 
+function TournamentTable({
+  tournaments,
+}: {
+  tournaments: Database["public"]["Tables"]["tournaments"]["Row"][];
+}) {
+  if (tournaments.length === 0) {
+    return <Text>No tournaments found</Text>;
+  }
+  tournaments.sort((a, b) => {
+    return new Date(b.date!).getTime() - new Date(a.date!).getTime();
+  });
+  return (
+    <Table>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>Name</Table.Th>
+          <Table.Th>Date</Table.Th>
+          <Table.Th>Meta</Table.Th>
+          <Table.Th>Region</Table.Th>
+          <Table.Th>Location</Table.Th>
+          <Table.Th>Site</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {tournaments.map((tournament) => (
+          <Table.Tr key={tournament.id}>
+            <Table.Td>{tournament.name}</Table.Td>
+            <Table.Td>{tournament.date}</Table.Td>
+            <Table.Td>{tournament.meta}</Table.Td>
+            <Table.Td>{tournament.region}</Table.Td>
+            <Table.Td>{tournament.location}</Table.Td>
+            <Table.Td>{tournament.url}</Table.Td>
+          </Table.Tr>
+        ))}
+      </Table.Tbody>
+    </Table>
+  );
+}
+
+function UrlInput({
+  url,
+  setUrl,
+}: {
+  url: string;
+  setUrl: (url: string) => void;
+}) {
+  const [useShortcode, setUseShortcode] = useState(false);
+  const [site, setSite] = useState("");
+  const [shortValue, setShortValue] = useState("");
+
+  useEffect(() => {
+    if (!useShortcode) return;
+    if (site === "") return;
+    setUrl(`${URLS[site as keyof typeof URLS]}${shortValue}`);
+  }, [site, shortValue]);
+  const shortInput = (
+    <Group>
+      <Radio.Group value={site} onChange={setSite} name="Site?">
+        <Stack>
+          <Radio value="aesops" label="Aesops" />
+          <Radio value="cobra" label="Cobra" />
+        </Stack>
+      </Radio.Group>
+      <TextInput
+        value={shortValue}
+        onChange={(e) => setShortValue(e.target.value)}
+      />
+    </Group>
+  );
+  const longInput = (
+    <TextInput value={url} onChange={(e) => setUrl(e.target.value)} w="50vw" />
+  );
+
+  return (
+    <Group>
+      {useShortcode ? shortInput : longInput}
+      <Switch
+        checked={useShortcode}
+        onChange={(e) => setUseShortcode(e.currentTarget.checked)}
+        label="Use shortcode"
+      />
+    </Group>
+  );
+}
+
 export default function Dashboard() {
   const [data, setData] = useState<Tournament>();
   const [user, setUser] = useState<User>();
@@ -72,8 +171,22 @@ export default function Dashboard() {
   const supabase = createClient();
   const [url, setUrl] = useState("");
 
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+  const [region, setRegion] = useState<string | null>(null);
+  const [meta, setMeta] = useState(DEFAULT_META);
+  const [location, setLocation] = useState<string | null>(null);
+
+  const [success, setSuccess] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [tournaments, setTournaments] = useState<
+    Database["public"]["Tables"]["tournaments"]["Row"][]
+  >([]);
+
   useEffect(() => {
     setData(undefined);
+    setSuccess(false);
   }, [url]);
 
   useEffect(() => {
@@ -87,7 +200,20 @@ export default function Dashboard() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (!uploadLoading) {
+      (async () => {
+        const tournaments = await getTournaments();
+        setTournaments(tournaments);
+      })();
+    }
+  }, [uploadLoading]);
+
   async function load(url: string) {
+    setData(undefined);
+    setRegion(null);
+    setLocation(null);
+    setMeta(DEFAULT_META);
     const parsed = parseUrl(url);
     if (!parsed) {
       return;
@@ -105,7 +231,14 @@ export default function Dashboard() {
     if (!data || !url) {
       return;
     }
-    const tournamentId = await uploadTournament(data, normalizeUrl(url));
+    setUploadLoading(true);
+    const tournamentId = await uploadTournament(
+      data,
+      normalizeUrl(url),
+      meta,
+      region,
+      location
+    );
 
     const standings = await uploadStandings(
       tournamentId,
@@ -116,6 +249,8 @@ export default function Dashboard() {
       tournamentId,
       tournamentToMatches(data, site === "aesops", standings)
     );
+
+    setUploadLoading(false);
   }
 
   if (!user) {
@@ -124,22 +259,52 @@ export default function Dashboard() {
 
   const additionalData = (
     <>
-      <TextInput />
+      <Text>
+        Found tournament <Code>{data?.name}</Code> held on{" "}
+        <Code>{data?.date}</Code>
+      </Text>
+      <Group>
+        <SearchableSelect
+          label="Location"
+          placeholder="Online?"
+          options={LOCATION_OPTIONS}
+          value={location}
+          setValue={setLocation}
+        />
+        <SearchableSelect
+          label="Region"
+          placeholder="Select a region"
+          options={REGION_OPTIONS}
+          value={region}
+          setValue={setRegion}
+        />
+        <TextInput value={meta} label="Meta" readOnly />
+      </Group>
     </>
   );
 
   return (
     <Container mt="lg">
       <Stack>
-        Hello {user!.email}
+        <Title order={3}>Upload</Title>
         <Stack align="start">
-          <TextInput value={url} onChange={(e) => setUrl(e.target.value)} />
+          <UrlInput url={url} setUrl={setUrl} />
           <VerificationChip tournament={data!} />
-          <Button onClick={() => load(url)} disabled={data != null}>
-            Load
-          </Button>
-          {data && <Button onClick={() => submitTournament()}>Upload</Button>}
+          {!data && <Button onClick={() => load(url)}>Load</Button>}
+          {data && additionalData}
+          {data && (
+            <Button
+              onClick={() => submitTournament()}
+              variant="gradient"
+              gradient={{ from: "red", to: "yellow", deg: 30 }}
+              loading={uploadLoading}
+            >
+              Upload
+            </Button>
+          )}
         </Stack>
+        <Title order={3}>Already uploaded</Title>
+        <TournamentTable tournaments={tournaments} />
         <Group mt="xl">
           <BackButton />
           <Button variant="subtle" onClick={signOut}>
