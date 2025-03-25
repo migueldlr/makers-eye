@@ -2,39 +2,24 @@
 
 import { Button, Container, PasswordInput, TextInput } from "@mantine/core";
 import { login } from "./actions";
-import { useForm } from "@mantine/form";
 
 export default function LoginPage() {
-  const form = useForm({
-    mode: "uncontrolled",
-    initialValues: {
-      email: "",
-      password: "",
-    },
-
-    validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
-      password: (value) => (value.length > 0 ? null : "Password is required"),
-    },
-  });
-
   return (
     <Container pt="40vh">
-      <form onSubmit={form.onSubmit(login)}>
-        <TextInput
-          id="email"
-          withAsterisk
-          label="Email"
-          key={form.key("email")}
-          {...form.getInputProps("email")}
-        />
-        <PasswordInput
-          id="password"
-          withAsterisk
-          label="Password"
-          key={form.key("password")}
-          {...form.getInputProps("password")}
-        />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const form = e.currentTarget;
+          if (form.email.value === "") return;
+          if (form.password.value === "") return;
+          login({
+            email: form.email.value,
+            password: form.password.value,
+          });
+        }}
+      >
+        <TextInput id="email" withAsterisk label="Email" />
+        <PasswordInput id="password" withAsterisk label="Password" />
         <Button type="submit" mt="sm">
           Log in
         </Button>

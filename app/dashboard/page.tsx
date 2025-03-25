@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { Button, Container, Group, Stack } from "@mantine/core";
 import { signOut } from "../login/actions";
+import { BackButton } from "@/components/BackButton";
 
 export default async function PrivatePage() {
   const supabase = await createClient();
@@ -21,6 +22,7 @@ export default async function PrivatePage() {
             Sign out
           </Button>
         </Group>
+        <BackButton />
       </Stack>
     </Container>
   );
