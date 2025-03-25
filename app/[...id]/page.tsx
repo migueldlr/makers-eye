@@ -1,10 +1,14 @@
 import { Tournament } from "../../lib/types";
-import { Container, Group, NavLink, Stack, Title } from "@mantine/core";
+import { Alert, Container, Group, NavLink, Stack, Title } from "@mantine/core";
 import { Players } from "../../components/players";
 import { MatchupTable } from "../../components/MatchupTable";
 import { createPlayerMap, augmentRounds } from "../../lib/tournament";
 import { WinrateChart } from "../../components/WinrateChart";
-import { IconArrowLeft } from "@tabler/icons-react";
+import {
+  IconAlertHexagon,
+  IconAlertSquare,
+  IconArrowLeft,
+} from "@tabler/icons-react";
 import { BackButton } from "../../components/BackButton";
 import { ConversionChart } from "../../components/ConversionChart";
 import { RepresentationChart } from "../../components/RepresentationChart";
@@ -25,6 +29,26 @@ export default async function Page({
 
   const data = await fetch(`${urls[site]}${id[1]}.json`);
   const tournament = (await data.json()) as Tournament;
+
+  if ((tournament?.rounds?.length ?? 0) === 0) {
+    return (
+      <Container pt="md">
+        <Stack>
+          <Title order={2}>{tournament.name}</Title>
+          <Alert
+            variant="light"
+            color="orange"
+            title="No rounds found"
+            icon={<IconAlertHexagon />}
+          >
+            This tournament might not be started yet. Check back later for
+            results!
+          </Alert>
+          <BackButton />
+        </Stack>
+      </Container>
+    );
+  }
 
   const playerMap = createPlayerMap(tournament);
 
