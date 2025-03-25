@@ -1,6 +1,7 @@
 "use client";
 
 import LinkToDashboard from "@/components/LinkToDashboard";
+import { parseUrl } from "@/lib/util";
 import {
   Button,
   Center,
@@ -11,17 +12,6 @@ import {
 } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-function parseUrl(url: string) {
-  const parsed = new URL(url);
-  if (parsed.hostname.includes("aesops")) {
-    return ["aesops", parsed.pathname.split("/")[1]];
-  }
-  if (parsed.hostname.includes("tournaments.nullsignal")) {
-    return ["cobra", parsed.pathname.split("/")[2]];
-  }
-  return null;
-}
 
 export default function HomePage() {
   const router = useRouter();

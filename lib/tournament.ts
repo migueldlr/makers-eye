@@ -8,6 +8,7 @@ import {
   Tournament,
 } from "./types";
 import { factionToColor, idToFaction, mergeObjects, shortenId } from "./util";
+import { StandingResult } from "./localtypes";
 
 export type Result = "corpWin" | "runnerWin" | "draw" | "bye";
 export type PlayerResult = "win" | "loss" | "draw" | "bye";
@@ -395,4 +396,90 @@ export function representationById(
         (games === "cut" ? eliminationPlayers : allPlayers).length,
     };
   });
+}
+
+export function getWinLossDrawForPlayer(
+  augmentedRounds: AugmentedRound[],
+  player: Player,
+  side: "runner" | "corp"
+) {
+  let wins = 0;
+  let losses = 0;
+  let draws = 0;
+  augmentedRounds.forEach((round) => {
+    round.map((game) => {
+      if (side === "runner") {
+        if (game.runner?.id === player.id) {
+          if (game.result === "runnerWin") {
+            wins++;
+          } else if (game.result === "corpWin") {
+            losses++;
+          } else {
+            draws++;
+          }
+        }
+      } else {
+        if (game.corp?.id === player.id) {
+          if (game.result === "runnerWin") {
+            losses++;
+          } else if (game.result === "corpWin") {
+            wins++;
+          } else {
+            draws++;
+          }
+        }
+      }
+    });
+  });
+  return { wins, losses, draws };
+}
+
+export function tournamentToStandings(
+  tournament: Tournament,
+  isAesops: boolean
+): Omit<StandingResult, "tournament">[] {
+  const playerMap = createPlayerMap(tournament);
+  const roundsAugmented = augmentRounds(tournament, isAesops, playerMap);
+  const standings: Omit<StandingResult, "tournament">[] = [];
+  tournament.players?.map((player, swissRank) => {
+    if (player.name == null) {
+      console.error(`Player has no name: ${JSON.stringify(player)}`);
+      return;
+    }
+    const corpResults = getWinLossDrawForPlayer(
+      roundsAugmented,
+      player,
+      "corp"
+    );
+    const runnerResults = getWinLossDrawForPlayer(
+      roundsAugmented,
+      player,
+      "runner"
+    );
+    const topCutIndex = tournament.eliminationPlayers?.findIndex(
+      (eliminationPlayer) => eliminationPlayer.id === player.id
+    );
+    const topCutRank = topCutIndex !== undefined ? topCutIndex + 1 : undefined;
+    const out: Omit<StandingResult, "tournament"> = {
+      name: player.name,
+      corpWins: corpResults.wins,
+      corpLosses: corpResults.losses,
+      corpDraws: corpResults.draws,
+      runnerWins: runnerResults.wins,
+      runnerLosses: runnerResults.losses,
+      runnerDraws: runnerResults.draws,
+      corpIdentity: player.corpIdentity ?? "",
+      runnerIdentity: player.runnerIdentity ?? "",
+      strengthOfSchedule: Number(player.strengthOfSchedule ?? 0),
+      extendedStrengthOfSchedule: Number(
+        player.extendedStrengthOfSchedule ?? 0
+      ),
+      matchPoints: player.matchPoints ?? 0,
+      swissRank: swissRank + 1,
+      topCutRank,
+    };
+
+    standings.push(out);
+  });
+  return standings;
 }

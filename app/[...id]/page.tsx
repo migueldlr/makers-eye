@@ -1,17 +1,13 @@
 import { Tournament } from "../../lib/types";
-import { Alert, Container, Group, NavLink, Stack, Title } from "@mantine/core";
+import { Alert, Container, Stack, Title } from "@mantine/core";
 import { Players } from "../../components/players";
 import { MatchupTable } from "../../components/MatchupTable";
 import { createPlayerMap, augmentRounds } from "../../lib/tournament";
 import { WinrateChart } from "../../components/WinrateChart";
-import {
-  IconAlertHexagon,
-  IconAlertSquare,
-  IconArrowLeft,
-} from "@tabler/icons-react";
+import { IconAlertHexagon } from "@tabler/icons-react";
 import { BackButton } from "../../components/BackButton";
-import { ConversionChart } from "../../components/ConversionChart";
 import { RepresentationChart } from "../../components/RepresentationChart";
+import { URLS } from "@/lib/util";
 
 export default async function Page({
   params,
@@ -20,14 +16,10 @@ export default async function Page({
 }) {
   const { id } = await params;
 
-  const urls = {
-    cobra: `https://tournaments.nullsignal.games/tournaments/`,
-    aesops: `https://www.aesopstables.net/`,
-  };
-  const site = id[0] as keyof typeof urls;
+  const site = id[0] as keyof typeof URLS;
   const isAesops = site === "aesops";
 
-  const data = await fetch(`${urls[site]}${id[1]}.json`);
+  const data = await fetch(`${URLS[site]}${id[1]}.json`);
   const tournament = (await data.json()) as Tournament;
 
   if ((tournament?.rounds?.length ?? 0) === 0) {

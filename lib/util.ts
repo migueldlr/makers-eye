@@ -170,3 +170,26 @@ export function mergeObjects<T>(
   }
   return merged;
 }
+
+export const URLS = {
+  cobra: `https://tournaments.nullsignal.games/tournaments/`,
+  aesops: `https://www.aesopstables.net/`,
+};
+
+export function parseUrl(url: string) {
+  const parsed = new URL(url);
+  if (parsed.hostname.includes("aesops")) {
+    return ["aesops", parsed.pathname.split("/")[1]];
+  }
+  if (parsed.hostname.includes("tournaments.nullsignal")) {
+    return ["cobra", parsed.pathname.split("/")[2]];
+  }
+  return null;
+}
+
+export function normalizeUrl(url: string) {
+  const parsed = parseUrl(url);
+  if (!parsed) return url;
+  const [site, id] = parsed;
+  return `${URLS[site as keyof typeof URLS]}${id}`;
+}
