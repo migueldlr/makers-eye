@@ -70,3 +70,14 @@ export async function proxyFetch(url: string) {
   }
   return await res.json();
 }
+
+export async function doesTournamentExist(name: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("tournaments").select("name");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data.some((tournament) => tournament.name === name);
+}

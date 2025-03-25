@@ -9,6 +9,8 @@ import {
   Stack,
   TextInput,
   Text,
+  Chip,
+  Code,
 } from "@mantine/core";
 import { signOut } from "../login/actions";
 import { BackButton } from "@/components/BackButton";
@@ -16,8 +18,51 @@ import { useEffect, useState } from "react";
 import { Tournament } from "@/lib/types";
 import { User } from "@supabase/supabase-js";
 import { normalizeUrl, parseUrl, URLS } from "@/lib/util";
-import { proxyFetch, uploadStandings, uploadTournament } from "./actions";
+import {
+  doesTournamentExist,
+  proxyFetch,
+  uploadStandings,
+  uploadTournament,
+} from "./actions";
 import { tournamentToStandings } from "@/lib/tournament";
+
+function VerificationChip({ tournament }: { tournament: Tournament }) {
+  const [verified, setVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (tournament == null) return;
+    (async () => {
+      if (tournament.name == null) return;
+      setVerified(true);
+      setLoading(true);
+
+      const doesTournamentNameExist = await doesTournamentExist(
+        tournament.name
+      );
+      setLoading(false);
+
+      if (doesTournamentNameExist) {
+        setVerified(false);
+      }
+    })();
+  }, [tournament]);
+
+  if (!tournament) return null;
+
+  if (loading) {
+    return <Text>Verifying...</Text>;
+  }
+  if (verified) {
+    return null;
+  }
+
+  return (
+    <Text c="red">
+      Conflict: {`Tournament with name "${tournament.name}" already exists`}
+    </Text>
+  );
+}
 
 function DataDisplay({
   data,
@@ -28,11 +73,12 @@ function DataDisplay({
 }) {
   if (!data) return <Text>No data yet...</Text>;
 
-  console.log(tournamentToStandings(data, isAesops));
   return (
     <Stack>
-      <Text>Loaded!</Text>
-      <Text>{data.name}</Text>
+      <Group>
+        <Text>Loaded tournament:</Text>
+        <Code>{data.name}</Code>
+      </Group>
     </Stack>
   );
 }
@@ -69,21 +115,18 @@ export default function Dashboard() {
     setData(tournament);
   }
 
-  console.log(data);
-  if (data) {
-    console.log();
-  }
-
   async function submitTournament() {
     if (!data || !url) {
       return;
     }
     const tournamentId = await uploadTournament(data, normalizeUrl(url));
 
-    await uploadStandings(
+    const standings = await uploadStandings(
       tournamentId,
       tournamentToStandings(data, site === "aesops")
     );
+
+    console.log(standings);
   }
 
   if (!user) {
@@ -96,16 +139,17 @@ export default function Dashboard() {
         Hello {user!.email}
         <Stack align="start">
           <TextInput value={url} onChange={(e) => setUrl(e.target.value)} />
+          <DataDisplay data={data!} isAesops={site === "aesops"} />
+          <VerificationChip tournament={data!} />
           <Button onClick={() => load(url)}>Load</Button>
           {data && <Button onClick={() => submitTournament()}>Upload</Button>}
         </Stack>
-        <DataDisplay data={data!} isAesops={site === "aesops"} />
         <Group mt="xl">
+          <BackButton />
           <Button variant="subtle" onClick={signOut}>
             Sign out
           </Button>
         </Group>
-        <BackButton />
       </Stack>
     </Container>
   );
