@@ -15,6 +15,7 @@ export async function uploadTournament(tournament: Tournament, url: string) {
       url,
       meta: "24.12",
       last_modified_at: new Date(),
+      date: tournament.date,
     })
     .select();
   if (error) {

@@ -65,31 +65,16 @@ function VerificationChip({ tournament }: { tournament: Tournament }) {
   );
 }
 
-function DataDisplay({
-  data,
-  isAesops,
-}: {
-  data: Tournament;
-  isAesops: boolean;
-}) {
-  if (!data) return <Text>No data yet...</Text>;
-
-  return (
-    <Stack>
-      <Group>
-        <Text>Loaded tournament:</Text>
-        <Code>{data.name}</Code>
-      </Group>
-    </Stack>
-  );
-}
-
 export default function Dashboard() {
   const [data, setData] = useState<Tournament>();
   const [user, setUser] = useState<User>();
   const [site, setSite] = useState("");
   const supabase = createClient();
   const [url, setUrl] = useState("");
+
+  useEffect(() => {
+    setData(undefined);
+  }, [url]);
 
   useEffect(() => {
     (async () => {
@@ -137,15 +122,22 @@ export default function Dashboard() {
     return null;
   }
 
+  const additionalData = (
+    <>
+      <TextInput />
+    </>
+  );
+
   return (
     <Container mt="lg">
       <Stack>
         Hello {user!.email}
         <Stack align="start">
           <TextInput value={url} onChange={(e) => setUrl(e.target.value)} />
-          <DataDisplay data={data!} isAesops={site === "aesops"} />
           <VerificationChip tournament={data!} />
-          <Button onClick={() => load(url)}>Load</Button>
+          <Button onClick={() => load(url)} disabled={data != null}>
+            Load
+          </Button>
           {data && <Button onClick={() => submitTournament()}>Upload</Button>}
         </Stack>
         <Group mt="xl">
