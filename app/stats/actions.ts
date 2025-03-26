@@ -53,8 +53,6 @@ export async function getMatchesMetadata(): Promise<{
     throw new Error("Error fetching runner info", runnerError);
   }
 
-  console.log(runnerData);
-
   const { data: corpData, error: corpError } = await supabase
     .rpc("get_corp_popularity", {
       tournament_filter: null,

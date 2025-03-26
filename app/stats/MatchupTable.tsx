@@ -178,8 +178,6 @@ export default function MatchupTable() {
     </Group>
   );
 
-  //   console.log(hoveredCoords);
-
   return (
     <Stack gap="xl" pb="xl">
       <Title order={3} id="matchups">
