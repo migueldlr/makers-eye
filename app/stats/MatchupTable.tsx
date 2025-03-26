@@ -245,7 +245,8 @@ function Cell_unmemoized({
   const [sideOneWins, sideTwoWins] =
     mainSide === "runner" ? [runnerWins, corpWins] : [corpWins, runnerWins];
 
-  const hasResults = sideOneWins + sideTwoWins > minMatches;
+  const hasMinResults = sideOneWins + sideTwoWins >= minMatches;
+  const hasResults = sideOneWins + sideTwoWins > 0;
   const isBlowout = sideOneWins === 0 || sideTwoWins === 0;
 
   const percentageDisplay = hasResults
@@ -273,7 +274,7 @@ function Cell_unmemoized({
       style={{
         cursor: "default",
         ...(showColors &&
-          hasResults && {
+          hasMinResults && {
             backgroundColor: `color-mix(in oklab, #071d31 ${
               (1 - rawWr) * 100
             }%, #1864ab ${rawWr * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
