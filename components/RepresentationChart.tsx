@@ -5,6 +5,7 @@ import { Player, Tournament } from "../lib/types";
 import { representationById } from "../lib/tournament";
 import {
   Group,
+  luminance,
   Paper,
   Radio,
   RadioGroup,
@@ -72,7 +73,7 @@ const renderCustomizedLabel = ({
     <text
       x={x}
       y={y}
-      fill="white"
+      fill={luminance(payload.fill) > 0.5 ? "black" : "white"}
       textAnchor="middle"
       dominantBaseline="central"
     >
