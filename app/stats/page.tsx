@@ -16,6 +16,8 @@ import {
   Group,
   Code,
   ActionIcon,
+  Switch,
+  NumberInput,
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
 import { getMatchesMetadata, getWinrates } from "./actions";
@@ -43,17 +45,10 @@ export default function StatsPage() {
     Awaited<ReturnType<typeof getMatchesMetadata>> | undefined
   >();
 
-  useEffect(() => {
-    (async () => {
-      const winrates = await getWinrates();
-      const metadata = await getMatchesMetadata();
-      setWinrates(winrates);
-      setMetadata(metadata);
-    })();
-  }, []);
-
   const [mainSide, setMainSide] = useState<"runner" | "corp">("runner");
   const offSide = mainSide === "runner" ? "corp" : "runner";
+  const [groupByFaction, setGroupByFaction] = useState(false);
+  const [showPercentages, setShowPercentages] = useState(false);
   const [hoveredCoords, setHoveredCoords] = useState<{
     row: number;
     col: number;
@@ -61,6 +56,17 @@ export default function StatsPage() {
     row: -1,
     col: -1,
   });
+
+  const [minMatches, setMinMatches] = useState(1);
+
+  useEffect(() => {
+    (async () => {
+      const winrates = await getWinrates(minMatches);
+      const metadata = await getMatchesMetadata();
+      setWinrates(winrates);
+      setMetadata(metadata);
+    })();
+  }, [minMatches]);
 
   const countsToIds = (_?: { identity: string; player_count: number }[]) =>
     _?.map(({ identity }) => identity);
@@ -104,11 +110,15 @@ export default function StatsPage() {
         : countsToIds(metadata.corpData)) ?? [];
     allSideOneIds.sort(sortByPopularity(mainSide)); //.sort(sortByFaction);
     allSideTwoIds.sort(sortByPopularity(offSide)); //.sort(sortByFaction);
+    if (groupByFaction) {
+      allSideOneIds.sort(sortByFaction);
+      allSideTwoIds.sort(sortByFaction);
+    }
     return {
       allSideOneIds,
       allSideTwoIds,
     };
-  }, [mainSide, metadata]);
+  }, [mainSide, metadata, groupByFaction]);
 
   if (winrates == null) {
     return <div>Loading...</div>;
@@ -167,7 +177,11 @@ export default function StatsPage() {
                   : [corpWins, runnerWins];
               return (
                 <TableTd key={sideTwoId} style={{ cursor: "default" }}>
-                  {sideOneWins}-{sideTwoWins}
+                  {showPercentages
+                    ? `${Math.round(
+                        (sideOneWins / (sideOneWins + sideTwoWins)) * 100
+                      )}%`
+                    : `${sideOneWins}-${sideTwoWins}`}
                 </TableTd>
               );
             })}
@@ -202,7 +216,11 @@ export default function StatsPage() {
                   <Text>{shortenId(sideOneId)}</Text>
                 </TableTd>
                 <TableTd style={{ cursor: "default" }}>
-                  {sideOneWins}-{sideTwoWins}
+                  {showPercentages
+                    ? `${Math.round(
+                        (sideOneWins / (sideOneWins + sideTwoWins)) * 100
+                      )}%`
+                    : `${sideOneWins}-${sideTwoWins}`}{" "}
                 </TableTd>
                 {allSideTwoIds.filter(Boolean).map((sideTwoId, j) => {
                   const games = gamesWithSideOneId.filter(
@@ -228,6 +246,13 @@ export default function StatsPage() {
                   const hovered =
                     hoveredCoords.row === i && hoveredCoords.col === j;
 
+                  const percentageDisplay =
+                    sideOneWins + sideTwoWins > 0
+                      ? `${Math.round(
+                          (sideOneWins / (sideOneWins + sideTwoWins)) * 100
+                        )}%`
+                      : "-";
+
                   return (
                     <TableTd
                       key={sideTwoId}
@@ -248,7 +273,9 @@ export default function StatsPage() {
                         <Overlay backgroundOpacity={0} />
                       ) : (
                         <Text size="sm">
-                          {sideOneWins}-{sideTwoWins}
+                          {showPercentages
+                            ? percentageDisplay
+                            : `${sideOneWins}-${sideTwoWins}`}
                         </Text>
                       )}
                     </TableTd>
@@ -260,13 +287,31 @@ export default function StatsPage() {
         </TableTbody>
       </Table>
       <Group justify="end">
-        <Text>
-          <Code>{mainSide} wins</Code>-
-          <Code>{mainSide === "runner" ? "corp" : "runner"} wins</Code>
-        </Text>
-        <ActionIcon variant="default" onClick={() => switchSides()}>
-          <IconTransfer style={{ width: "50%", height: "50%" }} />
-        </ActionIcon>
+        <NumberInput
+          value={minMatches}
+          onChange={(val) => setMinMatches(Number(val))}
+          min={1}
+          label="Min matches"
+        />
+        <Switch
+          checked={groupByFaction}
+          onChange={(e) => setGroupByFaction(e.currentTarget.checked)}
+          label="Group by faction"
+        />
+        <Switch
+          checked={showPercentages}
+          onChange={(e) => setShowPercentages(e.currentTarget.checked)}
+          label="Show percentages"
+        />
+        <Group>
+          <ActionIcon variant="default" onClick={() => switchSides()}>
+            <IconTransfer style={{ width: "50%", height: "50%" }} />
+          </ActionIcon>
+          <Text>
+            <Code>{mainSide} wins</Code>-
+            <Code>{mainSide === "runner" ? "corp" : "runner"} wins</Code>
+          </Text>
+        </Group>
       </Group>
     </Stack>
   );

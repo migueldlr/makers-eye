@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 
-export async function getWinrates(): Promise<
+export async function getWinrates(minMatches: number): Promise<
   {
     runner_identity: string;
     corp_identity: string;
@@ -15,7 +15,7 @@ export async function getWinrates(): Promise<
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .rpc("get_head_to_head_winrates", { min_matches: 0 })
+    .rpc("get_head_to_head_winrates", { min_matches: minMatches })
     .select();
 
   if (error) {
