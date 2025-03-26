@@ -49,7 +49,7 @@ export default function MatchupTable() {
 
   const [mainSide, setMainSide] = useState<"runner" | "corp">("runner");
   const offSide = mainSide === "runner" ? "corp" : "runner";
-  const [groupByFaction, setGroupByFaction] = useState(true);
+  const [groupByFaction, setGroupByFaction] = useState(false);
   const [showColors, setShowColors] = useState(true);
   const [showPercentages, setShowPercentages] = useState(false);
   const [includeCut, setIncludeCut] = useState(true);
