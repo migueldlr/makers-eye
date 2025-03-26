@@ -320,7 +320,7 @@ export default function MatchupTable() {
                         <Overlay backgroundOpacity={0} />
                       ) : (
                         <Text size="sm">
-                          {showPercentages
+                          {showPercentages && !hovered
                             ? percentageDisplay
                             : `${sideOneWins}-${sideTwoWins}`}
                         </Text>
