@@ -21,9 +21,9 @@ import {
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
 import { getMatchesMetadata, getWinrates, WinrateData } from "./actions";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 
-import classes from "./MatchupTable.module.css";
+// import classes from "./MatchupTable.module.css";
 
 function FillerTd({ count }: { count: number }) {
   return (
@@ -87,95 +87,207 @@ export function FirstRow({
   );
 }
 
-export function Cells({
+const Row = memo(Row_unmemoized, (prev, next) => {
+  const { i } = prev;
+  for (const key in prev) {
+    if (key === "hoveredCoords") continue;
+    if (prev[key as keyof typeof prev] !== next[key as keyof typeof next]) {
+      return false;
+    }
+  }
+  return prev.hoveredCoords.row !== i && next.hoveredCoords.row !== i;
+});
+
+function Row_unmemoized({
+  sideOneId,
   allSideTwoIds,
+  winrates,
+  mainSide,
+  showPercentages,
+  showColors,
+  hoveredCoords,
+  setHoveredCoords,
+  i,
+}: {
+  sideOneId: string;
+  allSideTwoIds: string[];
+  winrates: WinrateData[];
+  mainSide: "runner" | "corp";
+  showPercentages: boolean;
+  showColors: boolean;
+  hoveredCoords: { row: number; col: number };
+  setHoveredCoords: (coords: { row: number; col: number }) => void;
+  i: number;
+}) {
+  const gamesWithSideOneId = useMemo(
+    () =>
+      winrates.filter((winrate: WinrateData) => {
+        return (
+          winrate.corp_identity === sideOneId ||
+          winrate.runner_identity === sideOneId
+        );
+      }),
+    [winrates, sideOneId]
+  );
+
+  const runnerWins = gamesWithSideOneId.reduce(
+    (acc: number, winrate: WinrateData) => {
+      return acc + winrate.runner_wins;
+    },
+    0
+  );
+
+  const corpWins = gamesWithSideOneId.reduce(
+    (acc: number, winrate: WinrateData) => {
+      return acc + winrate.corp_wins;
+    },
+    0
+  );
+
+  const [sideOneWins, sideTwoWins] =
+    mainSide === "runner" ? [runnerWins, corpWins] : [corpWins, runnerWins];
+
+  const hasResults = sideOneWins + sideTwoWins > 0;
+  const percentageDisplay = `${Math.round(
+    (sideOneWins / (sideOneWins + sideTwoWins)) * 100
+  )}%`;
+
+  return (
+    <TableTr key={sideOneId}>
+      <TableTd
+        style={{
+          cursor: "default",
+          ...(i === hoveredCoords.row && HOVER_STYLE),
+        }}
+      >
+        <Text>{shortenId(sideOneId)}</Text>
+      </TableTd>
+      <TableTd style={{ cursor: "default" }}>
+        {showPercentages
+          ? hasResults
+            ? percentageDisplay
+            : "-"
+          : `${sideOneWins}-${sideTwoWins}`}{" "}
+      </TableTd>
+
+      {allSideTwoIds.filter(Boolean).map((sideTwoId: string, j: number) => {
+        return (
+          <Cell
+            key={sideTwoId}
+            sideTwoId={sideTwoId}
+            gamesWithSideOneId={gamesWithSideOneId}
+            mainSide={mainSide}
+            showColors={showColors}
+            showPercentages={showPercentages}
+            hoveredCoords={hoveredCoords}
+            setHoveredCoords={setHoveredCoords}
+            i={i}
+            j={j}
+          />
+        );
+      })}
+    </TableTr>
+  );
+}
+
+const Cell = memo(Cell_unmemoized, (prev, next) => {
+  const { j } = prev;
+  for (const key in prev) {
+    if (key === "hoveredCoords") continue;
+    if (prev[key as keyof typeof prev] !== next[key as keyof typeof next]) {
+      return false;
+    }
+  }
+  return prev.hoveredCoords.col !== j && next.hoveredCoords.col !== j;
+});
+
+function Cell_unmemoized({
+  sideTwoId,
   gamesWithSideOneId,
   mainSide,
-  i,
   showColors,
   showPercentages,
   hoveredCoords,
   setHoveredCoords,
+  i,
+  j,
 }: {
-  allSideTwoIds: string[];
+  sideTwoId: string;
   gamesWithSideOneId: WinrateData[];
   mainSide: "runner" | "corp";
-  i: number;
-  hoveredCoords: { row: number; col: number };
-  setHoveredCoords: (coords: { row: number; col: number }) => void;
   showColors: boolean;
   showPercentages: boolean;
+  hoveredCoords: { row: number; col: number };
+  setHoveredCoords: (coords: { row: number; col: number }) => void;
+  i: number;
+  j: number;
 }) {
+  const hovered = hoveredCoords.row === i && hoveredCoords.col === j;
+  const games = gamesWithSideOneId.filter(
+    (game) =>
+      game.corp_identity === sideTwoId || game.runner_identity === sideTwoId
+  );
+  const runnerWins = games.reduce((acc, game) => {
+    return acc + game.runner_wins;
+  }, 0);
+  const corpWins = games.reduce((acc, game) => {
+    return acc + game.corp_wins;
+  }, 0);
+  const draws = games.reduce((acc, game) => {
+    return acc + game.draws;
+  }, 0);
+
+  const [sideOneWins, sideTwoWins] =
+    mainSide === "runner" ? [runnerWins, corpWins] : [corpWins, runnerWins];
+
+  const hasResults = sideOneWins + sideTwoWins > 0;
+  const isBlowout = sideOneWins === 0 || sideTwoWins === 0;
+
+  const percentageDisplay = hasResults
+    ? `${Math.round((sideOneWins / (sideOneWins + sideTwoWins)) * 100)}%`
+    : "-";
+
+  const rawWr = sideOneWins / (sideOneWins + sideTwoWins);
+
   return (
-    <>
-      {allSideTwoIds.filter(Boolean).map((sideTwoId, j) => {
-        console.log("i'm rerendering!");
-        const games = gamesWithSideOneId.filter(
-          (game) =>
-            game.corp_identity === sideTwoId ||
-            game.runner_identity === sideTwoId
-        );
-        const runnerWins = games.reduce((acc, game) => {
-          return acc + game.runner_wins;
-        }, 0);
-        const corpWins = games.reduce((acc, game) => {
-          return acc + game.corp_wins;
-        }, 0);
-        const draws = games.reduce((acc, game) => {
-          return acc + game.draws;
-        }, 0);
-
-        const [sideOneWins, sideTwoWins] =
-          mainSide === "runner"
-            ? [runnerWins, corpWins]
-            : [corpWins, runnerWins];
-
-        const hovered = hoveredCoords.row === i && hoveredCoords.col === j;
-
-        const hasResults = sideOneWins + sideTwoWins > 0;
-        const isBlowout = sideOneWins === 0 || sideTwoWins === 0;
-
-        const percentageDisplay = hasResults
-          ? `${Math.round((sideOneWins / (sideOneWins + sideTwoWins)) * 100)}%`
-          : "-";
-
-        const rawWr = sideOneWins / (sideOneWins + sideTwoWins);
-
-        return (
-          <TableTd
-            //   className={games.length !== 0 ? classes.cell : ""}
-            key={sideTwoId}
-            pos="relative"
-            onMouseEnter={() => {
-              games.length > 0 && setHoveredCoords({ row: i, col: j });
-            }}
-            onMouseLeave={() => {
-              setHoveredCoords({ row: -1, col: -1 });
-            }}
-            style={{
-              cursor: "default",
-              ...(showColors &&
-                hasResults && {
-                  backgroundColor: `color-mix(in oklab, #071d31 ${
-                    (1 - rawWr) * 100
-                  }%, #1864ab ${rawWr * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
-                }),
-              ...(games.length !== 0 && hovered && HOVER_STYLE),
-            }}
-          >
-            {games.length === 0 ? (
-              <Overlay backgroundOpacity={0} />
-            ) : (
-              <Text size="sm">
-                {showPercentages && !hovered
-                  ? percentageDisplay
-                  : `${sideOneWins}-${sideTwoWins}`}
-              </Text>
-            )}
-          </TableTd>
-        );
-      })}
-    </>
+    <TableTd
+      key={sideTwoId}
+      pos="relative"
+      onMouseEnter={
+        games.length > 0
+          ? () =>
+              setHoveredCoords({
+                row: i,
+                col: j,
+              })
+          : undefined
+      }
+      onMouseLeave={
+        games.length > 0
+          ? () => setHoveredCoords({ row: -1, col: -1 })
+          : undefined
+      }
+      style={{
+        cursor: "default",
+        ...(showColors &&
+          hasResults && {
+            backgroundColor: `color-mix(in oklab, #071d31 ${
+              (1 - rawWr) * 100
+            }%, #1864ab ${rawWr * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
+          }),
+        ...(games.length !== 0 && hovered && HOVER_STYLE),
+      }}
+    >
+      {games.length === 0 ? (
+        <Overlay backgroundOpacity={0} />
+      ) : (
+        <Text size="sm">
+          {showPercentages && !hovered
+            ? percentageDisplay
+            : `${sideOneWins}-${sideTwoWins}`}
+        </Text>
+      )}
+    </TableTd>
   );
 }
 
@@ -307,6 +419,8 @@ export default function MatchupTable() {
     </Group>
   );
 
+  //   console.log(hoveredCoords);
+
   return (
     <Stack gap="xl" pb="xl">
       <Title order={3} id="matchups">
@@ -322,7 +436,7 @@ export default function MatchupTable() {
                   key={sideTwoId}
                   style={{
                     cursor: "default",
-                    // ...(i === hoveredCoords.col && HOVER_STYLE),
+                    ...(i === hoveredCoords.col && HOVER_STYLE),
                   }}
                 >
                   <Center>
@@ -342,60 +456,20 @@ export default function MatchupTable() {
             mainSide={mainSide}
             showPercentages={showPercentages}
           />
-          {allSideOneIds.filter(Boolean).map((sideOneId, i) => {
-            const gamesWithSideOneId = winrates.filter((winrate) => {
-              return (
-                winrate.corp_identity === sideOneId ||
-                winrate.runner_identity === sideOneId
-              );
-            });
-            const runnerWins = gamesWithSideOneId.reduce((acc, winrate) => {
-              return acc + winrate.runner_wins;
-            }, 0);
-            const corpWins = gamesWithSideOneId.reduce((acc, winrate) => {
-              return acc + winrate.corp_wins;
-            }, 0);
-
-            const [sideOneWins, sideTwoWins] =
-              mainSide === "runner"
-                ? [runnerWins, corpWins]
-                : [corpWins, runnerWins];
-
-            const hasResults = sideOneWins + sideTwoWins > 0;
-            const percentageDisplay = `${Math.round(
-              (sideOneWins / (sideOneWins + sideTwoWins)) * 100
-            )}%`;
-
-            return (
-              <TableTr key={sideOneId}>
-                <TableTd
-                  style={{
-                    cursor: "default",
-                    // ...(i === hoveredCoords.row && HOVER_STYLE),
-                  }}
-                >
-                  <Text>{shortenId(sideOneId)}</Text>
-                </TableTd>
-                <TableTd style={{ cursor: "default" }}>
-                  {showPercentages
-                    ? hasResults
-                      ? percentageDisplay
-                      : "-"
-                    : `${sideOneWins}-${sideTwoWins}`}{" "}
-                </TableTd>
-                <Cells
-                  allSideTwoIds={allSideTwoIds}
-                  gamesWithSideOneId={gamesWithSideOneId}
-                  mainSide={mainSide}
-                  i={i}
-                  hoveredCoords={hoveredCoords}
-                  setHoveredCoords={setHoveredCoords}
-                  showColors={showColors}
-                  showPercentages={showPercentages}
-                />
-              </TableTr>
-            );
-          })}
+          {allSideOneIds.filter(Boolean).map((sideOneId, i) => (
+            <Row
+              key={sideOneId}
+              sideOneId={sideOneId}
+              allSideTwoIds={allSideTwoIds}
+              winrates={winrates}
+              mainSide={mainSide}
+              showPercentages={showPercentages}
+              showColors={showColors}
+              hoveredCoords={hoveredCoords}
+              setHoveredCoords={setHoveredCoords}
+              i={i}
+            />
+          ))}
         </TableTbody>
       </Table>
       {controls}
