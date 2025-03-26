@@ -3,8 +3,8 @@
 import { createClient } from "@/utils/supabase/server";
 
 export type WinrateData = {
-  runner_identity: string;
-  corp_identity: string;
+  runner_id: string;
+  corp_id: string;
   total_games: number;
   runner_wins: number;
   corp_wins: number;

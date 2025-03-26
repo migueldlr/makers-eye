@@ -19,8 +19,7 @@ export default function FirstRow({
       {allSideTwoIds.filter(Boolean).map((sideTwoId) => {
         const gamesWithSideTwoId = winrates.filter(
           (winrate) =>
-            winrate.corp_identity === sideTwoId ||
-            winrate.runner_identity === sideTwoId
+            winrate.corp_id === sideTwoId || winrate.runner_id === sideTwoId
         );
         const runnerWins = gamesWithSideTwoId.reduce((acc, winrate) => {
           return acc + winrate.runner_wins;

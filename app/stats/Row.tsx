@@ -33,10 +33,7 @@ function Row_unmemoized({
   const gamesWithSideOneId = useMemo(
     () =>
       winrates.filter((winrate: WinrateData) => {
-        return (
-          winrate.corp_identity === sideOneId ||
-          winrate.runner_identity === sideOneId
-        );
+        return winrate.corp_id === sideOneId || winrate.runner_id === sideOneId;
       }),
     [winrates, sideOneId]
   );

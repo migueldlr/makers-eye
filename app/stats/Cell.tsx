@@ -30,8 +30,7 @@ function Cell_unmemoized({
 }) {
   const hovered = hoveredCoords.row === i && hoveredCoords.col === j;
   const games = gamesWithSideOneId.filter(
-    (game) =>
-      game.corp_identity === sideTwoId || game.runner_identity === sideTwoId
+    (game) => game.corp_id === sideTwoId || game.runner_id === sideTwoId
   );
   const runnerWins = games.reduce((acc, game) => {
     return acc + game.runner_wins;
