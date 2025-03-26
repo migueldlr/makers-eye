@@ -18,10 +18,13 @@ import {
   ActionIcon,
   Switch,
   NumberInput,
+  darken,
+  lighten,
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
 import { getMatchesMetadata, getWinrates } from "./actions";
 import { useEffect, useMemo, useState } from "react";
+import { BarChart } from "@mantine/charts";
 
 function FillerTd({ count }: { count: number }) {
   return (
@@ -48,6 +51,7 @@ export default function StatsPage() {
   const [mainSide, setMainSide] = useState<"runner" | "corp">("runner");
   const offSide = mainSide === "runner" ? "corp" : "runner";
   const [groupByFaction, setGroupByFaction] = useState(false);
+  const [showColors, setShowColors] = useState(false);
   const [showPercentages, setShowPercentages] = useState(false);
   const [hoveredCoords, setHoveredCoords] = useState<{
     row: number;
@@ -246,12 +250,16 @@ export default function StatsPage() {
                   const hovered =
                     hoveredCoords.row === i && hoveredCoords.col === j;
 
-                  const percentageDisplay =
-                    sideOneWins + sideTwoWins > 0
-                      ? `${Math.round(
-                          (sideOneWins / (sideOneWins + sideTwoWins)) * 100
-                        )}%`
-                      : "-";
+                  const hasResults = sideOneWins + sideTwoWins > 0;
+                  const isBlowout = sideOneWins === 0 || sideTwoWins === 0;
+
+                  const percentageDisplay = hasResults
+                    ? `${Math.round(
+                        (sideOneWins / (sideOneWins + sideTwoWins)) * 100
+                      )}%`
+                    : "-";
+
+                  const rawWr = sideOneWins / (sideOneWins + sideTwoWins);
 
                   return (
                     <TableTd
@@ -266,6 +274,12 @@ export default function StatsPage() {
                       }}
                       style={{
                         cursor: "default",
+                        ...(showColors &&
+                          hasResults && {
+                            backgroundColor: `color-mix(in oklab, #071d31 ${
+                              (1 - rawWr) * 100
+                            }%, #1864ab ${rawWr * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
+                          }),
                         ...(games.length !== 0 && hovered && HOVER_STYLE),
                       }}
                     >
@@ -287,7 +301,13 @@ export default function StatsPage() {
         </TableTbody>
       </Table>
       <Group justify="end">
+        <Switch
+          checked={showColors}
+          onChange={(e) => setShowColors(e.currentTarget.checked)}
+          label="Show colors"
+        />
         <NumberInput
+          w={100}
           value={minMatches}
           onChange={(val) => setMinMatches(Number(val))}
           min={1}
