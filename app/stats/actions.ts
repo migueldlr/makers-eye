@@ -11,11 +11,23 @@ export type WinrateData = {
   draws: number;
 };
 
-export async function getWinrates(minMatches: number): Promise<WinrateData[]> {
+export async function getWinrates({
+  minMatches,
+  includeSwiss,
+  includeCut,
+}: {
+  minMatches: number;
+  includeSwiss: boolean;
+  includeCut: boolean;
+}): Promise<WinrateData[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .rpc("get_head_to_head_winrates", { min_matches: minMatches })
+    .rpc("get_head_to_head_winrates", {
+      min_matches: minMatches,
+      include_swiss: includeSwiss,
+      include_cut: includeCut,
+    })
     .select();
 
   if (error) {
@@ -35,7 +47,13 @@ export async function getStandings(): Promise<{}[]> {
   return data;
 }
 
-export async function getMatchesMetadata(): Promise<{
+export async function getMatchesMetadata({
+  includeSwiss,
+  includeCut,
+}: {
+  includeSwiss: boolean;
+  includeCut: boolean;
+}): Promise<{
   runnerData: { identity: string; player_count: number }[];
   corpData: { identity: string; player_count: number }[];
 }> {
@@ -44,8 +62,8 @@ export async function getMatchesMetadata(): Promise<{
   const { data: runnerData, error: runnerError } = await supabase
     .rpc("get_runner_popularity", {
       tournament_filter: null,
-      include_swiss: true,
-      include_cut: true,
+      include_swiss: includeSwiss,
+      include_cut: includeCut,
     })
     .select();
 
@@ -56,8 +74,8 @@ export async function getMatchesMetadata(): Promise<{
   const { data: corpData, error: corpError } = await supabase
     .rpc("get_corp_popularity", {
       tournament_filter: null,
-      include_swiss: true,
-      include_cut: true,
+      include_swiss: includeSwiss,
+      include_cut: includeCut,
     })
     .select();
 

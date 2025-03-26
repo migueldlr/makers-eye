@@ -52,6 +52,8 @@ export default function MatchupTable() {
   const [groupByFaction, setGroupByFaction] = useState(true);
   const [showColors, setShowColors] = useState(true);
   const [showPercentages, setShowPercentages] = useState(false);
+  const [includeCut, setIncludeCut] = useState(true);
+  const [includeSwiss, setIncludeSwiss] = useState(true);
   const [wrRange, setWrRange] = useState<[number, number]>([0, 100]);
   const [hoveredCoords, setHoveredCoords] = useState<{
     row: number;
@@ -65,12 +67,19 @@ export default function MatchupTable() {
 
   useEffect(() => {
     (async () => {
-      const winrates = await getWinrates(1);
-      const metadata = await getMatchesMetadata();
+      const winrates = await getWinrates({
+        minMatches: 1,
+        includeSwiss,
+        includeCut,
+      });
+      const metadata = await getMatchesMetadata({
+        includeSwiss,
+        includeCut,
+      });
       setWinrates(winrates);
       setMetadata(metadata);
     })();
-  }, []);
+  }, [includeCut, includeSwiss]);
 
   const countsToIds = (_?: { identity: string; player_count: number }[]) =>
     _?.map(({ identity }) => identity);
@@ -166,6 +175,18 @@ export default function MatchupTable() {
         onChange={(e) => setShowPercentages(e.currentTarget.checked)}
         label="Show percentages"
       />
+      <Stack>
+        <Switch
+          checked={includeCut}
+          onChange={(e) => setIncludeCut(e.currentTarget.checked)}
+          label="Include cut"
+        />
+        <Switch
+          checked={includeSwiss}
+          onChange={(e) => setIncludeSwiss(e.currentTarget.checked)}
+          label="Include swiss"
+        />
+      </Stack>
       <Group gap="xs">
         <ActionIcon variant="default" onClick={() => switchSides()}>
           <IconTransfer style={{ width: "50%", height: "50%" }} />
