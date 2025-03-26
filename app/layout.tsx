@@ -10,7 +10,7 @@ import { theme } from "../theme";
 import { Analytics } from "@vercel/analytics/react";
 
 export const metadata = {
-  title: "Cataloguer - Netrunner tournament analysis",
+  title: "The Maker's Eye - Netrunner tournament analysis",
   description: "",
 };
 
