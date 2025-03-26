@@ -17,6 +17,7 @@ import {
   ActionIcon,
   Switch,
   NumberInput,
+  RangeSlider,
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
 import { getMatchesMetadata, getWinrates, WinrateData } from "./actions";
@@ -51,6 +52,7 @@ export default function MatchupTable() {
   const [groupByFaction, setGroupByFaction] = useState(true);
   const [showColors, setShowColors] = useState(true);
   const [showPercentages, setShowPercentages] = useState(false);
+  const [wrRange, setWrRange] = useState<[number, number]>([0, 100]);
   const [hoveredCoords, setHoveredCoords] = useState<{
     row: number;
     col: number;
@@ -146,6 +148,14 @@ export default function MatchupTable() {
           label="Min matches"
         />
       )}
+      <RangeSlider
+        w="200"
+        value={wrRange}
+        onChange={setWrRange}
+        minRange={5}
+        labelAlwaysOn
+        label={(val) => `${val}%`}
+      />
       <Switch
         checked={groupByFaction}
         onChange={(e) => setGroupByFaction(e.currentTarget.checked)}
@@ -218,6 +228,7 @@ export default function MatchupTable() {
               setHoveredCoords={setHoveredCoords}
               i={i}
               minMatches={minMatches}
+              wrRange={wrRange}
             />
           ))}
         </TableTbody>

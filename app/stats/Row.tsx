@@ -16,6 +16,7 @@ function Row_unmemoized({
   setHoveredCoords,
   i,
   minMatches,
+  wrRange,
 }: {
   sideOneId: string;
   allSideTwoIds: string[];
@@ -27,6 +28,7 @@ function Row_unmemoized({
   setHoveredCoords: (coords: { row: number; col: number }) => void;
   minMatches: number;
   i: number;
+  wrRange: [number, number];
 }) {
   const gamesWithSideOneId = useMemo(
     () =>
@@ -93,6 +95,7 @@ function Row_unmemoized({
             i={i}
             j={j}
             minMatches={minMatches}
+            wrRange={wrRange}
           />
         );
       })}

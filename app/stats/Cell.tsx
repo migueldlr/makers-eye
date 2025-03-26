@@ -14,6 +14,7 @@ function Cell_unmemoized({
   i,
   j,
   minMatches,
+  wrRange,
 }: {
   sideTwoId: string;
   gamesWithSideOneId: WinrateData[];
@@ -25,6 +26,7 @@ function Cell_unmemoized({
   i: number;
   j: number;
   minMatches: number;
+  wrRange: [number, number];
 }) {
   const hovered = hoveredCoords.row === i && hoveredCoords.col === j;
   const games = gamesWithSideOneId.filter(
@@ -53,6 +55,7 @@ function Cell_unmemoized({
     : "-";
 
   const rawWr = sideOneWins / (sideOneWins + sideTwoWins);
+  const inRange = rawWr * 100 >= wrRange[0] && rawWr * 100 <= wrRange[1];
 
   return (
     <TableTd
@@ -73,6 +76,7 @@ function Cell_unmemoized({
       style={{
         cursor: "default",
         ...(showColors &&
+          inRange &&
           hasMinResults && {
             backgroundColor: `color-mix(in oklab, #071d31 ${
               (1 - rawWr) * 100
