@@ -2,16 +2,16 @@
 
 import { createClient } from "@/utils/supabase/server";
 
-export async function getWinrates(minMatches: number): Promise<
-  {
-    runner_identity: string;
-    corp_identity: string;
-    total_games: number;
-    runner_wins: number;
-    corp_wins: number;
-    draws: number;
-  }[]
-> {
+export type WinrateData = {
+  runner_identity: string;
+  corp_identity: string;
+  total_games: number;
+  runner_wins: number;
+  corp_wins: number;
+  draws: number;
+};
+
+export async function getWinrates(minMatches: number): Promise<WinrateData[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase

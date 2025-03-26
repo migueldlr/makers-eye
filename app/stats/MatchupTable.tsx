@@ -20,8 +20,10 @@ import {
   NumberInput,
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
-import { getMatchesMetadata, getWinrates } from "./actions";
+import { getMatchesMetadata, getWinrates, WinrateData } from "./actions";
 import { useEffect, useMemo, useState } from "react";
+
+import classes from "./MatchupTable.module.css";
 
 function FillerTd({ count }: { count: number }) {
   return (
@@ -36,6 +38,146 @@ function FillerTd({ count }: { count: number }) {
 const HOVER_STYLE = {
   backgroundColor: "rgba(0,0,0,0.3)",
 };
+
+export function FirstRow({
+  allSideTwoIds,
+  winrates,
+  mainSide,
+  showPercentages,
+}: {
+  allSideTwoIds: string[];
+  winrates: WinrateData[];
+  mainSide: "runner" | "corp";
+  showPercentages: boolean;
+}) {
+  return (
+    <TableTr>
+      <FillerTd count={2} />
+      {allSideTwoIds.filter(Boolean).map((sideTwoId) => {
+        const gamesWithSideTwoId = winrates.filter(
+          (winrate) =>
+            winrate.corp_identity === sideTwoId ||
+            winrate.runner_identity === sideTwoId
+        );
+        const runnerWins = gamesWithSideTwoId.reduce((acc, winrate) => {
+          return acc + winrate.runner_wins;
+        }, 0);
+        const corpWins = gamesWithSideTwoId.reduce((acc, winrate) => {
+          return acc + winrate.corp_wins;
+        }, 0);
+        const [sideOneWins, sideTwoWins] =
+          mainSide === "runner"
+            ? [runnerWins, corpWins]
+            : [corpWins, runnerWins];
+        const hasResults = sideOneWins + sideTwoWins > 0;
+        const percentageDisplay = `${Math.round(
+          (sideOneWins / (sideOneWins + sideTwoWins)) * 100
+        )}%`;
+        return (
+          <TableTd key={sideTwoId} style={{ cursor: "default" }}>
+            {showPercentages
+              ? hasResults
+                ? percentageDisplay
+                : "-"
+              : `${sideOneWins}-${sideTwoWins}`}
+          </TableTd>
+        );
+      })}
+    </TableTr>
+  );
+}
+
+export function Cells({
+  allSideTwoIds,
+  gamesWithSideOneId,
+  mainSide,
+  i,
+  showColors,
+  showPercentages,
+  hoveredCoords,
+  setHoveredCoords,
+}: {
+  allSideTwoIds: string[];
+  gamesWithSideOneId: WinrateData[];
+  mainSide: "runner" | "corp";
+  i: number;
+  hoveredCoords: { row: number; col: number };
+  setHoveredCoords: (coords: { row: number; col: number }) => void;
+  showColors: boolean;
+  showPercentages: boolean;
+}) {
+  return (
+    <>
+      {allSideTwoIds.filter(Boolean).map((sideTwoId, j) => {
+        console.log("i'm rerendering!");
+        const games = gamesWithSideOneId.filter(
+          (game) =>
+            game.corp_identity === sideTwoId ||
+            game.runner_identity === sideTwoId
+        );
+        const runnerWins = games.reduce((acc, game) => {
+          return acc + game.runner_wins;
+        }, 0);
+        const corpWins = games.reduce((acc, game) => {
+          return acc + game.corp_wins;
+        }, 0);
+        const draws = games.reduce((acc, game) => {
+          return acc + game.draws;
+        }, 0);
+
+        const [sideOneWins, sideTwoWins] =
+          mainSide === "runner"
+            ? [runnerWins, corpWins]
+            : [corpWins, runnerWins];
+
+        const hovered = hoveredCoords.row === i && hoveredCoords.col === j;
+
+        const hasResults = sideOneWins + sideTwoWins > 0;
+        const isBlowout = sideOneWins === 0 || sideTwoWins === 0;
+
+        const percentageDisplay = hasResults
+          ? `${Math.round((sideOneWins / (sideOneWins + sideTwoWins)) * 100)}%`
+          : "-";
+
+        const rawWr = sideOneWins / (sideOneWins + sideTwoWins);
+
+        return (
+          <TableTd
+            //   className={games.length !== 0 ? classes.cell : ""}
+            key={sideTwoId}
+            pos="relative"
+            onMouseEnter={() => {
+              games.length > 0 && setHoveredCoords({ row: i, col: j });
+            }}
+            onMouseLeave={() => {
+              setHoveredCoords({ row: -1, col: -1 });
+            }}
+            style={{
+              cursor: "default",
+              ...(showColors &&
+                hasResults && {
+                  backgroundColor: `color-mix(in oklab, #071d31 ${
+                    (1 - rawWr) * 100
+                  }%, #1864ab ${rawWr * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
+                }),
+              ...(games.length !== 0 && hovered && HOVER_STYLE),
+            }}
+          >
+            {games.length === 0 ? (
+              <Overlay backgroundOpacity={0} />
+            ) : (
+              <Text size="sm">
+                {showPercentages && !hovered
+                  ? percentageDisplay
+                  : `${sideOneWins}-${sideTwoWins}`}
+              </Text>
+            )}
+          </TableTd>
+        );
+      })}
+    </>
+  );
+}
 
 export default function MatchupTable() {
   const [winrates, setWinrates] = useState<
@@ -180,7 +322,7 @@ export default function MatchupTable() {
                   key={sideTwoId}
                   style={{
                     cursor: "default",
-                    ...(i === hoveredCoords.col && HOVER_STYLE),
+                    // ...(i === hoveredCoords.col && HOVER_STYLE),
                   }}
                 >
                   <Center>
@@ -194,39 +336,12 @@ export default function MatchupTable() {
           </TableTr>
         </TableThead>
         <TableTbody>
-          <TableTr>
-            <FillerTd count={2} />
-            {allSideTwoIds.filter(Boolean).map((sideTwoId) => {
-              const gamesWithSideTwoId = winrates.filter(
-                (winrate) =>
-                  winrate.corp_identity === sideTwoId ||
-                  winrate.runner_identity === sideTwoId
-              );
-              const runnerWins = gamesWithSideTwoId.reduce((acc, winrate) => {
-                return acc + winrate.runner_wins;
-              }, 0);
-              const corpWins = gamesWithSideTwoId.reduce((acc, winrate) => {
-                return acc + winrate.corp_wins;
-              }, 0);
-              const [sideOneWins, sideTwoWins] =
-                mainSide === "runner"
-                  ? [runnerWins, corpWins]
-                  : [corpWins, runnerWins];
-              const hasResults = sideOneWins + sideTwoWins > 0;
-              const percentageDisplay = `${Math.round(
-                (sideOneWins / (sideOneWins + sideTwoWins)) * 100
-              )}%`;
-              return (
-                <TableTd key={sideTwoId} style={{ cursor: "default" }}>
-                  {showPercentages
-                    ? hasResults
-                      ? percentageDisplay
-                      : "-"
-                    : `${sideOneWins}-${sideTwoWins}`}
-                </TableTd>
-              );
-            })}
-          </TableTr>
+          <FirstRow
+            allSideTwoIds={allSideTwoIds}
+            winrates={winrates}
+            mainSide={mainSide}
+            showPercentages={showPercentages}
+          />
           {allSideOneIds.filter(Boolean).map((sideOneId, i) => {
             const gamesWithSideOneId = winrates.filter((winrate) => {
               return (
@@ -256,7 +371,7 @@ export default function MatchupTable() {
                 <TableTd
                   style={{
                     cursor: "default",
-                    ...(i === hoveredCoords.row && HOVER_STYLE),
+                    // ...(i === hoveredCoords.row && HOVER_STYLE),
                   }}
                 >
                   <Text>{shortenId(sideOneId)}</Text>
@@ -268,75 +383,16 @@ export default function MatchupTable() {
                       : "-"
                     : `${sideOneWins}-${sideTwoWins}`}{" "}
                 </TableTd>
-                {allSideTwoIds.filter(Boolean).map((sideTwoId, j) => {
-                  const games = gamesWithSideOneId.filter(
-                    (game) =>
-                      game.corp_identity === sideTwoId ||
-                      game.runner_identity === sideTwoId
-                  );
-                  const runnerWins = games.reduce((acc, game) => {
-                    return acc + game.runner_wins;
-                  }, 0);
-                  const corpWins = games.reduce((acc, game) => {
-                    return acc + game.corp_wins;
-                  }, 0);
-                  const draws = games.reduce((acc, game) => {
-                    return acc + game.draws;
-                  }, 0);
-
-                  const [sideOneWins, sideTwoWins] =
-                    mainSide === "runner"
-                      ? [runnerWins, corpWins]
-                      : [corpWins, runnerWins];
-
-                  const hovered =
-                    hoveredCoords.row === i && hoveredCoords.col === j;
-
-                  const hasResults = sideOneWins + sideTwoWins > 0;
-                  const isBlowout = sideOneWins === 0 || sideTwoWins === 0;
-
-                  const percentageDisplay = hasResults
-                    ? `${Math.round(
-                        (sideOneWins / (sideOneWins + sideTwoWins)) * 100
-                      )}%`
-                    : "-";
-
-                  const rawWr = sideOneWins / (sideOneWins + sideTwoWins);
-
-                  return (
-                    <TableTd
-                      key={sideTwoId}
-                      pos="relative"
-                      onMouseOver={() => {
-                        games.length > 0 &&
-                          setHoveredCoords({ row: i, col: j });
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredCoords({ row: -1, col: -1 });
-                      }}
-                      style={{
-                        cursor: "default",
-                        ...(showColors &&
-                          hasResults && {
-                            backgroundColor: `color-mix(in oklab, #071d31 ${
-                              (1 - rawWr) * 100
-                            }%, #1864ab ${rawWr * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
-                          }),
-                        ...(games.length !== 0 && hovered && HOVER_STYLE),
-                      }}
-                    >
-                      {games.length === 0 ? (
-                        <Overlay backgroundOpacity={0} />
-                      ) : (
-                        <Text size="sm">
-                          {showPercentages && !hovered
-                            ? percentageDisplay
-                            : `${sideOneWins}-${sideTwoWins}`}
-                        </Text>
-                      )}
-                    </TableTd>
-                  );
-                })}
+                <Cells
+                  allSideTwoIds={allSideTwoIds}
+                  gamesWithSideOneId={gamesWithSideOneId}
+                  mainSide={mainSide}
+                  i={i}
+                  hoveredCoords={hoveredCoords}
+                  setHoveredCoords={setHoveredCoords}
+                  showColors={showColors}
+                  showPercentages={showPercentages}
+                />
               </TableTr>
             );
           })}
