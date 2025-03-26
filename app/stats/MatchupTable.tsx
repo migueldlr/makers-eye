@@ -108,6 +108,7 @@ function Row_unmemoized({
   hoveredCoords,
   setHoveredCoords,
   i,
+  minMatches,
 }: {
   sideOneId: string;
   allSideTwoIds: string[];
@@ -117,6 +118,7 @@ function Row_unmemoized({
   showColors: boolean;
   hoveredCoords: { row: number; col: number };
   setHoveredCoords: (coords: { row: number; col: number }) => void;
+  minMatches: number;
   i: number;
 }) {
   const gamesWithSideOneId = useMemo(
@@ -183,6 +185,7 @@ function Row_unmemoized({
             setHoveredCoords={setHoveredCoords}
             i={i}
             j={j}
+            minMatches={minMatches}
           />
         );
       })}
@@ -211,6 +214,7 @@ function Cell_unmemoized({
   setHoveredCoords,
   i,
   j,
+  minMatches,
 }: {
   sideTwoId: string;
   gamesWithSideOneId: WinrateData[];
@@ -221,6 +225,7 @@ function Cell_unmemoized({
   setHoveredCoords: (coords: { row: number; col: number }) => void;
   i: number;
   j: number;
+  minMatches: number;
 }) {
   const hovered = hoveredCoords.row === i && hoveredCoords.col === j;
   const games = gamesWithSideOneId.filter(
@@ -240,7 +245,7 @@ function Cell_unmemoized({
   const [sideOneWins, sideTwoWins] =
     mainSide === "runner" ? [runnerWins, corpWins] : [corpWins, runnerWins];
 
-  const hasResults = sideOneWins + sideTwoWins > 0;
+  const hasResults = sideOneWins + sideTwoWins > minMatches;
   const isBlowout = sideOneWins === 0 || sideTwoWins === 0;
 
   const percentageDisplay = hasResults
@@ -254,7 +259,7 @@ function Cell_unmemoized({
       key={sideTwoId}
       pos="relative"
       onMouseEnter={
-        games.length > 0
+        hasResults
           ? () =>
               setHoveredCoords({
                 row: i,
@@ -263,9 +268,7 @@ function Cell_unmemoized({
           : undefined
       }
       onMouseLeave={
-        games.length > 0
-          ? () => setHoveredCoords({ row: -1, col: -1 })
-          : undefined
+        hasResults ? () => setHoveredCoords({ row: -1, col: -1 }) : undefined
       }
       style={{
         cursor: "default",
@@ -275,7 +278,7 @@ function Cell_unmemoized({
               (1 - rawWr) * 100
             }%, #1864ab ${rawWr * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
           }),
-        ...(games.length !== 0 && hovered && HOVER_STYLE),
+        ...(hasResults && hovered && HOVER_STYLE),
       }}
     >
       {games.length === 0 ? (
@@ -312,16 +315,16 @@ export default function MatchupTable() {
     col: -1,
   });
 
-  const [minMatches, setMinMatches] = useState(1);
+  const [minMatches, setMinMatches] = useState(0);
 
   useEffect(() => {
     (async () => {
-      const winrates = await getWinrates(minMatches);
+      const winrates = await getWinrates(1);
       const metadata = await getMatchesMetadata();
       setWinrates(winrates);
       setMetadata(metadata);
     })();
-  }, [minMatches]);
+  }, []);
 
   const countsToIds = (_?: { identity: string; player_count: number }[]) =>
     _?.map(({ identity }) => identity);
@@ -390,6 +393,15 @@ export default function MatchupTable() {
         onChange={(e) => setShowColors(e.currentTarget.checked)}
         label="Show colors"
       />
+      {showColors && (
+        <NumberInput
+          w={100}
+          value={minMatches}
+          onChange={(val) => setMinMatches(Number(val))}
+          min={0}
+          label="Min matches"
+        />
+      )}
       <Switch
         checked={groupByFaction}
         onChange={(e) => setGroupByFaction(e.currentTarget.checked)}
@@ -399,13 +411,6 @@ export default function MatchupTable() {
         checked={showPercentages}
         onChange={(e) => setShowPercentages(e.currentTarget.checked)}
         label="Show percentages"
-      />
-      <NumberInput
-        w={100}
-        value={minMatches}
-        onChange={(val) => setMinMatches(Number(val))}
-        min={1}
-        label="Min matches"
       />
       <Group gap="xs">
         <ActionIcon variant="default" onClick={() => switchSides()}>
@@ -468,6 +473,7 @@ export default function MatchupTable() {
               hoveredCoords={hoveredCoords}
               setHoveredCoords={setHoveredCoords}
               i={i}
+              minMatches={minMatches}
             />
           ))}
         </TableTbody>
