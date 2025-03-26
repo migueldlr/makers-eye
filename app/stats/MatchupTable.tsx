@@ -145,7 +145,7 @@ export default function MatchupTable() {
         checked={showPercentages}
         onChange={(e) => setShowPercentages(e.currentTarget.checked)}
         label="Show percentages"
-      />{" "}
+      />
       <NumberInput
         w={100}
         value={minMatches}
@@ -212,12 +212,16 @@ export default function MatchupTable() {
                 mainSide === "runner"
                   ? [runnerWins, corpWins]
                   : [corpWins, runnerWins];
+              const hasResults = sideOneWins + sideTwoWins > 0;
+              const percentageDisplay = `${Math.round(
+                (sideOneWins / (sideOneWins + sideTwoWins)) * 100
+              )}%`;
               return (
                 <TableTd key={sideTwoId} style={{ cursor: "default" }}>
                   {showPercentages
-                    ? `${Math.round(
-                        (sideOneWins / (sideOneWins + sideTwoWins)) * 100
-                      )}%`
+                    ? hasResults
+                      ? percentageDisplay
+                      : "-"
                     : `${sideOneWins}-${sideTwoWins}`}
                 </TableTd>
               );
@@ -242,6 +246,11 @@ export default function MatchupTable() {
                 ? [runnerWins, corpWins]
                 : [corpWins, runnerWins];
 
+            const hasResults = sideOneWins + sideTwoWins > 0;
+            const percentageDisplay = `${Math.round(
+              (sideOneWins / (sideOneWins + sideTwoWins)) * 100
+            )}%`;
+
             return (
               <TableTr key={sideOneId}>
                 <TableTd
@@ -254,9 +263,9 @@ export default function MatchupTable() {
                 </TableTd>
                 <TableTd style={{ cursor: "default" }}>
                   {showPercentages
-                    ? `${Math.round(
-                        (sideOneWins / (sideOneWins + sideTwoWins)) * 100
-                      )}%`
+                    ? hasResults
+                      ? percentageDisplay
+                      : "-"
                     : `${sideOneWins}-${sideTwoWins}`}{" "}
                 </TableTd>
                 {allSideTwoIds.filter(Boolean).map((sideTwoId, j) => {
