@@ -56,6 +56,8 @@ function Cell_unmemoized({
   const rawWr = sideOneWins / (sideOneWins + sideTwoWins);
   const inRange = rawWr * 100 >= wrRange[0] && rawWr * 100 <= wrRange[1];
 
+  const gradient = (Math.sin(Math.PI * (rawWr - 0.5)) + 1) / 2;
+
   return (
     <TableTd
       key={sideTwoId}
@@ -78,8 +80,8 @@ function Cell_unmemoized({
           inRange &&
           hasMinResults && {
             backgroundColor: `color-mix(in oklab, #071d31 ${
-              (1 - rawWr) * 100
-            }%, #1864ab ${rawWr * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
+              (1 - gradient) * 100
+            }%, #1864ab ${gradient * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
           }),
         ...(hasResults && hovered && HOVER_STYLE),
       }}
