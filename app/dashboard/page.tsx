@@ -41,6 +41,7 @@ import { tournamentToMatches, tournamentToStandings } from "@/lib/tournament";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { Database } from "@/lib/supabase";
 import { Standing } from "@/lib/localtypes";
+import TournamentTable from "../stats/TournamentTable";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {
   const [verified, setVerified] = useState(false);
@@ -77,45 +78,6 @@ function VerificationChip({ tournament }: { tournament: Tournament }) {
     <Text c="red">
       Conflict: {`Tournament with name "${tournament.name}" already exists`}
     </Text>
-  );
-}
-
-function TournamentTable({
-  tournaments,
-}: {
-  tournaments: Database["public"]["Tables"]["tournaments"]["Row"][];
-}) {
-  if (tournaments.length === 0) {
-    return <Text>No tournaments found</Text>;
-  }
-  tournaments.sort((a, b) => {
-    return new Date(b.date!).getTime() - new Date(a.date!).getTime();
-  });
-  return (
-    <Table>
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th>Name</Table.Th>
-          <Table.Th>Date</Table.Th>
-          <Table.Th>Meta</Table.Th>
-          <Table.Th>Region</Table.Th>
-          <Table.Th>Location</Table.Th>
-          <Table.Th>Site</Table.Th>
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>
-        {tournaments.map((tournament) => (
-          <Table.Tr key={tournament.id}>
-            <Table.Td>{tournament.name}</Table.Td>
-            <Table.Td>{tournament.date}</Table.Td>
-            <Table.Td>{tournament.meta}</Table.Td>
-            <Table.Td>{tournament.region}</Table.Td>
-            <Table.Td>{tournament.location}</Table.Td>
-            <Table.Td>{tournament.url}</Table.Td>
-          </Table.Tr>
-        ))}
-      </Table.Tbody>
-    </Table>
   );
 }
 
