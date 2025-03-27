@@ -7,7 +7,13 @@ import {
   AesopsGame,
   Tournament,
 } from "./types";
-import { factionToColor, idToFaction, mergeObjects, shortenId } from "./util";
+import {
+  DEFAULT_UNKNOWN_ID,
+  factionToColor,
+  idToFaction,
+  mergeObjects,
+  shortenId,
+} from "./util";
 import { RawMatch, Standing, StandingResult } from "./localtypes";
 
 export type Result = "corpWin" | "runnerWin" | "draw" | "bye";
@@ -223,9 +229,7 @@ export function augmentRounds(
           ? aesopsGameToCobraGame(rawGame)
           : (rawGame as CobraGame);
         if (isDss(game)) {
-          console.log({ roundNumber: roundNumber + 1, ...game });
           const parsed = parseDss(game, playerMap, roundNumber);
-          console.log(parsed);
           return parsed;
         }
         const result = getGameResult(game);
@@ -311,15 +315,17 @@ export function groupPlayersByRunner(
 
 export function groupPlayersByRunnerUsingPlayers(players: Player[]) {
   return players.reduce((acc, player) => {
-    if (!player.runnerIdentity) return acc;
-    return mergeObjects(acc, { [player.runnerIdentity]: [player] });
+    return mergeObjects(acc, {
+      [player.runnerIdentity ?? DEFAULT_UNKNOWN_ID]: [player],
+    });
   }, {} as Record<string, Player[]>);
 }
 
 export function groupPlayersByCorpUsingPlayers(players: Player[]) {
   return players.reduce((acc, player) => {
-    if (!player.corpIdentity) return acc;
-    return mergeObjects(acc, { [player.corpIdentity]: [player] });
+    return mergeObjects(acc, {
+      [player.corpIdentity ?? DEFAULT_UNKNOWN_ID]: [player],
+    });
   }, {} as Record<string, Player[]>);
 }
 
@@ -385,8 +391,7 @@ export function getCutPlayersByCorp(
     const player = players.find(
       (player) => player.id === eliminationPlayer.id
     )!;
-    const corpId = player.corpIdentity;
-    if (!corpId) return;
+    const corpId = player.corpIdentity ?? DEFAULT_UNKNOWN_ID;
     if (!cutPlayersById[corpId]) {
       cutPlayersById[corpId] = [];
     }
@@ -404,8 +409,7 @@ export function getCutPlayersByRunner(
     const player = players.find(
       (player) => player.id === eliminationPlayer.id
     )!;
-    const runnerId = player.runnerIdentity;
-    if (!runnerId) return;
+    const runnerId = player.runnerIdentity ?? DEFAULT_UNKNOWN_ID;
     if (!cutPlayersById[runnerId]) {
       cutPlayersById[runnerId] = [];
     }

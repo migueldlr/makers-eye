@@ -1,3 +1,5 @@
+export const DEFAULT_UNKNOWN_ID = "<Missing ID>";
+
 const ID_MAPPING = {
   "419: Amoral Scammer": "419",
   "A Teia: IP Recovery": "A Teia",
@@ -123,6 +125,7 @@ const FACTION_MAPPING = {
   BABW: "Weyland",
   BtL: "Weyland",
   Zahya: "Criminal",
+  [DEFAULT_UNKNOWN_ID]: "_Neutral",
 };
 
 const FACTION_COLORS = {
@@ -133,16 +136,16 @@ const FACTION_COLORS = {
   Jinteki: "#b14157",
   NBN: "#FFDE00",
   Weyland: "#458c45",
-  Neutral: "gray",
+  _Neutral: "gray",
 };
 
 export const shortenId = (id?: string) => {
-  if (id == null) return "";
+  if (id == null || id === "") return DEFAULT_UNKNOWN_ID;
   return ID_MAPPING[id as keyof typeof ID_MAPPING] ?? id;
 };
 
 export const idToFaction = (id?: string) => {
-  if (id == null) return "";
+  if (id == null) return "_Neutral";
   return FACTION_MAPPING[id as keyof typeof FACTION_MAPPING] ?? id;
 };
 
