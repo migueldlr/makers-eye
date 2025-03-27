@@ -16,7 +16,7 @@ import {
 } from "./util";
 import { RawMatch, Standing, StandingResult } from "./localtypes";
 
-export type Result = "corpWin" | "runnerWin" | "draw" | "bye";
+export type Result = "corpWin" | "runnerWin" | "draw" | "bye" | "unknown";
 export type PlayerResult = "win" | "loss" | "draw" | "bye" | "unknown";
 
 export type AugmentedGame = CobraGame & {
@@ -191,6 +191,13 @@ function getDssGameResult(
   game: CobraGame,
   runner: "player1" | "player2"
 ): Result {
+  if (
+    ((game.player1?.combinedScore as number) ?? 0) +
+      ((game.player2?.combinedScore as number) ?? 0) <
+    6
+  ) {
+    return "unknown";
+  }
   if (game.player1?.id == null || game.player2?.id == null) return "bye";
   if (runner === "player1") {
     if (game.player1?.runnerScore === 3) return "runnerWin";
@@ -509,6 +516,9 @@ export function getWinLossDrawForPlayer(
   let draws = 0;
   augmentedRounds.forEach((round) => {
     round.map((game) => {
+      if (game.result === "bye" || game.result === "unknown") {
+        return;
+      }
       if (side === "runner") {
         if (game.runner?.id === player.id) {
           if (game.result === "runnerWin") {
