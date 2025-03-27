@@ -3,32 +3,40 @@
 import LinkToDashboard from "@/components/LinkToDashboard";
 import { parseUrl } from "@/lib/util";
 import {
+  ActionIcon,
   Affix,
   Box,
   Button,
   Center,
   Container,
   Divider,
+  Loader,
+  LoadingOverlay,
+  Space,
   Stack,
   Text,
   TextInput,
   Title,
 } from "@mantine/core";
+import { IconEye, IconEyeSearch, IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const FancyTitle = () => (
-  <Title order={1}>
-    <Text
-      inherit
-      fw={900}
-      variant="gradient"
-      gradient={{ from: "red", to: "yellow", deg: 30 }}
-    >
-      The Maker's Eye
-    </Text>
-  </Title>
+  <Stack align="center" gap={0}>
+    <Title order={1}>
+      <Text
+        inherit
+        fw={900}
+        variant="gradient"
+        gradient={{ from: "red", to: "yellow", deg: 30 }}
+      >
+        The Maker's Eye
+      </Text>
+    </Title>
+    <Title order={4}>Netrunner tournament and meta analysis</Title>
+  </Stack>
 );
 
 export default function HomePage() {
@@ -42,43 +50,59 @@ export default function HomePage() {
     ref.current?.focus();
   }, []);
 
+  const go = () => {
+    let parsed = null;
+    try {
+      parsed = parseUrl(value);
+    } catch (error) {
+      setHasError(true);
+    }
+    if (parsed) {
+      setLoading(true);
+      router.push(`/${parsed[0]}/${parsed[1]}`);
+    } else {
+      setHasError(true);
+    }
+  };
+
   const form = (
-    <>
-      <TextInput
-        label="Tournament URL"
-        labelProps={{ align: "right" }}
-        value={value}
-        onChange={(e) => {
-          setHasError(false);
-          setValue(e.target.value);
-        }}
-        ref={ref}
-        error={hasError}
-      />
-      <Box>
-        <Button
-          variant="gradient"
-          gradient={{ from: "red", to: "yellow", deg: 30 }}
-          loading={loading}
-          onClick={() => {
-            let parsed = null;
-            try {
-              parsed = parseUrl(value);
-            } catch (error) {
-              setHasError(true);
-            }
-            if (parsed) {
-              setLoading(true);
-              router.push(`/${parsed[0]}/${parsed[1]}`);
-            } else {
-              setHasError(true);
-            }
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        go();
+      }}
+    >
+      <Box pos="relative">
+        <TextInput
+          color="orange"
+          placeholder="Tournament URL"
+          labelProps={{ align: "right" }}
+          value={value}
+          onChange={(e) => {
+            setHasError(false);
+            setValue(e.target.value);
           }}
-        >
-          Run
-        </Button>
+          disabled={loading}
+          onSubmit={() => go()}
+          ref={ref}
+          error={hasError}
+          rightSection={
+            loading ? (
+              <Loader size="xs" color="white" />
+            ) : (
+              <ActionIcon
+                size={24}
+                variant="gradient"
+                gradient={{ from: "red", to: "yellow", deg: 30 }}
+                onClick={() => go()}
+              >
+                <IconEye style={{ width: "70%", height: "70%" }} />
+              </ActionIcon>
+            )
+          }
+        />
       </Box>
-    </>
+    </form>
   );
 
   const width = 250;
@@ -88,6 +112,7 @@ export default function HomePage() {
       <Center h="100vh">
         <Stack align="center">
           <FancyTitle />
+          <Space h="xl" />
           <Stack gap="xs">
             <Stack align="center">
               {form}
