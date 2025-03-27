@@ -373,6 +373,7 @@ export function winrateById(
     })
     .sort(([a], [b]) => playersById[b].length - playersById[a].length)
     .map(([id, games]) => {
+      if (games.every((game) => game.result === "bye")) return;
       const wins = games.filter(
         (game) =>
           (game.result === "corpWin" && side === "corp") ||
@@ -391,7 +392,8 @@ export function winrateById(
         color: factionToColor(idToFaction(shortenId(id))),
         games: games.length,
       };
-    });
+    })
+    .filter(Boolean);
 }
 
 export function getCutPlayersByCorp(

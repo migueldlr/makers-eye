@@ -31,7 +31,7 @@ import {
   groupRoundsByCorp,
   groupRoundsByRunner,
 } from "../lib/tournament";
-import { shortenId } from "../lib/util";
+import { DEFAULT_UNKNOWN_ID, shortenId } from "../lib/util";
 import { useState } from "react";
 import { IconTransfer } from "@tabler/icons-react";
 
@@ -112,6 +112,7 @@ export function MatchupTable({
                 const players = playersBySideTwoId[sideTwoId]
                   .filter(Boolean)
                   .map((player) => player.name);
+                if (players.length === 0) return null;
                 return (
                   <TableTh
                     key={sideTwoId}
@@ -161,6 +162,7 @@ export function MatchupTable({
                   playersBySideTwoId[b].length - playersBySideTwoId[a].length
               )
               .map(([sideTwoId, games]) => {
+                if (games.every((game) => game.result === "bye")) return null;
                 const runnerWins = games.filter(
                   (game) => game.result === "runnerWin"
                 );
@@ -191,6 +193,7 @@ export function MatchupTable({
                 mainSide === "runner"
                   ? groupGamesByCorp(games)
                   : groupGamesByRunner(games);
+              if (games.every((game) => game.result === "bye")) return null;
               const runnerWins = games.filter(
                 (game) => game.result === "runnerWin"
               );
@@ -247,6 +250,9 @@ export function MatchupTable({
                     )
                     .map((sideTwoId, j) => {
                       const games = groupedGames[sideTwoId] ?? [];
+                      if (games.every((game) => game.result === "bye"))
+                        return null;
+
                       // console.log(games);
                       const runnerWins = games.filter(
                         (game) => game.result === "runnerWin"

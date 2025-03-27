@@ -64,7 +64,7 @@ function mergeData(
   cutData: ReturnType<typeof cutConversionById>
 ) {
   return wrData.map((wrData) => {
-    const cut = cutData.find(({ id: cutId }) => cutId === wrData.id);
+    const cut = cutData.find(({ id: cutId }) => cutId === wrData?.id);
     return {
       ...wrData,
       ...cut,
