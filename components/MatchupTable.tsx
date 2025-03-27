@@ -18,7 +18,6 @@ import {
   TableTr,
   Text,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import {
   AugmentedRound,
@@ -90,6 +89,10 @@ export function MatchupTable({
   function switchSides() {
     setMainSide((prev) => (prev === "runner" ? "corp" : "runner"));
   }
+
+  const shouldSkipMissingColumn = gamesBySideTwoId?.[DEFAULT_UNKNOWN_ID]?.every(
+    (game) => game.result === "bye"
+  );
 
   return (
     <Stack>
@@ -250,10 +253,13 @@ export function MatchupTable({
                     )
                     .map((sideTwoId, j) => {
                       const games = groupedGames[sideTwoId] ?? [];
-                      if (games.every((game) => game.result === "bye"))
+                      if (
+                        sideTwoId === DEFAULT_UNKNOWN_ID &&
+                        shouldSkipMissingColumn
+                      ) {
                         return null;
+                      }
 
-                      // console.log(games);
                       const runnerWins = games.filter(
                         (game) => game.result === "runnerWin"
                       );
@@ -294,6 +300,7 @@ export function MatchupTable({
 
                       return (
                         <TableTd
+                          id={`${sideOneId}-${sideTwoId}`}
                           key={sideTwoId}
                           pos="relative"
                           onMouseOver={() => {

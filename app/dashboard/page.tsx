@@ -186,38 +186,6 @@ export default function Dashboard() {
       `${URLS[site as keyof typeof URLS]}${id}.json`
     )) as unknown as Tournament;
 
-    // console.log(tournament);
-    // const standingResults = tournamentToStandings(
-    //   tournament,
-    //   site === "aesops"
-    // );
-    // const standings: Standing[] = standingResults.map((standing) => ({
-    //   tournament_id: 0,
-    //   name: standing.name,
-    //   swiss_rank: standing.swissRank,
-    //   sos: standing.strengthOfSchedule,
-    //   e_sos: standing.extendedStrengthOfSchedule,
-    //   match_points: standing.matchPoints,
-    //   corp_wins: standing.corpWins,
-    //   corp_losses: standing.corpLosses,
-    //   corp_draws: standing.corpDraws,
-    //   runner_wins: standing.runnerWins,
-    //   runner_losses: standing.runnerLosses,
-    //   runner_draws: standing.runnerDraws,
-    //   corp_identity: standing.corpIdentity,
-    //   runner_identity: standing.runnerIdentity,
-    //   top_cut_rank: standing.topCutRank ?? null,
-    //   created_at: "",
-    //   id:
-    //     tournament.players?.find((player) => player.name === standing.name)
-    //       ?.id ?? 0,
-    // }));
-    // const matches = tournamentToMatches(
-    //   tournament,
-    //   site === "aesops",
-    //   standings as unknown as Standing[]
-    // );
-    // console.log(matches);
     setData(tournament);
   }
 

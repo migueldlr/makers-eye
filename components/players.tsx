@@ -36,7 +36,10 @@ function SideRow({
   side: "runner" | "corp";
   playerMap: Record<number, Player>;
 }) {
-  const numRounds = Math.max(...games.map((game) => game?.round ?? 0));
+  const numRounds = Math.max(
+    Math.max(...games.map((game) => game?.round ?? 0)),
+    0
+  );
 
   return (
     <>
