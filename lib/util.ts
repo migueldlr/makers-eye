@@ -204,3 +204,5 @@ export const REGION_OPTIONS = ["Americas", "EMEA", "APAC"];
 export const LOCATION_OPTIONS = ["Online", "Paper"];
 
 export const DEFAULT_META = "24.12";
+
+export const SITE_TITLE = "The Maker's Eye - Netrunner tournament analysis";

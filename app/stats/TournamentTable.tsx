@@ -1,5 +1,7 @@
 import { Database } from "@/lib/supabase";
+import { parseUrl } from "@/lib/util";
 import {
+  Anchor,
   Table,
   TableTbody,
   TableTd,
@@ -20,6 +22,7 @@ export default function TournamentTable({
   tournaments.sort((a, b) => {
     return new Date(b.date!).getTime() - new Date(a.date!).getTime();
   });
+
   return (
     <Table>
       <TableThead pos="sticky" bg="dark.8">
@@ -30,19 +33,36 @@ export default function TournamentTable({
           <TableTh>Region</TableTh>
           <TableTh>Location</TableTh>
           <TableTh>URL</TableTh>
+          <TableTh>The Maker's Eye</TableTh>
         </TableTr>
       </TableThead>
       <TableTbody>
-        {tournaments.map((tournament) => (
-          <TableTr key={tournament.id}>
-            <TableTd>{tournament.name}</TableTd>
-            <TableTd>{tournament.date}</TableTd>
-            <TableTd>{tournament.meta}</TableTd>
-            <TableTd>{tournament.region}</TableTd>
-            <TableTd>{tournament.location}</TableTd>
-            <TableTd>{tournament.url}</TableTd>
-          </TableTr>
-        ))}
+        {tournaments.map((tournament) => {
+          const parsedUrl = parseUrl(tournament.url ?? "");
+
+          return (
+            <TableTr key={tournament.id}>
+              <TableTd>{tournament.name}</TableTd>
+              <TableTd>{tournament.date}</TableTd>
+              <TableTd>{tournament.meta}</TableTd>
+              <TableTd>{tournament.region}</TableTd>
+              <TableTd>{tournament.location}</TableTd>
+              <TableTd>
+                <Anchor href={tournament.url ?? "#"} target="_blank">
+                  {parsedUrl?.[0]} {parsedUrl?.[1]}
+                </Anchor>
+              </TableTd>
+              <TableTd>
+                <Anchor
+                  href={`/${parsedUrl?.[0]}/${parsedUrl?.[1]}`}
+                  target="_blank"
+                >
+                  Link
+                </Anchor>
+              </TableTd>
+            </TableTr>
+          );
+        })}
       </TableTbody>
     </Table>
   );

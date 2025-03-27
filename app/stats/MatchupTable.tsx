@@ -20,7 +20,7 @@ import {
   RangeSlider,
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
-import { getMatchesMetadata, getWinrates, WinrateData } from "./actions";
+import { getMatchesMetadata, getWinrates } from "./actions";
 import { useEffect, useMemo, useState } from "react";
 import Row from "./Row";
 import FirstRow from "./FirstRow";
@@ -63,7 +63,7 @@ export default function MatchupTable() {
     col: -1,
   });
 
-  const [minMatches, setMinMatches] = useState(0);
+  const [minMatches, setMinMatches] = useState(1);
 
   useEffect(() => {
     (async () => {
@@ -153,18 +153,20 @@ export default function MatchupTable() {
           w={100}
           value={minMatches}
           onChange={(val) => setMinMatches(Number(val))}
-          min={0}
+          min={1}
           label="Min matches"
         />
       )}
-      <RangeSlider
-        w="200"
-        value={wrRange}
-        onChange={setWrRange}
-        minRange={5}
-        labelAlwaysOn
-        label={(val) => `${val}%`}
-      />
+      <Stack gap={0}>
+        <Text>WR</Text>
+        <RangeSlider
+          w="200"
+          value={wrRange}
+          onChange={setWrRange}
+          minRange={5}
+          label={(val) => `${val}%`}
+        />
+      </Stack>
       <Switch
         checked={groupByFaction}
         onChange={(e) => setGroupByFaction(e.currentTarget.checked)}
@@ -201,9 +203,6 @@ export default function MatchupTable() {
 
   return (
     <Stack gap="xl" pb="xl">
-      <Title order={3} id="matchups">
-        Matchup spread
-      </Title>
       <Table>
         <TableThead>
           <TableTr>

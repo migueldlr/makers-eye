@@ -1,5 +1,5 @@
 import { Tournament } from "../../lib/types";
-import { Alert, Container, Stack, Title } from "@mantine/core";
+import { Alert, Anchor, Container, Stack, Title } from "@mantine/core";
 import { Players } from "../../components/players";
 import { MatchupTable } from "../../components/MatchupTable";
 import { createPlayerMap, augmentRounds } from "../../lib/tournament";
@@ -7,7 +7,22 @@ import { WinrateChart } from "../../components/WinrateChart";
 import { IconAlertHexagon } from "@tabler/icons-react";
 import { BackButton } from "../../components/BackButton";
 import { RepresentationChart } from "../../components/RepresentationChart";
-import { URLS } from "@/lib/util";
+import { SITE_TITLE, URLS } from "@/lib/util";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const site = id[0] as keyof typeof URLS;
+  const data = await fetch(`${URLS[site]}${id[1]}.json`);
+  const tournament = (await data.json()) as Tournament;
+  return {
+    title: `${tournament.name} | ${SITE_TITLE}`,
+  };
+}
 
 export default async function Page({
   params,
@@ -50,6 +65,9 @@ export default async function Page({
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
+        <Anchor href={`${URLS[site]}${id[1]}`}>
+          {`${URLS[site]}${id[1]}`}
+        </Anchor>
         <RepresentationChart tournament={tournament} side="runner" />
         <WinrateChart
           tournament={tournament}

@@ -8,9 +8,10 @@ import {
 } from "@mantine/core";
 import { theme } from "../theme";
 import { Analytics } from "@vercel/analytics/react";
+import { SITE_TITLE } from "@/lib/util";
 
 export const metadata = {
-  title: "The Maker's Eye - Netrunner tournament analysis",
+  title: SITE_TITLE,
   description: "",
 };
 
