@@ -1,6 +1,5 @@
 import { Database } from "@/lib/supabase";
 import {
-  ScrollArea,
   Table,
   TableTbody,
   TableTd,

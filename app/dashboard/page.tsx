@@ -11,7 +11,6 @@ import {
   Text,
   useCombobox,
   Title,
-  Table,
   Switch,
   Radio,
   Code,
@@ -40,7 +39,6 @@ import {
 import { tournamentToMatches, tournamentToStandings } from "@/lib/tournament";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { Database } from "@/lib/supabase";
-import { Standing } from "@/lib/localtypes";
 import TournamentTable from "../stats/TournamentTable";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {
