@@ -10,15 +10,13 @@ import {
   Center,
   Container,
   Divider,
-  Loader,
   LoadingOverlay,
-  Space,
   Stack,
   Text,
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconEye, IconEyeSearch, IconSearch } from "@tabler/icons-react";
+import { IconEye } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -73,6 +71,15 @@ export default function HomePage() {
       }}
     >
       <Box pos="relative">
+        <LoadingOverlay
+          visible={loading}
+          loaderProps={{ size: "sm", type: "dots", color: "orange" }}
+          overlayProps={{
+            radius: "sm",
+            color: "black",
+            backgroundOpacity: 0.2,
+          }}
+        />
         <TextInput
           color="orange"
           placeholder="Tournament URL"
@@ -87,9 +94,7 @@ export default function HomePage() {
           ref={ref}
           error={hasError}
           rightSection={
-            loading ? (
-              <Loader size="xs" color="white" />
-            ) : (
+            loading ? null : (
               <ActionIcon
                 size={24}
                 variant="gradient"
@@ -112,22 +117,20 @@ export default function HomePage() {
       <Center h="100vh">
         <Stack align="center">
           <FancyTitle />
-          <Space h="xl" />
           <Stack gap="xs">
             <Stack align="center">
               {form}
               <LinkToDashboard />
             </Stack>
-            <Divider label="or" my="sm" />
+            <Divider label="or" mx="xl" />
             <Stack align="center">
               <Button
                 component={Link}
                 href="/stats"
                 variant="outline"
                 color="orange"
-                // gradient={{ from: "cyan", to: "teal", deg: 90 }}
               >
-                Breach
+                Access
               </Button>
             </Stack>
           </Stack>
