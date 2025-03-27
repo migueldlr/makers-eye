@@ -1,9 +1,18 @@
-import { Container, ScrollArea, Stack, Title } from "@mantine/core";
+import {
+  Alert,
+  Center,
+  Container,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import MatchupTable from "./MatchupTable";
 import TournamentTable from "./TournamentTable";
 import { createClient } from "@/utils/supabase/server";
 import { Metadata } from "next";
 import { SITE_TITLE } from "@/lib/util";
+import { IconInfoCircle } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -17,6 +26,9 @@ export default async function StatsPage() {
     <Container fluid py="lg">
       <Stack>
         <Title order={2}>24.12 Meta Analysis</Title>
+        <Alert variant="light" color="gray" icon={<IconInfoCircle />}>
+          This section is under construction. Expect frequent updates.
+        </Alert>
         <Title order={3}>Matchup spread</Title>
         <MatchupTable />
         <Title order={3}>Included tournaments</Title>
@@ -27,7 +39,13 @@ export default async function StatsPage() {
             <TournamentTable tournaments={tournaments} />
           )}
         </ScrollArea>
+        <Title order={3}>Corp performance</Title>
       </Stack>
+      <Center>
+        <Text mt="43vh" c="gray.7">
+          created by spiderbro
+        </Text>
+      </Center>
     </Container>
   );
 }
