@@ -18,8 +18,8 @@ export default async function SummaryStats() {
   return (
     <Box>
       <Text>
-        Results from <Code>{total_matches}</Code> games of Netrunner between{" "}
-        <Code>{total_players}</Code> players across{" "}
+        Results from <Code>{total_matches}</Code> games of competitive-level
+        Netrunner between <Code>{total_players}</Code> players across{" "}
         <Code>{total_tournaments}</Code> tournaments from{" "}
         <Code>{transformDate(earliest_tournament)}</Code> to{" "}
         <Code>{transformDate(latest_tournament)}</Code>.
