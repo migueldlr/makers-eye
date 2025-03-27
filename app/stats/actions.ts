@@ -88,3 +88,14 @@ export async function getMatchesMetadata({
     corpData,
   };
 }
+
+export async function getSummaryStats() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_summary_stats").select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data[0];
+}

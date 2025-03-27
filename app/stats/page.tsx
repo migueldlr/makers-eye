@@ -13,6 +13,7 @@ import { createClient } from "@/utils/supabase/server";
 import { Metadata } from "next";
 import { SITE_TITLE } from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
+import SummaryStats from "./SummaryStats";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -27,8 +28,9 @@ export default async function StatsPage() {
       <Stack>
         <Title order={2}>24.12 Meta Analysis</Title>
         <Alert variant="light" color="gray" icon={<IconInfoCircle />}>
-          This section is under construction. Expect frequent updates.
+          This page is under construction. Expect frequent updates.
         </Alert>
+        <SummaryStats />
         <Title order={3}>Matchup spread</Title>
         <MatchupTable />
         <Title order={3}>Included tournaments</Title>
