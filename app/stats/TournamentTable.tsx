@@ -33,7 +33,7 @@ export default function TournamentTable({
           <TableTh>Region</TableTh>
           <TableTh>Location</TableTh>
           <TableTh>URL</TableTh>
-          <TableTh>The Maker's Eye</TableTh>
+          <TableTh>The Maker&#39;s Eye</TableTh>
         </TableTr>
       </TableThead>
       <TableTbody>

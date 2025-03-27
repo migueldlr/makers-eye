@@ -30,7 +30,7 @@ const FancyTitle = () => (
         variant="gradient"
         gradient={{ from: "red", to: "yellow", deg: 30 }}
       >
-        The Maker's Eye
+        The Maker&#39;s Eye
       </Text>
     </Title>
     <Title order={4}>Netrunner tournament and meta analysis</Title>
