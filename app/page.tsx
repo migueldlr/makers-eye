@@ -28,7 +28,7 @@ const FancyTitle = () => (
         inherit
         fw={900}
         variant="gradient"
-        gradient={{ from: "red", to: "yellow", deg: 30 }}
+        gradient={{ from: "orange", to: "yellow", deg: 30 }}
       >
         The Maker&#39;s Eye
       </Text>
@@ -98,7 +98,7 @@ export default function HomePage() {
               <ActionIcon
                 size={24}
                 variant="gradient"
-                gradient={{ from: "red", to: "yellow", deg: 30 }}
+                gradient={{ from: "orange", to: "yellow", deg: 30 }}
                 onClick={() => go()}
               >
                 <IconEye style={{ width: "70%", height: "70%" }} />
