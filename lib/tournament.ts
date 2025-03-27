@@ -17,7 +17,7 @@ import {
 import { RawMatch, Standing, StandingResult } from "./localtypes";
 
 export type Result = "corpWin" | "runnerWin" | "draw" | "bye";
-export type PlayerResult = "win" | "loss" | "draw" | "bye";
+export type PlayerResult = "win" | "loss" | "draw" | "bye" | "unknown";
 
 export type AugmentedGame = CobraGame & {
   runner: Player;
@@ -102,13 +102,22 @@ export function getIfPlayerWonDss(
   if (player2?.id == null || (player2.id as unknown as string) === "(BYE)")
     return "bye";
 
+  if (
+    ((player1?.combinedScore as number) ?? 0) +
+      ((player2?.combinedScore as number) ?? 0) <
+    6
+  ) {
+    return "unknown";
+  }
+  if (side === "runner" && player1?.runnerScore === 3) return "win";
+  if (side === "runner" && player1?.runnerScore === 0) return "loss";
   if (side === "corp" && player1?.corpScore === 3) return "win";
   if (side === "corp" && player1?.corpScore === 0) return "loss";
 
   if (side === "runner" && player1?.runnerScore === 3) return "win";
   if (side === "runner" && player1?.runnerScore === 0) return "loss";
 
-  return "loss";
+  return "unknown";
 }
 
 export function getPlayerSide(

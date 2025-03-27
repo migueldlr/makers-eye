@@ -77,7 +77,9 @@ function SideRow({
             ? "Loss"
             : playerResult === "bye"
             ? "Bye"
-            : "Draw"
+            : playerResult === "draw"
+            ? "Draw"
+            : "Unknown"
         }: ${playerIdentity} vs ${enemyIdentity} (${enemy?.name ?? "unknown"})`;
 
         return (
