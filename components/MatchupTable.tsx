@@ -62,7 +62,6 @@ export function MatchupTable({
           groupRoundsByCorp(roundsAugmented),
           groupRoundsByRunner(roundsAugmented),
         ];
-
   const [playersBySideOneId, playersBySideTwoId] =
     mainSide === "runner"
       ? [
@@ -110,9 +109,9 @@ export function MatchupTable({
                   playersBySideTwoId[b].length - playersBySideTwoId[a].length
               )
               .map((sideTwoId, i) => {
-                const players = playersBySideTwoId[sideTwoId].map(
-                  (player) => player.name
-                );
+                const players = playersBySideTwoId[sideTwoId]
+                  .filter(Boolean)
+                  .map((player) => player.name);
                 return (
                   <TableTh
                     key={sideTwoId}
@@ -202,9 +201,9 @@ export function MatchupTable({
                 mainSide === "runner"
                   ? [runnerWins, corpWins]
                   : [corpWins, runnerWins];
-              const players = playersBySideOneId[sideOneId].map(
-                (player) => player.name
-              );
+              const players = playersBySideOneId[sideOneId]
+                .filter(Boolean)
+                .map((player) => player.name);
               return (
                 <TableTr key={sideOneId}>
                   <TableTd
@@ -248,6 +247,7 @@ export function MatchupTable({
                     )
                     .map((sideTwoId, j) => {
                       const games = groupedGames[sideTwoId] ?? [];
+                      // console.log(games);
                       const runnerWins = games.filter(
                         (game) => game.result === "runnerWin"
                       );
@@ -261,21 +261,26 @@ export function MatchupTable({
 
                       const hovered =
                         hoveredCoords.row === i && hoveredCoords.col === j;
-                      const results = games.map((game) => {
-                        const [sideOneName, sideTwoName] =
-                          mainSide === "runner"
-                            ? [game.runner.name, game.corp.name]
-                            : [game.corp.name, game.runner.name];
-                        return `R${
-                          game.round
-                        } ${sideOneName} vs ${sideTwoName} (${
-                          game.result === "runnerWin"
-                            ? "runner win"
-                            : game.result === "corpWin"
-                            ? "corp win"
-                            : "draw"
-                        })`;
-                      });
+                      const results = games
+                        .map((game) => {
+                          if (game.runner == null || game.corp == null) {
+                            return null;
+                          }
+                          const [sideOneName, sideTwoName] =
+                            mainSide === "runner"
+                              ? [game.runner.name, game.corp.name]
+                              : [game.corp.name, game.runner.name];
+                          return `R${
+                            game.round
+                          } ${sideOneName} vs ${sideTwoName} (${
+                            game.result === "runnerWin"
+                              ? "runner win"
+                              : game.result === "corpWin"
+                              ? "corp win"
+                              : "draw"
+                          })`;
+                        })
+                        .filter(Boolean);
 
                       const hasTies = games.some(
                         (game) => game.result === "draw"

@@ -37,6 +37,10 @@ export function getGameResult(game: CobraGame): Result {
   ) {
     return "bye";
   }
+  if (player1?.id == null || player2?.id == null) {
+    return "bye";
+  }
+
   if (
     (player1?.role === "runner" &&
       ((player1 as SwissGameResult).runnerScore === 3 ||
@@ -178,6 +182,7 @@ function getDssGameResult(
   game: CobraGame,
   runner: "player1" | "player2"
 ): Result {
+  if (game.player1?.id == null || game.player2?.id == null) return "bye";
   if (runner === "player1") {
     if (game.player1?.runnerScore === 3) return "runnerWin";
     if (game.player1?.runnerScore === 0) return "corpWin";
@@ -262,8 +267,7 @@ export function createPlayerMap(tournament: Tournament) {
 
 export function groupGamesByRunner(games: AugmentedGame[]) {
   return games.reduce((acc, game) => {
-    const runner = game.runner?.runnerIdentity ?? "";
-    if (!runner) return acc;
+    const runner = game.runner?.runnerIdentity ?? DEFAULT_UNKNOWN_ID;
     if (!acc[runner]) {
       acc[runner] = [];
     }
@@ -281,8 +285,7 @@ export function groupRoundsByRunner(rounds: AugmentedRound[]) {
 
 export function groupGamesByCorp(games: AugmentedGame[]) {
   return games.reduce((acc, game) => {
-    const corp = game.corp?.corpIdentity ?? "";
-    if (!corp) return acc;
+    const corp = game.corp?.corpIdentity ?? DEFAULT_UNKNOWN_ID;
     if (!acc[corp]) {
       acc[corp] = [];
     }
@@ -338,14 +341,14 @@ export function groupRoundsByCorp(rounds: AugmentedRound[]) {
 
 export function getUniqueCorps(rounds: AugmentedRound[]) {
   const corps = rounds.flatMap((round) =>
-    round.map((game) => game.corp?.corpIdentity).filter((x) => x != null)
+    round.map((game) => game.corp?.corpIdentity ?? DEFAULT_UNKNOWN_ID)
   );
   return Array.from(new Set(corps));
 }
 
 export function getUniqueRunners(rounds: AugmentedRound[]) {
   const runners = rounds.flatMap((round) =>
-    round.map((game) => game.runner?.runnerIdentity).filter((x) => x != null)
+    round.map((game) => game.runner?.runnerIdentity ?? DEFAULT_UNKNOWN_ID)
   );
   return Array.from(new Set(runners));
 }
