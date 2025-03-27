@@ -10,39 +10,20 @@ import {
   SimpleGrid,
   Code,
   Tooltip,
-  Affix,
-  ActionIcon,
-  Transition,
-  Group,
   Title,
 } from "@mantine/core";
-import {
-  forwardRef,
-  memo,
-  Ref,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, memo, Ref, useMemo, useRef, useState } from "react";
 import {
   AugmentedGame,
   AugmentedRound,
-  augmentRounds,
-  createPlayerMap,
   getIfPlayerWon,
+  getIfPlayerWonDss,
   getPlayerSide,
+  isDss,
   playerInGame,
   PlayerResult,
 } from "../lib/tournament";
 import { shortenId } from "../lib/util";
-import {
-  IconArrowDown,
-  IconArrowsUp,
-  IconArrowUp,
-  IconChevronDown,
-} from "@tabler/icons-react";
-import { useScrollIntoView, useWindowScroll } from "@mantine/hooks";
 
 function SideRow({
   games,
@@ -51,13 +32,16 @@ function SideRow({
   playerMap,
 }: {
   player: Player;
-  games?: (AugmentedGame | null)[];
+  games: (AugmentedGame | null)[];
   side: "runner" | "corp";
   playerMap: Record<number, Player>;
 }) {
+  const numRounds = Math.max(...games.map((game) => game?.round ?? 0));
+
   return (
     <>
-      {games?.map((game, i) => {
+      {[...new Array(numRounds)].map((_, i) => {
+        const game = games.find((game) => game?.round === i + 1);
         if (!game) return <div key={i}></div>;
         let { player1, player2 } = game;
 
@@ -66,10 +50,17 @@ function SideRow({
           player2 = game.player1;
         }
 
-        const playerResult = getIfPlayerWon(player, game);
-        const playerSide = getPlayerSide(player, game);
+        const dss = isDss(game);
 
-        if (playerSide !== side) return <div key={i}></div>;
+        const playerResult = !dss
+          ? getIfPlayerWon(player, game)
+          : getIfPlayerWonDss(player, game, side);
+
+        if (!dss) {
+          const playerSide = getPlayerSide(player, game);
+
+          if (playerSide !== side) return <div key={i}></div>;
+        }
 
         const playerIdentity = shortenId(
           side === "runner" ? player.runnerIdentity : player.corpIdentity
@@ -79,7 +70,7 @@ function SideRow({
           side === "runner" ? enemy?.corpIdentity : enemy?.runnerIdentity
         );
 
-        const label = `R${i + 1} ${
+        const label = `R${game.round} ${
           playerResult === "win"
             ? "Win"
             : playerResult === "loss"
@@ -137,7 +128,7 @@ function TitleWithMatch({
   }
   const parts = text.split(new RegExp(`(${query})`, "gi"));
   return (
-    <Title>
+    <Title order={4}>
       {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase() ? (
           <b key={i}>{part}</b>
@@ -152,44 +143,31 @@ function TitleWithMatch({
 function PlayerCard_raw(
   {
     player,
-    rounds,
     games,
     playerMap,
-    selected,
     query,
   }: {
     player: Player;
-    rounds: AugmentedRound[];
     games: (AugmentedGame | null)[];
     playerMap: Record<number, Player>;
-    selected: boolean;
     query: string;
   },
   ref: Ref<HTMLDivElement>
 ) {
+  const numRounds = Math.max(...games.map((game) => game?.round ?? 0));
   return (
-    <Card
-      key={player.id}
-      p="sm"
-      withBorder={true}
-      style={{
-        ...(selected
-          ? { borderColor: "orange" }
-          : { borderColor: "transparent" }),
-      }}
-      ref={ref}
-    >
+    <Card key={player.id} p="sm" withBorder={true} ref={ref}>
       <Stack gap="xs">
         <TitleWithMatch
           text={`${player.rank}. ${player.name}`}
           query={query}
-          enabled={selected}
+          enabled={query.length > 0}
         />
         <Text>
           {shortenId(player.corpIdentity)} + {shortenId(player.runnerIdentity)}
         </Text>
         <SimpleGrid
-          cols={rounds.length}
+          cols={numRounds}
           w="fit-content"
           spacing="xs"
           verticalSpacing="xs"
@@ -213,8 +191,6 @@ function PlayerCard_raw(
 }
 const PlayerCard = memo(forwardRef(PlayerCard_raw));
 
-const FANCY_SEARCH_ENABLED = false;
-
 export function Players({
   tournament,
   roundsAugmented,
@@ -225,9 +201,6 @@ export function Players({
   playerMap: Record<number, Player>;
 }) {
   const [playerFilter, setPlayerFilter] = useState("");
-  const [index, setIndex] = useState(-1);
-  const [_scroll, scrollTo] = useWindowScroll();
-  const targetRef = useRef<HTMLDivElement>(null);
 
   const roundsPerPlayer = useMemo(() => {
     const out: Record<number, AugmentedRound[]> = {};
@@ -256,66 +229,14 @@ export function Players({
     return out;
   }, [tournament, roundsAugmented]);
 
-  const selectedPlayers = useMemo(
-    () =>
-      tournament.players?.map(
-        (player) =>
-          playerFilter.length === 0 ||
-          (player?.name ?? "")
-            .toLowerCase()
-            .includes(playerFilter.toLowerCase())
-      ) ?? [],
-    [tournament, playerFilter]
-  );
-
-  const scrollNext = useCallback(() => {
-    let newIndex = index;
-    for (let i = 1; i < selectedPlayers.length + 1; i++) {
-      const currIndex = (index + i) % selectedPlayers.length;
-      if (selectedPlayers[currIndex]) {
-        newIndex = currIndex;
-        break;
-      }
-    }
-    setIndex(newIndex);
-    setTimeout(() => {
-      targetRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }, 10);
-  }, [index, selectedPlayers]);
-
-  const scrollToTop = () => {
-    setIndex(-1);
-    scrollTo({ y: 0 });
-  };
-
-  const searchHelper = (
-    <Affix position={{ bottom: 20, right: 20 }}>
-      <Transition transition="slide-left" mounted={playerFilter.length > 0}>
-        {(transitionStyles) => (
-          <Stack style={transitionStyles} gap="sm">
-            <ActionIcon variant="default" size={40} onClick={scrollToTop}>
-              <IconArrowsUp size={20} />
-            </ActionIcon>
-            <ActionIcon variant="default" size={40} onClick={scrollNext}>
-              <IconArrowDown size={20} />
-            </ActionIcon>
-          </Stack>
-        )}
-      </Transition>
-    </Affix>
-  );
   const searchInput = (
     <Flex>
       <TextInput
         value={playerFilter}
         onChange={(e) => {
           setPlayerFilter(e.target.value);
-          setIndex(-1);
         }}
-        placeholder="Player name"
+        placeholder="Search player name"
       />
     </Flex>
   );
@@ -325,24 +246,28 @@ export function Players({
       <Title order={4} id="players">
         Players
       </Title>
-      {FANCY_SEARCH_ENABLED ? searchHelper : null}
-      {FANCY_SEARCH_ENABLED ? searchInput : null}
-      {tournament.players?.map((player, i) => {
-        const rounds = roundsPerPlayer[player?.id ?? 0];
-        const games = gamesPerPlayer[player?.id ?? 0];
-        return (
-          <PlayerCard
-            key={player.id}
-            player={player}
-            rounds={rounds ?? []}
-            games={games}
-            playerMap={playerMap}
-            selected={i === index}
-            ref={i === index ? targetRef : null}
-            query={playerFilter}
-          />
-        );
-      })}
+      {searchInput}
+      {tournament.players
+        ?.filter(
+          (player) =>
+            playerFilter.length === 0 ||
+            player.name?.toLowerCase().includes(playerFilter)
+        )
+        .map((player) => {
+          const rounds = roundsPerPlayer[player?.id ?? 0];
+
+          const games = gamesPerPlayer[player?.id ?? 0];
+
+          return (
+            <PlayerCard
+              key={player.id}
+              player={player}
+              games={games}
+              playerMap={playerMap}
+              query={playerFilter}
+            />
+          );
+        })}
     </>
   );
 }

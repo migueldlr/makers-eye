@@ -172,6 +172,7 @@ export interface SwissGameResult {
    * this player's corp score
    */
   corpScore: null | number;
+  combinedScore: null | number;
   [k: string]: unknown;
 }
 /**

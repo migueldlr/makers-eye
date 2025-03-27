@@ -303,7 +303,9 @@ export default function Dashboard() {
             </Button>
           )}
         </Stack>
-        <Title order={3}>Already uploaded</Title>
+        <Title order={3} mt="xl">
+          Uploaded
+        </Title>
         <TournamentTable tournaments={tournaments} />
         <Group mt="xl">
           <BackButton />

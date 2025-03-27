@@ -17,6 +17,7 @@ export type AugmentedGame = CobraGame & {
   runner: Player;
   corp: Player;
   result: Result;
+  round: number;
 };
 
 export type AugmentedRound = AugmentedGame[];
@@ -71,6 +72,31 @@ export function getIfPlayerWon(player: Player, game: CobraGame): PlayerResult {
     (player1?.combinedScore === 3 || player1?.winner)
   )
     return "win";
+
+  return "loss";
+}
+
+export function getIfPlayerWonDss(
+  player: Player,
+  game: CobraGame,
+  side: "runner" | "corp"
+): PlayerResult {
+  let { player1, player2 } = game;
+
+  if (player2?.id === player.id) {
+    player1 = game.player2;
+    player2 = game.player1;
+  }
+
+  if (game.intentionalDraw) return "draw";
+  if (player2?.id == null || (player2.id as unknown as string) === "(BYE)")
+    return "bye";
+
+  if (side === "corp" && player1?.corpScore === 3) return "win";
+  if (side === "corp" && player1?.corpScore === 0) return "loss";
+
+  if (side === "runner" && player1?.runnerScore === 3) return "win";
+  if (side === "runner" && player1?.runnerScore === 0) return "loss";
 
   return "loss";
 }
@@ -134,6 +160,57 @@ export function aesopsGameToCobraGame(game: AesopsGame): CobraGame {
   };
 }
 
+export function isDss(game: CobraGame): boolean {
+  return (
+    ((game.player1?.combinedScore as number) ?? 0) +
+      ((game.player2?.combinedScore as number) ?? 0) >
+    3
+  );
+}
+
+function getDssGameResult(
+  game: CobraGame,
+  runner: "player1" | "player2"
+): Result {
+  if (runner === "player1") {
+    if (game.player1?.runnerScore === 3) return "runnerWin";
+    if (game.player1?.runnerScore === 0) return "corpWin";
+    return "draw";
+  }
+  if (game.player2?.runnerScore === 3) return "runnerWin";
+  if (game.player2?.runnerScore === 0) return "corpWin";
+  return "draw";
+}
+
+function parseDss(
+  game: CobraGame,
+  playerMap: Record<number, Player>,
+  roundNumber: number
+): AugmentedRound {
+  const player1 = playerMap[game.player1?.id ?? 0];
+  const player2 = playerMap[game.player2?.id ?? 0];
+
+  // p1 runner, p2 corp
+  const game1 = {
+    ...game,
+    result: getDssGameResult(game, "player1"),
+    runner: player1,
+    corp: player2,
+    round: roundNumber + 1,
+  };
+
+  // p2 runner, p1 corp
+  const game2 = {
+    ...game,
+    result: getDssGameResult(game, "player2"),
+    runner: player2,
+    corp: player1,
+    round: roundNumber + 1,
+  };
+
+  return [game1, game2];
+}
+
 export function augmentRounds(
   tournament: Tournament,
   isAesops: boolean,
@@ -141,16 +218,22 @@ export function augmentRounds(
 ) {
   const rounds_augmented: AugmentedRound[] =
     tournament.rounds?.map((round, roundNumber) =>
-      round.map((rawGame) => {
+      round.flatMap((rawGame) => {
         const game = isAesops
           ? aesopsGameToCobraGame(rawGame)
           : (rawGame as CobraGame);
+        if (isDss(game)) {
+          console.log({ roundNumber: roundNumber + 1, ...game });
+          const parsed = parseDss(game, playerMap, roundNumber);
+          console.log(parsed);
+          return parsed;
+        }
         const result = getGameResult(game);
 
         const player1 = playerMap[game.player1?.id ?? 0];
         const player2 = playerMap[game.player2?.id ?? 0];
 
-        const out = {
+        const out: AugmentedGame = {
           ...game,
           result,
           runner: game.player1?.role === "runner" ? player1 : player2,
