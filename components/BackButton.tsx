@@ -1,22 +1,22 @@
 "use client";
 
-import { Group, NavLink } from "@mantine/core";
+import { Button, Group } from "@mantine/core";
 import { IconArrowLeft } from "@tabler/icons-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function BackButton() {
-  const router = useRouter();
   return (
     <Group justify="start" w="fit-content">
-      <NavLink
+      <Button
+        component={Link}
         href="/"
-        label="Back to home"
         leftSection={<IconArrowLeft size={16} stroke={1.5} />}
-        onClick={(e) => {
-          e.preventDefault();
-          router.push("/");
-        }}
-      />
+        variant="outline"
+        color="orange"
+        size="sm"
+      >
+        Back to home
+      </Button>
     </Group>
   );
 }

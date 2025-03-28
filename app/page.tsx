@@ -124,7 +124,7 @@ export default function HomePage() {
               <LinkToDashboard />
             </Stack>
             <Divider label="or" mx="xl" />
-            <Stack align="center">
+            <Stack align="center" gap="xs">
               <Button
                 component={Link}
                 href="/stats"
@@ -135,6 +135,20 @@ export default function HomePage() {
                   
                 </Text>
                 : Run
+              </Button>
+              <Button
+                component={Link}
+                href="/credits"
+                variant="outline"
+                color="orange"
+              >
+                <Text className={netrunnerFont.className} size="14">
+                  
+                </Text>
+                : Gain 1
+                <Text className={netrunnerFont.className} size="14">
+                  
+                </Text>
               </Button>
             </Stack>
           </Stack>
