@@ -94,7 +94,7 @@ function UrlInput({
     if (!useShortcode) return;
     if (site === "") return;
     setUrl(`${URLS[site as keyof typeof URLS]}${shortValue}`);
-  }, [site, shortValue]);
+  }, [site, shortValue, useShortcode, setUrl]);
   const shortInput = (
     <Group>
       <Radio.Group value={site} onChange={setSite} name="Site?">
@@ -159,7 +159,7 @@ export default function Dashboard() {
       }
       setUser(authData.user);
     })();
-  }, []);
+  }, [supabase.auth]);
 
   useEffect(() => {
     if (!uploadLoading) {

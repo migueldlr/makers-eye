@@ -17,7 +17,7 @@ export default function LinkToDashboard() {
       const { data } = await supabase.auth.getUser();
       if (data.user) setUser(data.user);
     })();
-  }, []);
+  }, [supabase.auth]);
 
   if (!user) {
     return null;

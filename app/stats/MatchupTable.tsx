@@ -21,7 +21,7 @@ import {
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
 import { getMatchesMetadata, getWinrates } from "./actions";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Row from "./Row";
 import FirstRow from "./FirstRow";
 
@@ -90,7 +90,7 @@ export default function MatchupTable() {
     return a < b ? -1 : a > b ? 1 : 0;
   };
 
-  const sortByPopularity =
+  const sortByPopularity = useCallback(
     (side: "runner" | "corp") => (l: string, r: string) => {
       if (metadata == null) {
         return 0;
@@ -104,8 +104,9 @@ export default function MatchupTable() {
         popularityData.find(({ identity }) => identity === l)?.player_count ??
         0;
       return a < b ? -1 : a > b ? 1 : 0;
-    };
-
+    },
+    [metadata]
+  );
   const { allSideOneIds, allSideTwoIds } = useMemo(() => {
     if (metadata == null) {
       return {
@@ -131,7 +132,7 @@ export default function MatchupTable() {
       allSideOneIds,
       allSideTwoIds,
     };
-  }, [mainSide, metadata, groupByFaction]);
+  }, [mainSide, metadata, groupByFaction, offSide, sortByPopularity]);
 
   if (winrates == null) {
     return <div>Loading...</div>;

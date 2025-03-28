@@ -29,16 +29,16 @@ export default function CreditsPage() {
         </Group>
 
         <Text>
-          The Maker's Eye was created as a personal project for me (spiderbro)
-          to analyze Netrunner tournament results and the Netrunner meta at
-          large. While it is still very much a work in progress, I hope it can
-          be of use to the community.
+          The Maker&apos;s Eye was created as a personal project for me
+          (spiderbro) to analyze Netrunner tournament results and the Netrunner
+          meta at large. While it is still very much a work in progress, I hope
+          it can be of use to the community.
         </Text>
 
         <Text>
           I would like to thank the following people and projects for their
           contributions to the community and as direct inspiration for The
-          Maker's Eye:
+          Maker&apos;s Eye:
         </Text>
         <List>
           <ListItem>
@@ -50,7 +50,9 @@ export default function CreditsPage() {
             The authors and maintainers of{" "}
             <Anchor href="https://tournaments.nullsignal.games/">Cobra</Anchor>{" "}
             and{" "}
-            <Anchor href="https://www.aesopstables.net/">Aesop's Tables</Anchor>
+            <Anchor href="https://www.aesopstables.net/">
+              Aesop&apos;s Tables
+            </Anchor>
             , for providing open APIs for tournament data.
           </ListItem>
           <ListItem>The kind folks in GLC for providing feedback.</ListItem>
