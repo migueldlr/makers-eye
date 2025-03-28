@@ -30,6 +30,7 @@ export default function CorpSummary() {
       });
       const corpIds = res.corpData.map((c) => c.identity).filter(Boolean);
       setAllCorps(corpIds);
+      setCorps([corpIds[0]]);
 
       const runnerIds = res.runnerData.map((c) => c.identity).filter(Boolean);
       setAllRunners(runnerIds);
