@@ -131,7 +131,10 @@ export default function HomePage() {
                 variant="outline"
                 color="orange"
               >
-                <Text className={netrunnerFont.className}></Text>: Run
+                <Text className={netrunnerFont.className} size="14">
+                  
+                </Text>
+                : Run
               </Button>
             </Stack>
           </Stack>
