@@ -32,6 +32,7 @@ export default async function StatsPage() {
         <Alert variant="light" color="gray" icon={<IconInfoCircle />}>
           This page is under construction. Expect frequent updates.
         </Alert>
+        <Title order={3}>Corp representation</Title>
         <Title order={3}>Corp performance</Title>
         <CorpSummary />
         <Title order={3}>Matchup spread</Title>
