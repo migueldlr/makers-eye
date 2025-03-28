@@ -2,6 +2,7 @@
 
 import LinkToDashboard from "@/components/LinkToDashboard";
 import { parseUrl } from "@/lib/util";
+import { netrunnerFont } from "@/styles/fonts";
 import {
   ActionIcon,
   Affix,
@@ -130,7 +131,7 @@ export default function HomePage() {
                 variant="outline"
                 color="orange"
               >
-                Access
+                <Text className={netrunnerFont.className}></Text>: Run
               </Button>
             </Stack>
           </Stack>
