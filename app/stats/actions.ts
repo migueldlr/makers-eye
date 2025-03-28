@@ -99,3 +99,19 @@ export async function getSummaryStats() {
   }
   return data[0];
 }
+
+export async function getCorpWinrates(corps: string[]): Promise<WinrateData[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .rpc("get_corp_winrates", {
+      corp_filter: corps,
+    })
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}

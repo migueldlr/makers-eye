@@ -14,6 +14,7 @@ import { Metadata } from "next";
 import { SITE_TITLE } from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
+import CorpSummary from "./CorpSummary";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -27,10 +28,12 @@ export default async function StatsPage() {
     <Container fluid py="lg">
       <Stack>
         <Title order={2}>24.12 Meta Analysis</Title>
+        <SummaryStats />
         <Alert variant="light" color="gray" icon={<IconInfoCircle />}>
           This page is under construction. Expect frequent updates.
         </Alert>
-        <SummaryStats />
+        <Title order={3}>Corp performance</Title>
+        <CorpSummary />
         <Title order={3}>Matchup spread</Title>
         <MatchupTable />
         <Title order={3}>Included tournaments</Title>
@@ -41,7 +44,6 @@ export default async function StatsPage() {
             <TournamentTable tournaments={tournaments} />
           )}
         </ScrollArea>
-        <Title order={3}>Corp performance</Title>
       </Stack>
       <Center>
         <Text mt="43vh" c="gray.7">
