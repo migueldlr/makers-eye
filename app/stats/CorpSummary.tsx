@@ -6,6 +6,7 @@ import {
   MultiSelect,
   NumberInput,
   Stack,
+  Switch,
   Text,
 } from "@mantine/core";
 import { getCorpWinrates, getMatchesMetadata, WinrateData } from "./actions";
@@ -18,6 +19,7 @@ export default function CorpSummary() {
   const [allRunners, setAllRunners] = useState<string[]>([]);
   const [data, setData] = useState<WinrateData[]>([]);
   const [minMatches, setMinMatches] = useState(1);
+  const [showDraws, setShowDraws] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,6 +52,7 @@ export default function CorpSummary() {
         allRunners={allRunners}
         corps={corps}
         minMatches={minMatches}
+        showDraws={showDraws}
       />
       <Group>
         <MultiSelect
@@ -68,6 +71,11 @@ export default function CorpSummary() {
             min={1}
           />
         </Group>
+        <Switch
+          checked={showDraws}
+          onChange={(e) => setShowDraws(e.currentTarget.checked)}
+          label="Show draws"
+        />
       </Group>
     </Stack>
   );
