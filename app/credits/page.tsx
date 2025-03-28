@@ -1,7 +1,7 @@
 import { BackButton } from "@/components/BackButton";
+import { SITE_TITLE } from "@/lib/util";
 import { netrunnerFont } from "@/styles/fonts";
 import {
-  Center,
   Container,
   Title,
   Text,
@@ -11,6 +11,11 @@ import {
   ListItem,
   Anchor,
 } from "@mantine/core";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: `Credits | ${SITE_TITLE}`,
+};
 
 export default function CreditsPage() {
   return (
