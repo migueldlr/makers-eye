@@ -16,6 +16,7 @@ import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
 import CorpSummary from "./CorpSummary";
 import CorpRepresentation from "./CorpRepresentation";
+import { BackButton } from "@/components/BackButton";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -47,9 +48,10 @@ export default async function StatsPage() {
             <TournamentTable tournaments={tournaments} />
           )}
         </ScrollArea>
+        <BackButton />
       </Stack>
       <Center>
-        <Text mt="43vh" c="gray.7">
+        <Text mt="40vh" c="gray.7">
           created by spiderbro
         </Text>
       </Center>
