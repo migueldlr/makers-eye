@@ -61,7 +61,6 @@ function ChartTooltip({
   if (!payload) return null;
 
   if (payload.length === 0) return null;
-  console.log(payload);
   return (
     <Paper px="md" py="sm" withBorder shadow="md" radius="md">
       <Text>vs {label}</Text>

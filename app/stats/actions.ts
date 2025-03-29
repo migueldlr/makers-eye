@@ -11,6 +11,11 @@ export type WinrateData = {
   draws: number;
 };
 
+export type PopularityData = {
+  identity: string;
+  player_count: number;
+};
+
 export async function getWinrates({
   minMatches,
   includeSwiss,
@@ -106,6 +111,24 @@ export async function getCorpWinrates(corps: string[]): Promise<WinrateData[]> {
   const { data, error } = await supabase
     .rpc("get_corp_winrates", {
       corp_filter: corps,
+    })
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function getCorpPopularity(): Promise<PopularityData[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .rpc("get_corp_popularity", {
+      tournament_filter: null,
+      include_swiss: true,
+      include_cut: true,
     })
     .select();
 

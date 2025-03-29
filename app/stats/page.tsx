@@ -15,6 +15,7 @@ import { SITE_TITLE } from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
 import CorpSummary from "./CorpSummary";
+import CorpRepresentation from "./CorpRepresentation";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -33,6 +34,7 @@ export default async function StatsPage() {
           This page is under construction. Expect frequent updates.
         </Alert>
         <Title order={3}>Corp representation</Title>
+        <CorpRepresentation />
         <Title order={3}>Corp performance</Title>
         <CorpSummary />
         <Title order={3}>Matchup spread</Title>
