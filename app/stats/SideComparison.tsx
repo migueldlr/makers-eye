@@ -32,27 +32,19 @@ export default function SideComparison({
         <Code>{runnerWins}</Code> runner win{runnerWins !== 0 ? "s" : ""},{" "}
         <Code>{corpWins}</Code> corp win
         {corpWins !== 0 ? "s" : ""}
-        {draws > 0 ? (
-          <>
-            {", "}
-            <Code>{draws}</Code>
-            {` draw${draws !== 1 ? "s" : ""}`}
-          </>
-        ) : null}
-        {byes > 0 ? (
-          <>
-            {", "}
-            <Code>{byes}</Code>
-            {` bye${byes !== 1 ? "s" : ""}`}
-          </>
-        ) : null}
-        {unknown > 0 ? (
-          <>
-            {", "}
-            <Code>{unknown}</Code>
-            {` unknown${unknown !== 1 ? "s" : ""}`}
-          </>
-        ) : null}
+        {[
+          { value: draws, label: "draw" },
+          { value: byes, label: "bye" },
+          { value: unknown, label: "unknown" },
+        ].map(({ value, label }) =>
+          value > 0 ? (
+            <>
+              {", "}
+              <Code>{value}</Code>
+              {` ${label}${value !== 1 ? "s" : ""}`}
+            </>
+          ) : null
+        )}{" "}
       </Text>
     </Stack>
   );
