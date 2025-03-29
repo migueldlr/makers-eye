@@ -6,45 +6,18 @@ export default function SideComparison({
 }: {
   roundsAugmented: AugmentedRound[];
 }) {
-  const runnerWins = roundsAugmented
-    .flatMap((round) => {
-      return round.map((game) => {
-        return game.result === "runnerWin" ? 1 : 0;
-      });
-    })
-    .reduce((a: number, b: number) => a + b, 0);
+  const countResults = (targetResult: string) =>
+    roundsAugmented
+      .flatMap((round) =>
+        round.map((game) => (game.result === targetResult ? 1 : 0))
+      )
+      .reduce((a: number, b: number) => a + b, 0);
 
-  const corpWins = roundsAugmented
-    .flatMap((round) => {
-      return round.map((game) => {
-        return game.result === "corpWin" ? 1 : 0;
-      });
-    })
-    .reduce((a: number, b: number) => a + b, 0);
-
-  const draws = roundsAugmented
-    .flatMap((round) => {
-      return round.map((game) => {
-        return game.result === "draw" ? 1 : 0;
-      });
-    })
-    .reduce((a: number, b: number) => a + b, 0);
-
-  const byes = roundsAugmented
-    .flatMap((round) => {
-      return round.map((game) => {
-        return game.result === "bye" ? 1 : 0;
-      });
-    })
-    .reduce((a: number, b: number) => a + b, 0);
-
-  const unknown = roundsAugmented
-    .flatMap((round) => {
-      return round.map((game) => {
-        return game.result === "unknown" ? 1 : 0;
-      });
-    })
-    .reduce((a: number, b: number) => a + b, 0);
+  const runnerWins = countResults("runnerWin");
+  const corpWins = countResults("corpWin");
+  const draws = countResults("draw");
+  const byes = countResults("bye");
+  const unknown = countResults("unknown");
 
   const totalGames = roundsAugmented
     .map((round) => round.length)
