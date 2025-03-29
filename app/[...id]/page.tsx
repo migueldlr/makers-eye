@@ -8,6 +8,7 @@ import { IconAlertHexagon } from "@tabler/icons-react";
 import { BackButton } from "../../components/BackButton";
 import { RepresentationChart } from "../../components/RepresentationChart";
 import { SITE_TITLE, URLS } from "@/lib/util";
+import SideComparison from "../stats/SideComparison";
 
 export async function generateMetadata({
   params,
@@ -68,6 +69,7 @@ export default async function Page({
         <Anchor href={`${URLS[site]}${id[1]}`}>
           {`${URLS[site]}${id[1]}`}
         </Anchor>
+        <SideComparison roundsAugmented={roundsAugmented} />
         <RepresentationChart tournament={tournament} side="runner" />
         <WinrateChart
           tournament={tournament}

@@ -79,10 +79,6 @@ export default function PopularityChart({
   return (
     <DonutChart
       pieProps={{
-        // activeIndex: activeIndex,
-        // onMouseEnter: (_, index) => {
-        //   setActiveIndex(index);
-        // },
         label: renderCustomizedLabel,
         labelLine: false,
       }}
