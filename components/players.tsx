@@ -11,6 +11,7 @@ import {
   Code,
   Tooltip,
   Title,
+  Group,
 } from "@mantine/core";
 import { forwardRef, memo, Ref, useMemo, useRef, useState } from "react";
 import {
@@ -168,28 +169,32 @@ function PlayerCard_raw(
           query={query}
           enabled={query.length > 0}
         />
-        <Text>
-          {shortenId(player.corpIdentity)} + {shortenId(player.runnerIdentity)}
-        </Text>
-        <SimpleGrid
-          cols={numRounds}
-          w="fit-content"
-          spacing="xs"
-          verticalSpacing="xs"
-        >
-          <SideRow
-            player={player}
-            games={games}
-            side="corp"
-            playerMap={playerMap}
-          />
-          <SideRow
-            player={player}
-            games={games}
-            side="runner"
-            playerMap={playerMap}
-          />
-        </SimpleGrid>
+        <Group align="start">
+          <Stack gap="xs" w="5em">
+            <Text ta="right">{shortenId(player.corpIdentity)}</Text>
+            <Text ta="right">{shortenId(player.runnerIdentity)}</Text>
+          </Stack>
+          <SimpleGrid
+            cols={numRounds}
+            w="fit-content"
+            spacing="xs"
+            verticalSpacing="xs"
+          >
+            <SideRow
+              player={player}
+              games={games}
+              side="corp"
+              playerMap={playerMap}
+            />
+
+            <SideRow
+              player={player}
+              games={games}
+              side="runner"
+              playerMap={playerMap}
+            />
+          </SimpleGrid>
+        </Group>
       </Stack>
     </Card>
   );

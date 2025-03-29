@@ -24,8 +24,6 @@ export default function CorpRepresentation() {
     })();
   }, []);
 
-  console.log(corpData);
-
   return (
     <Stack>
       <PopularityChart data={corpData} sortBy={sortBy} />
