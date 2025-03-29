@@ -1,5 +1,6 @@
 import { AugmentedRound } from "@/lib/tournament";
 import { Stack, Text, Code } from "@mantine/core";
+import React from "react";
 
 export default function SideComparison({
   roundsAugmented,
@@ -38,11 +39,11 @@ export default function SideComparison({
           { value: unknown, label: "unknown" },
         ].map(({ value, label }) =>
           value > 0 ? (
-            <>
+            <React.Fragment key={label}>
               {", "}
               <Code>{value}</Code>
               {` ${label}${value !== 1 ? "s" : ""}`}
-            </>
+            </React.Fragment>
           ) : null
         )}{" "}
       </Text>
