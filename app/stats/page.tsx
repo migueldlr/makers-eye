@@ -38,12 +38,6 @@ export default async function StatsPage() {
         {process.env.NODE_ENV === "development" && (
           <TournamentFilter tournaments={tournaments ?? []} />
         )}
-        <Title order={3}>Corp representation</Title>
-        <CorpRepresentation />
-        <Title order={3}>Corp performance</Title>
-        <CorpSummary />
-        <Title order={3}>Matchup spread</Title>
-        <MatchupTable />
         <Title order={3}>
           Included tournaments ({tournaments?.length ?? 0})
         </Title>
@@ -54,6 +48,12 @@ export default async function StatsPage() {
             <TournamentTable tournaments={tournaments} />
           )}
         </ScrollArea>
+        <Title order={3}>Corp representation</Title>
+        <CorpRepresentation />
+        <Title order={3}>Corp performance</Title>
+        <CorpSummary />
+        <Title order={3}>Matchup spread</Title>
+        <MatchupTable />
         <BackButton />
       </Stack>
       <Center>

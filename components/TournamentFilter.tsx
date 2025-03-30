@@ -111,6 +111,10 @@ export default function TournamentFilter({
   });
   const filteredDates = data.map(({ date }) => date);
 
+  useEffect(() => {
+    // console.log(selectedTournaments.map((tournament) => tournament.name));
+  }, [selectedTournaments]);
+
   return (
     <Stack gap="xs">
       <BarChart
