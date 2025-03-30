@@ -6,13 +6,13 @@ import { Box, darken, Paper, Text } from "@mantine/core";
 function groupWinrateByRunner(
   data: WinrateData[],
   corps: string[],
-  allRunners: string[],
+  runners: string[],
   minMatches: number
 ): {
   runner: string;
   [corp: string]: null | number | string;
 }[] {
-  const grouped = allRunners.map((runner) => {
+  const grouped = runners.map((runner) => {
     const dataByRunner = data.filter((d) => d.runner_id === runner);
     const out: {
       [corp: string]: null | number;
@@ -91,17 +91,17 @@ function ChartTooltip({
 export default function CorpWinrateChart({
   data_raw,
   corps,
-  allRunners,
+  runners,
   minMatches,
   showDraws,
 }: {
   data_raw: WinrateData[];
   corps: string[];
-  allRunners: string[];
+  runners: string[];
   minMatches: number;
   showDraws: boolean;
 }) {
-  const data = groupWinrateByRunner(data_raw, corps, allRunners, minMatches);
+  const data = groupWinrateByRunner(data_raw, corps, runners, minMatches);
   const series = corps.flatMap((corp) => {
     return [
       {
