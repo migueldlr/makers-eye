@@ -143,54 +143,8 @@ export default function MatchupTable() {
   }
 
   const controls = (
-    <Group justify="end">
-      <Switch
-        checked={showColors}
-        onChange={(e) => setShowColors(e.currentTarget.checked)}
-        label="Show colors"
-      />
-      {showColors && (
-        <NumberInput
-          w={100}
-          value={minMatches}
-          onChange={(val) => setMinMatches(Number(val))}
-          min={1}
-          label="Min matches"
-        />
-      )}
-      <Stack gap={0}>
-        <Text>WR</Text>
-        <RangeSlider
-          w="200"
-          value={wrRange}
-          onChange={setWrRange}
-          minRange={5}
-          label={(val) => `${val}%`}
-        />
-      </Stack>
-      <Switch
-        checked={groupByFaction}
-        onChange={(e) => setGroupByFaction(e.currentTarget.checked)}
-        label="Group by faction"
-      />
-      <Switch
-        checked={showPercentages}
-        onChange={(e) => setShowPercentages(e.currentTarget.checked)}
-        label="Show percentages"
-      />
-      <Stack>
-        <Switch
-          checked={includeCut}
-          onChange={(e) => setIncludeCut(e.currentTarget.checked)}
-          label="Include cut"
-        />
-        <Switch
-          checked={includeSwiss}
-          onChange={(e) => setIncludeSwiss(e.currentTarget.checked)}
-          label="Include swiss"
-        />
-      </Stack>
-      <Group gap="xs">
+    <Stack>
+      <Group gap="xs" justify="end">
         <ActionIcon variant="default" onClick={() => switchSides()}>
           <IconTransfer style={{ width: "50%", height: "50%" }} />
         </ActionIcon>
@@ -199,7 +153,59 @@ export default function MatchupTable() {
           <Code>{mainSide === "runner" ? "corp" : "runner"} wins</Code>
         </Text>
       </Group>
-    </Group>
+      <Group justify="end">
+        <Switch
+          checked={showColors}
+          onChange={(e) => setShowColors(e.currentTarget.checked)}
+          label="Show colors"
+        />
+        {showColors && (
+          <NumberInput
+            w={100}
+            value={minMatches}
+            onChange={(val) => setMinMatches(Number(val))}
+            min={1}
+            label="Min matches"
+          />
+        )}
+        {showColors && (
+          <Stack gap={0}>
+            <Text>WR</Text>
+            <RangeSlider
+              w="200"
+              value={wrRange}
+              onChange={setWrRange}
+              minRange={5}
+              label={(val) => `${val}%`}
+            />
+          </Stack>
+        )}
+      </Group>
+      <Group justify="end">
+        <Switch
+          checked={groupByFaction}
+          onChange={(e) => setGroupByFaction(e.currentTarget.checked)}
+          label="Group by faction"
+        />
+        <Switch
+          checked={showPercentages}
+          onChange={(e) => setShowPercentages(e.currentTarget.checked)}
+          label="Show percentages"
+        />
+        <Stack>
+          <Switch
+            checked={includeCut}
+            onChange={(e) => setIncludeCut(e.currentTarget.checked)}
+            label="Include cut"
+          />
+          <Switch
+            checked={includeSwiss}
+            onChange={(e) => setIncludeSwiss(e.currentTarget.checked)}
+            label="Include swiss"
+          />
+        </Stack>
+      </Group>
+    </Stack>
   );
 
   return (
