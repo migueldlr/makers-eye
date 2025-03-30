@@ -35,7 +35,9 @@ export default async function StatsPage() {
           This page is under construction. Expect frequent updates.
         </Alert>
         <SummaryStats />
-        <TournamentFilter tournaments={tournaments ?? []} />
+        {process.env.NODE_ENV === "development" && (
+          <TournamentFilter tournaments={tournaments ?? []} />
+        )}
         <Title order={3}>Corp representation</Title>
         <CorpRepresentation />
         <Title order={3}>Corp performance</Title>
