@@ -40,7 +40,9 @@ export default async function StatsPage() {
         <CorpSummary />
         <Title order={3}>Matchup spread</Title>
         <MatchupTable />
-        <Title order={3}>Included tournaments</Title>
+        <Title order={3}>
+          Included tournaments ({tournaments?.length ?? 0})
+        </Title>
         <ScrollArea h={400}>
           {tournaments == null ? (
             <div>Loading...</div>
