@@ -1,6 +1,6 @@
 "use server";
 
-import { RawMatch, StandingResult } from "@/lib/localtypes";
+import { RawMatch, StandingResult, TournamentRow } from "@/lib/localtypes";
 import { Database } from "@/lib/supabase";
 import { Tournament } from "@/lib/types";
 import { createClient } from "@/utils/supabase/server";
