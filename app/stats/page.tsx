@@ -17,6 +17,7 @@ import SummaryStats from "./SummaryStats";
 import CorpSummary from "./CorpSummary";
 import CorpRepresentation from "./CorpRepresentation";
 import { BackButton } from "@/components/BackButton";
+import TournamentFilter from "@/components/TournamentFilter";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -27,13 +28,14 @@ export default async function StatsPage() {
 
   const { data: tournaments } = await supabase.from("tournaments").select("*");
   return (
-    <Container fluid py="lg">
+    <Container fluid px="lg" py="lg">
       <Stack>
         <Title order={2}>24.12 Meta Analysis</Title>
-        <SummaryStats />
         <Alert variant="light" color="gray" icon={<IconInfoCircle />}>
           This page is under construction. Expect frequent updates.
         </Alert>
+        <SummaryStats />
+        <TournamentFilter tournaments={tournaments ?? []} />
         <Title order={3}>Corp representation</Title>
         <CorpRepresentation />
         <Title order={3}>Corp performance</Title>

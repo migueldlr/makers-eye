@@ -34,6 +34,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      identity_names: {
+        Row: {
+          long_id: string
+          short_id: string | null
+        }
+        Insert: {
+          long_id: string
+          short_id?: string | null
+        }
+        Update: {
+          long_id?: string
+          short_id?: string | null
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           corp_id: number | null
@@ -77,10 +92,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "matches_corp_id_fkey"
+            columns: ["corp_id"]
+            isOneToOne: false
+            referencedRelation: "standings_mapped"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matches_runner_id_fkey"
             columns: ["runner_id"]
             isOneToOne: false
             referencedRelation: "standings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "standings_mapped"
             referencedColumns: ["id"]
           },
           {
@@ -164,6 +193,7 @@ export type Database = {
         Row: {
           created_at: string
           date: string | null
+          format: string | null
           id: number
           last_modified_at: string | null
           location: string | null
@@ -175,6 +205,7 @@ export type Database = {
         Insert: {
           created_at?: string
           date?: string | null
+          format?: string | null
           id?: number
           last_modified_at?: string | null
           location?: string | null
@@ -186,6 +217,7 @@ export type Database = {
         Update: {
           created_at?: string
           date?: string | null
+          format?: string | null
           id?: number
           last_modified_at?: string | null
           location?: string | null
@@ -198,10 +230,141 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      matches_mapped: {
+        Row: {
+          corp_short_id: string | null
+          phase: string | null
+          result: string | null
+          round: number | null
+          runner_short_id: string | null
+          table: number | null
+          tournament_id: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      standings_mapped: {
+        Row: {
+          corp_draws: number | null
+          corp_identity: string | null
+          corp_losses: number | null
+          corp_short_id: string | null
+          corp_wins: number | null
+          created_at: string | null
+          e_sos: number | null
+          id: number | null
+          match_points: number | null
+          name: string | null
+          runner_draws: number | null
+          runner_identity: string | null
+          runner_losses: number | null
+          runner_short_id: string | null
+          runner_wins: number | null
+          sos: number | null
+          swiss_rank: number | null
+          top_cut_rank: number | null
+          tournament_id: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      all_runners: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      get_corp_popularity: {
+        Args: {
+          tournament_filter?: number[]
+          include_swiss?: boolean
+          include_cut?: boolean
+        }
+        Returns: {
+          identity: string
+          player_count: number
+        }[]
+      }
+      get_corp_vs_runner_winrates: {
+        Args: {
+          corp_filter?: string[]
+        }
+        Returns: {
+          corp_identity: string
+          runner_identity: string
+          total_games: number
+          corp_wins: number
+          runner_wins: number
+          draws: number
+          corp_win_rate: number
+        }[]
+      }
+      get_corp_winrates: {
+        Args: {
+          corp_filter?: string[]
+        }
+        Returns: {
+          corp_id: string
+          runner_id: string
+          total_games: number
+          corp_wins: number
+          runner_wins: number
+          draws: number
+          corp_win_rate: number
+        }[]
+      }
+      get_head_to_head_winrates: {
+        Args: {
+          tournament_filter?: number[]
+          min_matches?: number
+          include_swiss?: boolean
+          include_cut?: boolean
+        }
+        Returns: {
+          runner_id: string
+          corp_id: string
+          runner_wins: number
+          corp_wins: number
+          draws: number
+          total_games: number
+          runner_winrate: number
+        }[]
+      }
+      get_runner_popularity: {
+        Args: {
+          tournament_filter?: number[]
+          include_swiss?: boolean
+          include_cut?: boolean
+        }
+        Returns: {
+          identity: string
+          player_count: number
+        }[]
+      }
+      get_summary_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_matches: number
+          total_players: number
+          total_tournaments: number
+          earliest_tournament: string
+          latest_tournament: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

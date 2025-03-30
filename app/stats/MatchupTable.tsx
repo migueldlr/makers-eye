@@ -47,7 +47,7 @@ export default function MatchupTable() {
     Awaited<ReturnType<typeof getMatchesMetadata>> | undefined
   >();
 
-  const [mainSide, setMainSide] = useState<"runner" | "corp">("runner");
+  const [mainSide, setMainSide] = useState<"runner" | "corp">("corp");
   const offSide = mainSide === "runner" ? "corp" : "runner";
   const [groupByFaction, setGroupByFaction] = useState(false);
   const [showColors, setShowColors] = useState(true);

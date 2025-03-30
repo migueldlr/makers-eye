@@ -110,7 +110,7 @@ export async function doesTournamentExist(name: string) {
   return data.some((tournament) => tournament.name === name);
 }
 
-export async function getTournaments() {
+export async function getTournaments(): Promise<TournamentRow[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase.from("tournaments").select();

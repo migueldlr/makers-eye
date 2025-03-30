@@ -105,6 +105,15 @@ export async function getSummaryStats() {
   return data[0];
 }
 
+export async function getTournaments() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("tournaments").select();
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
 export async function getCorpWinrates(corps: string[]): Promise<WinrateData[]> {
   const supabase = await createClient();
 
