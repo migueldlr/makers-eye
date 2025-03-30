@@ -144,6 +144,7 @@ export default function Dashboard() {
   const [tournaments, setTournaments] = useState<
     Database["public"]["Tables"]["tournaments"]["Row"][]
   >([]);
+  const [sortBy, setSortBy] = useState<string>("last_updated_at");
 
   useEffect(() => {
     setData(undefined);
@@ -245,6 +246,15 @@ export default function Dashboard() {
     </>
   );
 
+  if (sortBy === "last_updated_at") {
+    tournaments.sort((a, b) => {
+      return (
+        new Date(a.last_modified_at ?? 0).getTime() -
+        new Date(b.last_modified_at ?? 0).getTime()
+      );
+    });
+  }
+
   return (
     <Container mt="lg">
       <Stack>
@@ -268,7 +278,7 @@ export default function Dashboard() {
         <Title order={3} mt="xl">
           Uploaded
         </Title>
-        <TournamentTable tournaments={tournaments} />
+        <TournamentTable tournaments={tournaments} isAdmin />
         <Group mt="xl">
           <BackButton />
           <Button variant="subtle" onClick={signOut}>

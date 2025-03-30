@@ -13,27 +13,32 @@ import {
 
 export default function TournamentTable({
   tournaments,
+  isAdmin = false,
 }: {
   tournaments: Database["public"]["Tables"]["tournaments"]["Row"][];
+  isAdmin?: boolean;
 }) {
   if (tournaments.length === 0) {
     return <Text>No tournaments found</Text>;
   }
-  tournaments.sort((a, b) => {
-    return new Date(b.date!).getTime() - new Date(a.date!).getTime();
-  });
+  if (!isAdmin)
+    tournaments.sort((a, b) => {
+      return new Date(b.date!).getTime() - new Date(a.date!).getTime();
+    });
 
   return (
     <Table>
       <TableThead pos="sticky" bg="dark.8">
         <TableTr>
           <TableTh>Name</TableTh>
+          {isAdmin && <TableTh>ID</TableTh>}
           <TableTh>Date</TableTh>
           <TableTh>Meta</TableTh>
           <TableTh>Region</TableTh>
           <TableTh>Location</TableTh>
           <TableTh>URL</TableTh>
           <TableTh>The Maker&#39;s Eye</TableTh>
+          {isAdmin && <TableTh>Last updated</TableTh>}
         </TableTr>
       </TableThead>
       <TableTbody>
@@ -43,6 +48,7 @@ export default function TournamentTable({
           return (
             <TableTr key={tournament.id}>
               <TableTd>{tournament.name}</TableTd>
+              {isAdmin && <TableTd>{tournament.id}</TableTd>}
               <TableTd>{tournament.date}</TableTd>
               <TableTd>{tournament.meta}</TableTd>
               <TableTd>{tournament.region}</TableTd>
@@ -60,6 +66,7 @@ export default function TournamentTable({
                   Link
                 </Anchor>
               </TableTd>
+              {isAdmin && <TableTd>{tournament.last_modified_at}</TableTd>}
             </TableTr>
           );
         })}
