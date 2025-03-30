@@ -97,7 +97,9 @@ export async function getMatchesMetadata({
 export async function getSummaryStats() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("get_summary_stats").select();
+  const { data, error } = await supabase
+    .rpc("get_summary_stats", { tournament_filter: null })
+    .select();
 
   if (error) {
     throw new Error(error.message);
