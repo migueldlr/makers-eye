@@ -1,9 +1,13 @@
 "use client";
 
 import { TournamentRow } from "@/lib/localtypes";
-import { TOURNAMENT_FILTER_KEY } from "@/lib/util";
+import {
+  END_DATE_FILTER_KEY,
+  START_DATE_FILTER_KEY,
+  TOURNAMENT_FILTER_KEY,
+} from "@/lib/util";
 import { BarChart } from "@mantine/charts";
-import { Box, Button, RangeSlider, Stack, Title } from "@mantine/core";
+import { Box, Button, Group, RangeSlider, Stack, Title } from "@mantine/core";
 import { format, max, min, parse } from "date-fns";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -26,19 +30,6 @@ function isInRange(
 ) {
   const index = uniqueDates.indexOf(date);
   return index >= range[0] && index <= range[1];
-}
-
-function getMinMaxDate(dates?: string[]) {
-  if (dates == null || dates.length == 0) return ["", ""];
-  const minDate = format(
-    min(dates.map((date) => parse(date, "yyyy-MM-dd", new Date()))),
-    "yyyy-MM-dd"
-  );
-  const maxDate = format(
-    max(dates.map((date) => parse(date, "yyyy-MM-dd", new Date()))),
-    "yyyy-MM-dd"
-  );
-  return [minDate, maxDate];
 }
 
 const WIDTH = 300;
@@ -89,24 +80,12 @@ export default function TournamentFilter({
     [groupedByDate]
   );
 
-  const initialIds =
-    searchParams
-      .get(TOURNAMENT_FILTER_KEY)
-      ?.split(",")
-      .map((x) => Number(x)) ?? [];
-
-  const initialDates = initialIds
-    .map((id) => {
-      const tournament = tournaments.find((tournament) => tournament.id === id);
-      return tournament?.date ?? "";
-    })
-    .filter((x) => x.length > 0)
-    .sort();
-  const minMaxDate = getMinMaxDate(initialDates);
+  const initialStartDate = searchParams.get(START_DATE_FILTER_KEY) ?? "";
+  const initialEndDate = searchParams.get(END_DATE_FILTER_KEY) ?? "";
 
   const [initialStartIndex, initialEndIndex] = [
-    uniqueDates.indexOf(minMaxDate[0] as string),
-    uniqueDates.indexOf(minMaxDate[1] as string),
+    uniqueDates.indexOf(initialStartDate),
+    uniqueDates.indexOf(initialEndDate),
   ];
 
   const [selectedDateRange, setSelectedDateRange] = useState<[number, number]>([
@@ -142,7 +121,10 @@ export default function TournamentFilter({
   );
 
   useEffect(() => {
-    if (!searchParams.has(TOURNAMENT_FILTER_KEY)) {
+    if (
+      !searchParams.has(START_DATE_FILTER_KEY) &&
+      !searchParams.has(END_DATE_FILTER_KEY)
+    ) {
       setSelectedDateRange([0, uniqueDates.length - 1]);
     }
   }, [uniqueDates]);
@@ -153,14 +135,19 @@ export default function TournamentFilter({
   });
   const filteredDates = data.map(({ date }) => date);
 
-  useEffect(() => {
-    // console.log(selectedTournaments.map((tournament) => tournament.name));
-  }, [selectedTournaments]);
+  const startDateSelected = uniqueDates[selectedDateRange[0]];
+  const endDateSelected = uniqueDates[selectedDateRange[1]];
+
+  useEffect(() => {}, [selectedDateRange]);
 
   const ids = selectedTournaments.map((tournament) => tournament.id);
   ids.sort();
 
-  const href = `${pathname}?${TOURNAMENT_FILTER_KEY}=${ids.join(",")}`;
+  const href = `${pathname}?${START_DATE_FILTER_KEY}=${startDateSelected}&${END_DATE_FILTER_KEY}=${endDateSelected}`;
+
+  const hasFilters =
+    searchParams.has(START_DATE_FILTER_KEY) ||
+    searchParams.has(END_DATE_FILTER_KEY);
 
   return (
     <Box>
@@ -195,9 +182,16 @@ export default function TournamentFilter({
           }
         />
       </Stack>
-      <Button mt="lg" component={Link} href={href}>
-        Filter
-      </Button>
+      <Group mt="lg">
+        <Button component={Link} href={href}>
+          Filter
+        </Button>
+        {hasFilters && (
+          <Button component={Link} href={pathname} variant="outline">
+            Reset
+          </Button>
+        )}
+      </Group>
     </Box>
   );
 }

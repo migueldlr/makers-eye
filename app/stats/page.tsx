@@ -1,10 +1,5 @@
 import {
-  Accordion,
-  AccordionControl,
-  AccordionItem,
-  AccordionPanel,
   Alert,
-  Card,
   Center,
   Container,
   ScrollArea,
@@ -12,19 +7,24 @@ import {
   Stack,
   Text,
   Title,
-  useMantineTheme,
 } from "@mantine/core";
 import MatchupTable from "./MatchupTable";
 import TournamentTable from "./TournamentTable";
 import { createClient } from "@/utils/supabase/server";
 import { Metadata } from "next";
-import { SITE_TITLE, TOURNAMENT_FILTER_KEY } from "@/lib/util";
+import {
+  END_DATE_FILTER_KEY,
+  isWithinDateRange,
+  SITE_TITLE,
+  START_DATE_FILTER_KEY,
+} from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
 import CorpSummary from "./CorpSummary";
 import CorpRepresentation from "./CorpRepresentation";
 import { BackButton } from "@/components/BackButton";
 import TournamentFilter from "@/components/TournamentFilter";
+import { TournamentRow } from "@/lib/localtypes";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -37,14 +37,15 @@ export default async function StatsPage({
 }) {
   const supabase = await createClient();
   const params = await searchParams;
-  const tournamentIds =
-    params[TOURNAMENT_FILTER_KEY] == null
-      ? undefined
-      : (params[TOURNAMENT_FILTER_KEY] as string)
-          .split(",")
-          .map((id) => Number(id));
 
-  const { data: tournaments } = await supabase.from("tournaments").select("*");
+  const res = await supabase.from("tournaments").select("*");
+  const tournaments = res.data as TournamentRow[];
+  const startDate = (params[START_DATE_FILTER_KEY] ?? "") as string;
+  const endDate = (params[END_DATE_FILTER_KEY] ?? "") as string;
+  const tournamentIds = tournaments
+    ?.filter((t) => isWithinDateRange(startDate, endDate, t.date))
+    .map((t) => t.id);
+  console.log(tournamentIds);
 
   return (
     <Container fluid px="lg" py="lg">
