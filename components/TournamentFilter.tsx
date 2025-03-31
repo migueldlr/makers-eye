@@ -3,7 +3,7 @@
 import { TournamentRow } from "@/lib/localtypes";
 import { TOURNAMENT_FILTER_KEY } from "@/lib/util";
 import { BarChart } from "@mantine/charts";
-import { Box, Button, RangeSlider, Stack } from "@mantine/core";
+import { Box, Button, RangeSlider, Stack, Title } from "@mantine/core";
 import { format, max, min, parse } from "date-fns";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";

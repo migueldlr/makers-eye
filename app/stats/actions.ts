@@ -132,12 +132,15 @@ export async function getCorpWinrates(corps: string[]): Promise<WinrateData[]> {
   return data;
 }
 
-export async function getCorpPopularity(): Promise<PopularityData[]> {
+export async function getCorpPopularity(
+  tournamentFilter?: number[]
+): Promise<PopularityData[]> {
   const supabase = await createClient();
+  console.log(tournamentFilter);
 
   const { data, error } = await supabase
     .rpc("get_corp_popularity", {
-      tournament_filter: null,
+      tournament_filter: tournamentFilter ?? null,
       include_swiss: true,
       include_cut: true,
     })

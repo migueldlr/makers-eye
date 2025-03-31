@@ -13,16 +13,20 @@ import { useEffect, useState } from "react";
 import { getCorpPopularity, PopularityData } from "./actions";
 import PopularityChart from "@/components/PopularityChart";
 
-export default function CorpRepresentation() {
+export default function CorpRepresentation({
+  tournamentIds,
+}: {
+  tournamentIds?: number[];
+}) {
   const [sortBy, setSortBy] = useState<"faction" | "popularity">("popularity");
   const [corpData, setCorpData] = useState<PopularityData[]>([]);
 
   useEffect(() => {
     (async () => {
-      const res = await getCorpPopularity();
+      const res = await getCorpPopularity(tournamentIds);
       setCorpData(res);
     })();
-  }, []);
+  }, [tournamentIds]);
 
   return (
     <Stack>

@@ -14,9 +14,11 @@ import {
 export default function TournamentTable({
   tournaments,
   isAdmin = false,
+  tournamentIds,
 }: {
   tournaments: Database["public"]["Tables"]["tournaments"]["Row"][];
   isAdmin?: boolean;
+  tournamentIds?: number[];
 }) {
   if (tournaments.length === 0) {
     return <Text>No tournaments found</Text>;
@@ -25,6 +27,13 @@ export default function TournamentTable({
     tournaments.sort((a, b) => {
       return new Date(b.date!).getTime() - new Date(a.date!).getTime();
     });
+
+  const filteredTournaments = tournaments.filter((tournament) => {
+    if (tournamentIds) {
+      return tournamentIds.includes(tournament.id);
+    }
+    return true;
+  });
 
   return (
     <Table>
@@ -42,7 +51,7 @@ export default function TournamentTable({
         </TableTr>
       </TableThead>
       <TableTbody>
-        {tournaments.map((tournament) => {
+        {filteredTournaments.map((tournament) => {
           const parsedUrl = parseUrl(tournament.url ?? "");
 
           return (
