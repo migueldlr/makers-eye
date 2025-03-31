@@ -82,8 +82,10 @@ export default function TournamentFilter({
       pathname +
       "?" +
       new URLSearchParams({
-        [START_DATE_FILTER_KEY]: startDateSelected,
-        [END_DATE_FILTER_KEY]: endDateSelected,
+        ...(startDateSelected && {
+          [START_DATE_FILTER_KEY]: startDateSelected,
+        }),
+        ...(endDateSelected && { [END_DATE_FILTER_KEY]: endDateSelected }),
         ...(regionsSelected.length !== ALL_REGION_OPTIONS.length && {
           [REGION_FILTER_KEY]: regionsSelected.join(","),
         }),
@@ -106,8 +108,6 @@ export default function TournamentFilter({
   const onlineTag = onlineParam ? (
     <Pill>Location: {onlineParam.split(",").join(" || ")}</Pill>
   ) : null;
-
-  console.log({ startDateSelected, endDateSelected });
 
   return (
     <Accordion

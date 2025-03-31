@@ -73,8 +73,6 @@ export default function DateFilter({
     uniqueDates.indexOf(endDate),
   ];
 
-  console.log({ initialStartIndex, initialEndIndex });
-
   const [selectedStartIndex, setSelectedStartIndex] = useState(
     initialStartIndex === -1 ? 0 : initialStartIndex
   );
@@ -83,33 +81,34 @@ export default function DateFilter({
   );
 
   useEffect(() => {
-    setStartDate(uniqueDates[selectedStartIndex]);
-    setEndDate(uniqueDates[selectedEndIndex]);
+    setStartDate(
+      selectedStartIndex === 0 ? "" : uniqueDates[selectedStartIndex]
+    );
+    setEndDate(
+      selectedEndIndex === uniqueDates.length - 1
+        ? ""
+        : uniqueDates[selectedEndIndex]
+    );
   }, [selectedStartIndex, selectedEndIndex]);
 
   const data = useMemo(
     () =>
-      uniqueDates
-        .map((date) => {
-          const tournaments = groupedByDate[date] ?? [];
-          const inRange = isInRange(date, uniqueDates, [
-            selectedStartIndex,
-            selectedEndIndex,
-          ]);
+      uniqueDates.map((date, i) => {
+        const tournaments = groupedByDate[date] ?? [];
+        const inRange = isInRange(date, uniqueDates, [
+          selectedStartIndex,
+          selectedEndIndex,
+        ]);
 
-          return {
-            tournaments,
-            selectedCount: inRange ? tournaments.length : 0,
-            unselectedCount: inRange ? 0 : tournaments.length,
-            date,
-          };
-        })
-        .map((row, i) => {
-          return {
-            ...row,
-            selected: i >= selectedStartIndex && i <= selectedEndIndex,
-          };
-        }),
+        return {
+          tournaments,
+          selectedCount: inRange ? tournaments.length : 0,
+          unselectedCount: inRange ? 0 : tournaments.length,
+          selected: i >= selectedStartIndex && i <= selectedEndIndex,
+
+          date,
+        };
+      }),
     [
       uniqueDates,
       groupedByDate,
