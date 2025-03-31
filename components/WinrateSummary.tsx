@@ -20,7 +20,5 @@ export default async function WinrateSummary({
     }
   );
 
-  return (
-    <WinrateChart winrates={winrates as IdentityWinrateData[]} side={side} />
-  );
+  return <WinrateChart winrates={winrates as IdentityWinrateData[]} />;
 }

@@ -16,10 +16,8 @@ import { useState } from "react";
 
 export default function WinrateChart({
   winrates,
-  side,
 }: {
   winrates: IdentityWinrateData[];
-  side: "runner" | "corp";
 }) {
   const [sortBy, setSortBy] = useState<string>("winrate");
   const [minMatches, setMinMatches] = useState<number>(10);
@@ -115,7 +113,7 @@ export default function WinrateChart({
           color="blue"
           data={[
             { label: "Winrate", value: "winrate" },
-            { label: "Popularity", value: "popularity" },
+            { label: "Games played", value: "popularity" },
             { label: "Faction", value: "faction" },
           ]}
         />
@@ -123,6 +121,7 @@ export default function WinrateChart({
       <Group>
         <Text>Min matches</Text>
         <NumberInput
+          min={1}
           value={minMatches}
           onChange={(n) => setMinMatches(Number(n))}
         />
