@@ -11,6 +11,15 @@ export type WinrateData = {
   draws: number;
 };
 
+export type GameResults = {
+  total_games: number;
+  runner_wins: number;
+  corp_wins: number;
+  draws: number;
+  byes: number;
+  unknowns: number;
+};
+
 export type PopularityData = {
   identity: string;
   player_count: number;
@@ -179,4 +188,22 @@ export async function getPopularity(
     throw new Error(error.message);
   }
   return data;
+}
+
+export async function getGameResults(
+  tournamentFilter?: number[]
+): Promise<GameResults> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .rpc("get_tournament_game_outcomes", {
+      tournament_filter: tournamentFilter ?? null,
+    })
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data[0];
 }

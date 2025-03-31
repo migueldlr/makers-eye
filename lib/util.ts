@@ -224,3 +224,5 @@ export function isWithinDateRange(
     (endDate === "" || date <= endDate)
   );
 }
+
+export const RADIAN = Math.PI / 180;

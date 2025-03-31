@@ -3,12 +3,11 @@ import {
   DEFAULT_UNKNOWN_ID,
   factionToColor,
   idToFaction,
+  RADIAN,
   shortenId,
 } from "@/lib/util";
 import { DonutChart } from "@mantine/charts";
 import { Card, luminance, Paper, Text } from "@mantine/core";
-
-const RADIAN = Math.PI / 180;
 
 const renderCustomizedLabel = ({
   cx,

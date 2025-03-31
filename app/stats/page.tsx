@@ -31,6 +31,7 @@ import RepresentationChart from "./RepresentationChart";
 import { BackButton } from "@/components/BackButton";
 import TournamentFilter from "@/components/TournamentFilter";
 import { TournamentRow } from "@/lib/localtypes";
+import GameResultsSummary from "./GameResultsSummary";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -92,6 +93,8 @@ export default async function StatsPage({
             />
           )}
         </ScrollArea>
+
+        <GameResultsSummary tournamentIds={tournamentIds} />
 
         <Title order={3} my="sm">
           Corp representation
