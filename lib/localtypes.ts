@@ -21,4 +21,7 @@ export type StandingResult = {
 export type Match = Database["public"]["Tables"]["matches"]["Insert"];
 export type RawMatch = Omit<Match, "created_at" | "id" | "tournament_id">;
 export type Standing = Database["public"]["Tables"]["standings"]["Row"];
-export type TournamentRow = Database["public"]["Tables"]["tournaments"]["Row"];
+export type TournamentRow =
+  Database["public"]["Tables"]["tournaments"]["Row"] & {
+    player_count: number;
+  };

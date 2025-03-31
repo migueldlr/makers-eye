@@ -45,8 +45,12 @@ export default function TournamentFilter({
   );
   const [sticky, setSticky] = useState(true);
   const toggleSticky = () => setSticky(sticky ? false : true);
+  const showHide = () => setAccordionValue(accordionValue ? null : "filters");
   const os = useOs();
-  useHotkeys([["alt+F", toggleSticky]]);
+  useHotkeys([
+    ["alt+F", toggleSticky],
+    ["alt+H", showHide],
+  ]);
 
   const [startDateSelected, setStartDateSelected] = useState(
     searchParams.get(START_DATE_FILTER_KEY) ?? ""
@@ -107,7 +111,7 @@ export default function TournamentFilter({
     <Pill>End date: {endDateParam}</Pill>
   ) : null;
   const regionTag = regionParam ? (
-    <Pill>Regions: {regionParam.split(",").join(", ")}</Pill>
+    <Pill>Region: {regionParam.split(",").join(", ")}</Pill>
   ) : null;
   const onlineTag = onlineParam ? (
     <Pill>Location: {onlineParam.split(",").join(", ")}</Pill>
@@ -171,10 +175,12 @@ export default function TournamentFilter({
               setEndDate={setEndDateSelected}
             />
           </Group>
-          <Group mt="lg" style={{ justifyContent: "space-between" }}>
+          <Group
+            style={{ justifyContent: "space-between", alignItems: "flex-end" }}
+          >
             <Group>
               <Button component={Link} href={href} scroll={false}>
-                Filter
+                Apply
               </Button>
               {hasFilters && (
                 <Button
@@ -187,15 +193,28 @@ export default function TournamentFilter({
                 </Button>
               )}
             </Group>
-            <Button variant="subtle" color="gray" onClick={toggleSticky}>
-              {sticky ? "Unstick from top" : "Stick to top"}
-              {os === "macos" || os === "windows" ? (
-                <>
-                  {" ("}
-                  <Kbd>{os === "macos" ? "⌥" : "Alt"}</Kbd> + <Kbd>F</Kbd> {")"}
-                </>
-              ) : null}
-            </Button>
+            <Stack align="flex-end">
+              <Button variant="subtle" color="gray" onClick={toggleSticky}>
+                {sticky ? "Unstick from top" : "Stick to top"}
+                {os === "macos" || os === "windows" ? (
+                  <>
+                    {" ("}
+                    <Kbd>{os === "macos" ? "⌥" : "Alt"}</Kbd> + <Kbd>F</Kbd>{" "}
+                    {")"}
+                  </>
+                ) : null}
+              </Button>
+              <Button variant="subtle" color="gray" onClick={showHide}>
+                {accordionValue === null ? "Show" : "Hide"}
+                {os === "macos" || os === "windows" ? (
+                  <>
+                    {" ("}
+                    <Kbd>{os === "macos" ? "⌥" : "Alt"}</Kbd> + <Kbd>H</Kbd>{" "}
+                    {")"}
+                  </>
+                ) : null}
+              </Button>
+            </Stack>
           </Group>
         </AccordionPanel>
       </AccordionItem>

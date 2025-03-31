@@ -1,4 +1,4 @@
-import { Database } from "@/lib/supabase";
+import { TournamentRow } from "@/lib/localtypes";
 import { parseUrl } from "@/lib/util";
 import {
   Anchor,
@@ -16,7 +16,7 @@ export default function TournamentTable({
   isAdmin = false,
   tournamentIds,
 }: {
-  tournaments: Database["public"]["Tables"]["tournaments"]["Row"][];
+  tournaments: TournamentRow[];
   isAdmin?: boolean;
   tournamentIds?: number[];
 }) {
@@ -45,6 +45,8 @@ export default function TournamentTable({
           <TableTh>Meta</TableTh>
           <TableTh>Region</TableTh>
           <TableTh>Location</TableTh>
+          <TableTh>Players</TableTh>
+          <TableTh>Format</TableTh>
           <TableTh>URL</TableTh>
           <TableTh>The Maker&#39;s Eye</TableTh>
           {isAdmin && <TableTh>Last updated</TableTh>}
@@ -62,6 +64,8 @@ export default function TournamentTable({
               <TableTd>{tournament.meta}</TableTd>
               <TableTd>{tournament.region}</TableTd>
               <TableTd>{tournament.location}</TableTd>
+              <TableTd>{tournament.player_count}</TableTd>
+              <TableTd>{tournament.format?.toUpperCase()}</TableTd>
               <TableTd>
                 <Anchor href={tournament.url ?? "#"} target="_blank">
                   {parsedUrl?.[0]} {parsedUrl?.[1]}

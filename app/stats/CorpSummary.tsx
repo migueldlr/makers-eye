@@ -24,7 +24,7 @@ export default function CorpSummary({
   const [runners, setRunners] = useState<string[]>(allRunners);
   const [data, setData] = useState<WinrateData[]>([]);
   const [minMatches, setMinMatches] = useState(1);
-  const [showDraws, setShowDraws] = useState(true);
+  const [showDraws, setShowDraws] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,11 +35,11 @@ export default function CorpSummary({
       });
       const corpIds = res.corpData.map((c) => c.identity).filter(Boolean);
       setAllCorps(corpIds);
-      setCorps([corpIds[0], corpIds[1], corpIds[2]]);
+      setCorps(corpIds.slice(0, 5));
 
       const runnerIds = res.runnerData.map((c) => c.identity).filter(Boolean);
-      setRunners(runnerIds);
       setAllRunners(runnerIds);
+      setRunners(runnerIds.slice(0, 7));
     })();
   }, []);
 
@@ -70,13 +70,13 @@ export default function CorpSummary({
           searchable
           clearable
         />
-        {/* <MultiSelect
+        <MultiSelect
           placeholder="Select runner(s)"
           value={runners}
           onChange={setRunners}
           data={allRunners}
           searchable
-        /> */}
+        />
         <Group gap="xs">
           <Text>Min matches:</Text>
           <NumberInput

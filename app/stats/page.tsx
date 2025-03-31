@@ -45,7 +45,7 @@ export default async function StatsPage({
   const supabase = await createClient();
   const params = await searchParams;
 
-  const res = await supabase.from("tournaments").select("*");
+  const res = await supabase.from("tournaments_with_player_count").select("*");
   const tournaments = res.data as TournamentRow[];
   const startDate = (params[START_DATE_FILTER_KEY] ?? "") as string;
   const endDate = (params[END_DATE_FILTER_KEY] ?? "") as string;
