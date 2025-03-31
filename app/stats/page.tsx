@@ -98,7 +98,7 @@ export default async function StatsPage({
         </Title>
         <CorpRepresentation tournamentIds={tournamentIds} />
         <Title order={3} my="sm">
-          Corp performance
+          Corp winrates
         </Title>
         <CorpSummary tournamentIds={tournamentIds} />
         <Title order={3} my="sm">
