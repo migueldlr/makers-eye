@@ -100,7 +100,7 @@ function ChartTooltip({
   );
 }
 
-export default function StatsPageWinrateChart({
+export default function MatchupChart({
   data_raw,
   mainSideIds,
   offSideIds,

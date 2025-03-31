@@ -10,9 +10,9 @@ import {
 } from "@mantine/core";
 import { getMatchesMetadata, getSideWinrates, WinrateData } from "./actions";
 import { useEffect, useState } from "react";
-import StatsPageWinrateChart from "@/components/StatsPageWinrateChart";
+import MatchupChart from "@/components/MatchupChart";
 
-export default function WinrateSummary({
+export default function MatchupSummary({
   tournamentIds,
   side,
 }: {
@@ -63,7 +63,7 @@ export default function WinrateSummary({
 
   return (
     <Stack>
-      <StatsPageWinrateChart
+      <MatchupChart
         data_raw={data}
         mainSideIds={mainSideIds}
         offSideIds={offSideIds}
