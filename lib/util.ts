@@ -219,6 +219,8 @@ export function isWithinDateRange(
   date: string | null
 ) {
   if (date == null) return false;
-  if (startDate === "" && endDate === "") return true;
-  return date >= startDate && date <= endDate;
+  return (
+    (startDate === "" || date >= startDate) &&
+    (endDate === "" || date <= endDate)
+  );
 }

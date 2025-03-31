@@ -107,6 +107,8 @@ export default function TournamentFilter({
     <Pill>Location: {onlineParam.split(",").join(" || ")}</Pill>
   ) : null;
 
+  console.log({ startDateSelected, endDateSelected });
+
   return (
     <Accordion
       defaultValue="filters"

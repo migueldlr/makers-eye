@@ -42,21 +42,6 @@ export default function DateFilter({
 }) {
   const searchParams = useSearchParams();
 
-  const dateRange = useMemo(
-    () =>
-      getRangeOfDates(
-        tournaments.reduce((acc, tournament) => {
-          const date = tournament.date ?? "unknown";
-          return date < acc ? date : acc;
-        }, tournaments[0].date ?? "2023-01-01"),
-        tournaments.reduce((acc, tournament) => {
-          const date = tournament.date ?? "unknown";
-          return date > acc ? date : acc;
-        }, tournaments[0].date ?? "2023-01-01")
-      ),
-    [startDate, endDate]
-  );
-
   const groupedByDate = useMemo(
     () =>
       tournaments.reduce((acc, tournament) => {
@@ -75,57 +60,63 @@ export default function DateFilter({
   );
 
   useEffect(() => {
-    if (
-      !searchParams.has(START_DATE_FILTER_KEY) &&
-      !searchParams.has(END_DATE_FILTER_KEY)
-    ) {
-      setSelectedDateRange([0, uniqueDates.length - 1]);
+    if (!searchParams.has(START_DATE_FILTER_KEY)) {
+      setSelectedStartIndex(0);
+    }
+    if (!searchParams.has(END_DATE_FILTER_KEY)) {
+      setSelectedEndIndex(uniqueDates.length - 1);
     }
   }, [uniqueDates]);
 
-  const initialStartDate = searchParams.get(START_DATE_FILTER_KEY) ?? "";
-  const initialEndDate = searchParams.get(END_DATE_FILTER_KEY) ?? "";
-
   const [initialStartIndex, initialEndIndex] = [
-    uniqueDates.indexOf(initialStartDate),
-    uniqueDates.indexOf(initialEndDate),
+    uniqueDates.indexOf(startDate),
+    uniqueDates.indexOf(endDate),
   ];
 
-  const [selectedDateRange, setSelectedDateRange] = useState<[number, number]>([
-    initialStartIndex === -1 ? 0 : initialStartIndex,
-    initialEndIndex === -1 ? 0 : initialEndIndex,
-  ]);
+  console.log({ initialStartIndex, initialEndIndex });
+
+  const [selectedStartIndex, setSelectedStartIndex] = useState(
+    initialStartIndex === -1 ? 0 : initialStartIndex
+  );
+  const [selectedEndIndex, setSelectedEndIndex] = useState(
+    initialEndIndex === -1 ? 0 : initialEndIndex
+  );
 
   useEffect(() => {
-    setStartDate(uniqueDates[selectedDateRange[0]]);
-    setEndDate(uniqueDates[selectedDateRange[1]]);
-  }, [selectedDateRange]);
+    setStartDate(uniqueDates[selectedStartIndex]);
+    setEndDate(uniqueDates[selectedEndIndex]);
+  }, [selectedStartIndex, selectedEndIndex]);
 
   const data = useMemo(
     () =>
-      dateRange
+      uniqueDates
         .map((date) => {
           const tournaments = groupedByDate[date] ?? [];
+          const inRange = isInRange(date, uniqueDates, [
+            selectedStartIndex,
+            selectedEndIndex,
+          ]);
 
           return {
             tournaments,
-            selectedCount: isInRange(date, uniqueDates, selectedDateRange)
-              ? tournaments.length
-              : 0,
-            unselectedCount: isInRange(date, uniqueDates, selectedDateRange)
-              ? 0
-              : tournaments.length,
+            selectedCount: inRange ? tournaments.length : 0,
+            unselectedCount: inRange ? 0 : tournaments.length,
             date,
           };
         })
-        .filter(({ tournaments }) => tournaments.length > 0)
         .map((row, i) => {
           return {
             ...row,
-            selected: i >= selectedDateRange[0] && i <= selectedDateRange[1],
+            selected: i >= selectedStartIndex && i <= selectedEndIndex,
           };
         }),
-    [dateRange, groupedByDate, uniqueDates, selectedDateRange]
+    [
+      uniqueDates,
+      groupedByDate,
+      uniqueDates,
+      selectedStartIndex,
+      selectedEndIndex,
+    ]
   );
 
   const filteredDates = data.map(({ date }) => date);
@@ -153,8 +144,11 @@ export default function DateFilter({
         max={filteredDates.length - 1}
         minRange={0}
         w={WIDTH}
-        value={selectedDateRange}
-        onChange={setSelectedDateRange}
+        value={[selectedStartIndex, selectedEndIndex]}
+        onChange={([start, end]) => {
+          setSelectedStartIndex(start);
+          setSelectedEndIndex(end);
+        }}
         label={(value) =>
           format(
             parse(filteredDates[value], "yyyy-MM-dd", new Date()),
