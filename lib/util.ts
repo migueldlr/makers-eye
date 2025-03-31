@@ -210,6 +210,7 @@ export const SITE_TITLE = "The Maker's Eye - Netrunner tournament analysis";
 export const TOURNAMENT_FILTER_KEY = "tournamentFilter";
 export const START_DATE_FILTER_KEY = "startDate";
 export const END_DATE_FILTER_KEY = "endDate";
+export const REGION_FILTER_KEY = "region";
 
 export function isWithinDateRange(
   startDate: string,

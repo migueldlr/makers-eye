@@ -1,8 +1,13 @@
 "use client";
 
 import { TournamentRow } from "@/lib/localtypes";
-import { END_DATE_FILTER_KEY, START_DATE_FILTER_KEY } from "@/lib/util";
-import { BarChart } from "@mantine/charts";
+import {
+  DEFAULT_NONE,
+  END_DATE_FILTER_KEY,
+  REGION_FILTER_KEY,
+  REGION_OPTIONS,
+  START_DATE_FILTER_KEY,
+} from "@/lib/util";
 import {
   Accordion,
   AccordionControl,
@@ -11,15 +16,16 @@ import {
   Button,
   Group,
   Pill,
-  RangeSlider,
-  Stack,
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import DateFilter from "./DateFilter";
+import RegionFilter from "./RegionFilter";
+
+export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
 
 export default function TournamentFilter({
   tournaments,
@@ -41,6 +47,14 @@ export default function TournamentFilter({
   const [endDateSelected, setEndDateSelected] = useState(
     searchParams.get(END_DATE_FILTER_KEY) ?? ""
   );
+  const initialRegion_raw = searchParams.get("region");
+  const initialRegion = (initialRegion_raw ?? "")
+    .split(",")
+    .filter((x) => x.length > 0);
+
+  const [regionsSelected, setRegionsSelected] = useState<string[]>(
+    initialRegion.length > 0 ? initialRegion : ALL_REGION_OPTIONS
+  );
 
   const hasFilters =
     searchParams.has(START_DATE_FILTER_KEY) ||
@@ -48,6 +62,7 @@ export default function TournamentFilter({
 
   const startDateParam = searchParams.get(START_DATE_FILTER_KEY);
   const endDateParam = searchParams.get(END_DATE_FILTER_KEY);
+  const regionParam = searchParams.get(REGION_FILTER_KEY);
 
   const href = useMemo(
     () =>
@@ -56,8 +71,11 @@ export default function TournamentFilter({
       new URLSearchParams({
         [START_DATE_FILTER_KEY]: startDateSelected,
         [END_DATE_FILTER_KEY]: endDateSelected,
+        ...(regionsSelected.length !== ALL_REGION_OPTIONS.length && {
+          [REGION_FILTER_KEY]: regionsSelected.join(","),
+        }),
       }).toString(),
-    [startDateSelected, endDateSelected]
+    [startDateSelected, endDateSelected, regionsSelected]
   );
 
   const startDateTag = startDateParam ? (
@@ -65,6 +83,9 @@ export default function TournamentFilter({
   ) : null;
   const endDateTag = endDateParam ? (
     <Pill>End date: {endDateParam}</Pill>
+  ) : null;
+  const regionTag = regionParam ? (
+    <Pill>Regions: {regionParam.split(",").join(" || ")}</Pill>
   ) : null;
 
   return (
@@ -85,12 +106,13 @@ export default function TournamentFilter({
               <Group>
                 {startDateTag}
                 {endDateTag}
+                {regionTag}
               </Group>
             )}
           </Group>
         </AccordionControl>
         <AccordionPanel>
-          <Stack gap="xs">
+          <Group gap="xl" align="flex-start">
             <DateFilter
               tournaments={tournaments}
               startDate={startDateSelected}
@@ -98,7 +120,11 @@ export default function TournamentFilter({
               endDate={endDateSelected}
               setEndDate={setEndDateSelected}
             />
-          </Stack>
+            <RegionFilter
+              regions={regionsSelected}
+              setRegions={setRegionsSelected}
+            />
+          </Group>
           <Group mt="lg">
             {hasFilters && (
               <Button

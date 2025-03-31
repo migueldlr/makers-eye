@@ -16,8 +16,10 @@ import TournamentTable from "./TournamentTable";
 import { createClient } from "@/utils/supabase/server";
 import { Metadata } from "next";
 import {
+  DEFAULT_NONE,
   END_DATE_FILTER_KEY,
   isWithinDateRange,
+  REGION_FILTER_KEY,
   SITE_TITLE,
   START_DATE_FILTER_KEY,
 } from "@/lib/util";
@@ -45,8 +47,14 @@ export default async function StatsPage({
   const tournaments = res.data as TournamentRow[];
   const startDate = (params[START_DATE_FILTER_KEY] ?? "") as string;
   const endDate = (params[END_DATE_FILTER_KEY] ?? "") as string;
+  const region = (params[REGION_FILTER_KEY] ?? "") as string;
   const tournamentIds = tournaments
     ?.filter((t) => isWithinDateRange(startDate, endDate, t.date))
+    .filter((t) =>
+      region === ""
+        ? true
+        : region.split(",").includes(t.region ?? DEFAULT_NONE)
+    )
     .map((t) => t.id);
 
   return (

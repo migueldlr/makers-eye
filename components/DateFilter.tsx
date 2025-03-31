@@ -1,6 +1,6 @@
 import { TournamentRow } from "@/lib/localtypes";
 import { START_DATE_FILTER_KEY, END_DATE_FILTER_KEY } from "@/lib/util";
-import { Title, RangeSlider } from "@mantine/core";
+import { Title, RangeSlider, Stack } from "@mantine/core";
 import { format, parse } from "date-fns";
 import { useMemo, useEffect, useState } from "react";
 import { BarChart } from "@mantine/charts";
@@ -131,7 +131,7 @@ export default function DateFilter({
   const filteredDates = data.map(({ date }) => date);
 
   return (
-    <>
+    <Stack gap="xs">
       <Title order={4}>Date</Title>
       <BarChart
         data={data}
@@ -162,6 +162,6 @@ export default function DateFilter({
           )
         }
       />
-    </>
+    </Stack>
   );
 }
