@@ -19,8 +19,10 @@ import {
   Pill,
   Stack,
   Title,
+  Text,
+  Kbd,
 } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { useHotkeys, useOs } from "@mantine/hooks";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -41,9 +43,10 @@ export default function TournamentFilter({
   const [accordionValue, setAccordionValue] = useState<string | null>(
     "filters"
   );
-  const toggleAccordion = () =>
-    setAccordionValue(accordionValue == null ? "filters" : null);
-  useHotkeys([["alt+F", toggleAccordion]]);
+  const [sticky, setSticky] = useState(true);
+  const toggleSticky = () => setSticky(sticky ? false : true);
+  const os = useOs();
+  useHotkeys([["alt+F", toggleSticky]]);
 
   const [startDateSelected, setStartDateSelected] = useState(
     searchParams.get(START_DATE_FILTER_KEY) ?? ""
@@ -130,7 +133,7 @@ export default function TournamentFilter({
     <Accordion
       defaultValue="filters"
       variant="filled"
-      pos="sticky"
+      pos={sticky ? "sticky" : "unset"}
       top={0}
       style={{ zIndex: 100 }}
       value={accordionValue}
@@ -168,20 +171,31 @@ export default function TournamentFilter({
               setEndDate={setEndDateSelected}
             />
           </Group>
-          <Group mt="lg">
-            <Button component={Link} href={href} scroll={false}>
-              Filter
-            </Button>
-            {hasFilters && (
-              <Button
-                component={Link}
-                href={pathname}
-                variant="outline"
-                scroll={false}
-              >
-                Clear filters
+          <Group mt="lg" style={{ justifyContent: "space-between" }}>
+            <Group>
+              <Button component={Link} href={href} scroll={false}>
+                Filter
               </Button>
-            )}
+              {hasFilters && (
+                <Button
+                  component={Link}
+                  href={pathname}
+                  variant="outline"
+                  scroll={false}
+                >
+                  Clear filters
+                </Button>
+              )}
+            </Group>
+            <Button variant="outline" color="gray" onClick={toggleSticky}>
+              {sticky ? "Unstick from top" : "Stick to top"}
+              {os === "macos" || os === "windows" ? (
+                <>
+                  {" ("}
+                  <Kbd>{os === "macos" ? "⌥" : "Alt"}</Kbd> + <Kbd>F</Kbd> {")"}
+                </>
+              ) : null}
+            </Button>
           </Group>
         </AccordionPanel>
       </AccordionItem>
