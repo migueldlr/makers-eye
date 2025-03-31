@@ -87,7 +87,7 @@ export default function GameResultsSummary({
     {
       name: "Byes",
       value: byes,
-      color: "gray.3",
+      color: "gray.5",
       percentage: byes / total_games,
     },
     {
