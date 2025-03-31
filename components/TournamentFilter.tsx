@@ -205,7 +205,7 @@ export default function TournamentFilter({
                 ) : null}
               </Button>
               <Button variant="subtle" color="gray" onClick={showHide}>
-                {accordionValue === null ? "Show" : "Hide"}
+                {accordionValue === null ? "Expand" : "Collapse"}
                 {os === "macos" || os === "windows" ? (
                   <>
                     {" ("}
