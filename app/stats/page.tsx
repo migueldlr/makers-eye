@@ -1,7 +1,10 @@
 import {
   Alert,
+  Box,
+  Card,
   Center,
   Container,
+  Paper,
   ScrollArea,
   Space,
   Stack,
@@ -45,21 +48,22 @@ export default async function StatsPage({
   const tournamentIds = tournaments
     ?.filter((t) => isWithinDateRange(startDate, endDate, t.date))
     .map((t) => t.id);
-  console.log(tournamentIds);
 
   return (
     <Container fluid px="lg" py="lg">
       <Stack display="block" pos="relative">
-        <Title order={2}>24.12 Meta Analysis</Title>
-        <Alert variant="light" color="gray" icon={<IconInfoCircle />}>
+        <Title order={2} mb="sm">
+          24.12 Meta Analysis
+        </Title>
+        <Alert variant="light" color="orange" icon={<IconInfoCircle />}>
           This page is under construction. Expect frequent updates.
         </Alert>
-
-        <SummaryStats tournamentIds={tournamentIds} />
-
-        <Title order={3}>Tournament filter</Title>
+        <Space h="sm" />
 
         <TournamentFilter tournaments={tournaments ?? []} />
+        <Space h="sm" />
+        <SummaryStats tournamentIds={tournamentIds} />
+
         <Space h="md" />
         <Title order={4}>
           Included tournaments ({tournamentIds?.length ?? 0})
@@ -79,9 +83,9 @@ export default async function StatsPage({
         <Title order={3}>Corp representation</Title>
         <CorpRepresentation tournamentIds={tournamentIds} />
         <Title order={3}>Corp performance</Title>
-        <CorpSummary />
+        <CorpSummary tournamentIds={tournamentIds} />
         <Title order={3}>Matchup spread</Title>
-        <MatchupTable />
+        <MatchupTable tournamentIds={tournamentIds} />
         <BackButton />
       </Stack>
       <Center>

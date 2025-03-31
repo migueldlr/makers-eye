@@ -20,10 +20,12 @@ export async function getWinrates({
   minMatches,
   includeSwiss,
   includeCut,
+  tournamentFilter,
 }: {
   minMatches: number;
   includeSwiss: boolean;
   includeCut: boolean;
+  tournamentFilter?: number[];
 }): Promise<WinrateData[]> {
   const supabase = await createClient();
 
@@ -32,6 +34,7 @@ export async function getWinrates({
       min_matches: minMatches,
       include_swiss: includeSwiss,
       include_cut: includeCut,
+      tournament_filter: tournamentFilter,
     })
     .select();
 
@@ -55,9 +58,11 @@ export async function getStandings(): Promise<{}[]> {
 export async function getMatchesMetadata({
   includeSwiss,
   includeCut,
+  tournamentFilter,
 }: {
   includeSwiss: boolean;
   includeCut: boolean;
+  tournamentFilter?: number[];
 }): Promise<{
   runnerData: { identity: string; player_count: number }[];
   corpData: { identity: string; player_count: number }[];
@@ -66,7 +71,7 @@ export async function getMatchesMetadata({
 
   const { data: runnerData, error: runnerError } = await supabase
     .rpc("get_runner_popularity", {
-      tournament_filter: null,
+      tournament_filter: tournamentFilter,
       include_swiss: includeSwiss,
       include_cut: includeCut,
     })
@@ -78,7 +83,7 @@ export async function getMatchesMetadata({
 
   const { data: corpData, error: corpError } = await supabase
     .rpc("get_corp_popularity", {
-      tournament_filter: null,
+      tournament_filter: tournamentFilter,
       include_swiss: includeSwiss,
       include_cut: includeCut,
     })
@@ -116,12 +121,16 @@ export async function getTournaments() {
   return data;
 }
 
-export async function getCorpWinrates(corps: string[]): Promise<WinrateData[]> {
+export async function getCorpWinrates(
+  corps: string[],
+  tournamentFilter?: number[]
+): Promise<WinrateData[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .rpc("get_corp_winrates", {
       corp_filter: corps,
+      tournament_filter: tournamentFilter ?? null,
     })
     .select();
 

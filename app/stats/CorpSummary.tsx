@@ -13,7 +13,11 @@ import { getCorpWinrates, getMatchesMetadata, WinrateData } from "./actions";
 import { useEffect, useState } from "react";
 import CorpWinrateChart from "@/components/CorpWinrateChart";
 
-export default function CorpSummary() {
+export default function CorpSummary({
+  tournamentIds,
+}: {
+  tournamentIds: number[];
+}) {
   const [allCorps, setAllCorps] = useState<string[]>([]);
   const [corps, setCorps] = useState<string[]>(allCorps);
   const [allRunners, setAllRunners] = useState<string[]>([]);
@@ -42,11 +46,11 @@ export default function CorpSummary() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const res = await getCorpWinrates(corps);
+      const res = await getCorpWinrates(corps, tournamentIds);
       setData(res);
       setLoading(false);
     })();
-  }, [corps]);
+  }, [corps, tournamentIds]);
 
   return (
     <Stack>

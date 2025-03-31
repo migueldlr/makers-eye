@@ -39,7 +39,11 @@ export const HOVER_STYLE = {
   backgroundColor: "rgba(0,0,0,0.3)",
 };
 
-export default function MatchupTable() {
+export default function MatchupTable({
+  tournamentIds,
+}: {
+  tournamentIds: number[];
+}) {
   const [winrates, setWinrates] = useState<
     Awaited<ReturnType<typeof getWinrates>> | undefined
   >();
@@ -71,15 +75,17 @@ export default function MatchupTable() {
         minMatches: 1,
         includeSwiss,
         includeCut,
+        tournamentFilter: tournamentIds,
       });
       const metadata = await getMatchesMetadata({
         includeSwiss,
         includeCut,
+        tournamentFilter: tournamentIds,
       });
       setWinrates(winrates);
       setMetadata(metadata);
     })();
-  }, [includeCut, includeSwiss]);
+  }, [includeCut, includeSwiss, tournamentIds]);
 
   const countsToIds = (_?: { identity: string; player_count: number }[]) =>
     _?.map(({ identity }) => identity);

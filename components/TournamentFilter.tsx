@@ -1,14 +1,24 @@
 "use client";
 
 import { TournamentRow } from "@/lib/localtypes";
-import {
-  END_DATE_FILTER_KEY,
-  START_DATE_FILTER_KEY,
-  TOURNAMENT_FILTER_KEY,
-} from "@/lib/util";
+import { END_DATE_FILTER_KEY, START_DATE_FILTER_KEY } from "@/lib/util";
 import { BarChart } from "@mantine/charts";
-import { Box, Button, Group, RangeSlider, Stack, Title } from "@mantine/core";
-import { format, max, min, parse } from "date-fns";
+import {
+  Accordion,
+  AccordionControl,
+  AccordionItem,
+  AccordionPanel,
+  ActionIcon,
+  Box,
+  Button,
+  Group,
+  Pill,
+  RangeSlider,
+  Stack,
+  Title,
+} from "@mantine/core";
+import { IconChevronDown } from "@tabler/icons-react";
+import { format, parse } from "date-fns";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -39,6 +49,7 @@ export default function TournamentFilter({
 }: {
   tournaments: TournamentRow[];
 }) {
+  const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -149,9 +160,13 @@ export default function TournamentFilter({
     searchParams.has(START_DATE_FILTER_KEY) ||
     searchParams.has(END_DATE_FILTER_KEY);
 
-  return (
-    <Box>
+  const startDateParam = searchParams.get(START_DATE_FILTER_KEY);
+  const endDateParam = searchParams.get(END_DATE_FILTER_KEY);
+
+  const primaryContent = (
+    <>
       <Stack gap="xs">
+        <Title order={4}>Date</Title>
         <BarChart
           data={data}
           series={[
@@ -183,15 +198,71 @@ export default function TournamentFilter({
         />
       </Stack>
       <Group mt="lg">
-        <Button component={Link} href={href}>
-          Filter
-        </Button>
         {hasFilters && (
-          <Button component={Link} href={pathname} variant="outline">
+          <Button
+            component={Link}
+            href={pathname}
+            variant="outline"
+            scroll={false}
+          >
             Reset
           </Button>
         )}
+        <Button component={Link} href={href} scroll={false}>
+          Filter
+        </Button>
       </Group>
+      {/* <ActionIcon
+        variant="transparent"
+        mt="md"
+        onClick={() => setCollapsed(true)}
+      >
+        <IconChevronUp style={{ width: "70%", height: "70%" }} />
+      </ActionIcon> */}
+    </>
+  );
+
+  const collapsedContent = (
+    <Box>
+      <ActionIcon
+        variant="transparent"
+        mt="md"
+        onClick={() => setCollapsed(false)}
+      >
+        <IconChevronDown style={{ width: "70%", height: "70%" }} />
+      </ActionIcon>
     </Box>
+  );
+
+  const startDateTag = startDateParam ? (
+    <Pill>Start date: {startDateParam}</Pill>
+  ) : null;
+  const endDateTag = endDateParam ? (
+    <Pill>End date: {endDateParam}</Pill>
+  ) : null;
+
+  return (
+    <Accordion
+      defaultValue="filters"
+      variant="filled"
+      pos="sticky"
+      top={0}
+      style={{ zIndex: 100 }}
+    >
+      <AccordionItem value="filters">
+        <AccordionControl bg="dark.6">
+          <Group>
+            <Title order={3}>Filters</Title>
+            {hasFilters && (
+              <Group>
+                {startDateTag}
+                {endDateTag}
+              </Group>
+            )}
+          </Group>
+        </AccordionControl>
+        <AccordionPanel>{primaryContent}</AccordionPanel>
+      </AccordionItem>
+    </Accordion>
   );
 }
