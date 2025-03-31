@@ -78,7 +78,7 @@ export default async function StatsPage({
         <SummaryStats tournamentIds={tournamentIds} />
 
         <Space h="md" />
-        <Title order={4}>
+        <Title order={4} mb="sm">
           Included tournaments ({tournamentIds?.length ?? 0})
         </Title>
         <Space h="xs" />
@@ -93,11 +93,17 @@ export default async function StatsPage({
           )}
         </ScrollArea>
 
-        <Title order={3}>Corp representation</Title>
+        <Title order={3} my="sm">
+          Corp representation
+        </Title>
         <CorpRepresentation tournamentIds={tournamentIds} />
-        <Title order={3}>Corp performance</Title>
+        <Title order={3} my="sm">
+          Corp performance
+        </Title>
         <CorpSummary tournamentIds={tournamentIds} />
-        <Title order={3}>Matchup spread</Title>
+        <Title order={3} my="sm">
+          Matchup spread
+        </Title>
         <MatchupTable tournamentIds={tournamentIds} />
         <BackButton />
       </Stack>
