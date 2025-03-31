@@ -1,4 +1,4 @@
-import { Checkbox, CheckboxGroup, Stack, Title } from "@mantine/core";
+import { Checkbox, CheckboxGroup, Group, Stack, Title } from "@mantine/core";
 import { ONLINE_OPTIONS } from "./TournamentFilter";
 
 export default function OnlineFilter({
@@ -12,11 +12,11 @@ export default function OnlineFilter({
     <Stack gap="xs">
       <Title order={4}>Location</Title>
       <CheckboxGroup value={online} onChange={setOnline}>
-        <Stack mt="xs">
+        <Group mt="xs">
           {ONLINE_OPTIONS.map((option) => (
             <Checkbox value={option} key={option} label={option} />
           ))}
-        </Stack>
+        </Group>
       </CheckboxGroup>
     </Stack>
   );

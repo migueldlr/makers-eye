@@ -17,6 +17,7 @@ import {
   Button,
   Group,
   Pill,
+  Stack,
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
@@ -124,29 +125,31 @@ export default function TournamentFilter({
           <Group>
             <Title order={3}>Filters</Title>
             <Group>
-              {startDateTag}
-              {endDateTag}
               {regionTag}
               {onlineTag}
+              {startDateTag}
+              {endDateTag}
             </Group>
           </Group>
         </AccordionControl>
         <AccordionPanel>
           <Group gap="xl" align="flex-start">
+            <Stack>
+              <RegionFilter
+                regions={regionsSelected}
+                setRegions={setRegionsSelected}
+              />
+              <OnlineFilter
+                online={onlineSelected}
+                setOnline={setOnlineSelected}
+              />
+            </Stack>
             <DateFilter
               tournaments={tournaments}
               startDate={startDateSelected}
               setStartDate={setStartDateSelected}
               endDate={endDateSelected}
               setEndDate={setEndDateSelected}
-            />
-            <RegionFilter
-              regions={regionsSelected}
-              setRegions={setRegionsSelected}
-            />
-            <OnlineFilter
-              online={onlineSelected}
-              setOnline={setOnlineSelected}
             />
           </Group>
           <Group mt="lg">

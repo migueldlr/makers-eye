@@ -12,11 +12,11 @@ export default function RegionFilter({
     <Stack gap="xs">
       <Title order={4}>Region</Title>
       <CheckboxGroup value={regions} onChange={setRegions}>
-        <Stack mt="xs">
+        <Group mt="xs">
           {ALL_REGION_OPTIONS.map((region) => (
             <Checkbox value={region} key={region} label={region} />
           ))}
-        </Stack>
+        </Group>
       </CheckboxGroup>
     </Stack>
   );
