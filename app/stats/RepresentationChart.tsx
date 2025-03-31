@@ -1,36 +1,30 @@
 "use client";
 
-import {
-  Box,
-  Group,
-  Radio,
-  RadioGroup,
-  Stack,
-  Switch,
-  Text,
-} from "@mantine/core";
+import { Group, Radio, RadioGroup, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { getCorpPopularity, PopularityData } from "./actions";
+import { getPopularity, PopularityData } from "./actions";
 import PopularityChart from "@/components/PopularityChart";
 
-export default function CorpRepresentation({
+export default function RepresentationChart({
   tournamentIds,
+  side,
 }: {
   tournamentIds?: number[];
+  side: "corp" | "runner";
 }) {
   const [sortBy, setSortBy] = useState<"faction" | "popularity">("popularity");
-  const [corpData, setCorpData] = useState<PopularityData[]>([]);
+  const [data, setData] = useState<PopularityData[]>([]);
 
   useEffect(() => {
     (async () => {
-      const res = await getCorpPopularity(tournamentIds);
-      setCorpData(res);
+      const res = await getPopularity(tournamentIds, side);
+      setData(res);
     })();
   }, [tournamentIds]);
 
   return (
     <Stack>
-      <PopularityChart data={corpData} sortBy={sortBy} />
+      <PopularityChart data={data} sortBy={sortBy} />
       <RadioGroup
         value={sortBy}
         onChange={(v) => setSortBy(v as "faction" | "popularity")}

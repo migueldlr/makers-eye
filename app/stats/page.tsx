@@ -27,7 +27,7 @@ import {
 import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
 import CorpSummary from "./CorpSummary";
-import CorpRepresentation from "./CorpRepresentation";
+import RepresentationChart from "./RepresentationChart";
 import { BackButton } from "@/components/BackButton";
 import TournamentFilter from "@/components/TournamentFilter";
 import { TournamentRow } from "@/lib/localtypes";
@@ -96,11 +96,16 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Corp representation
         </Title>
-        <CorpRepresentation tournamentIds={tournamentIds} />
+        <RepresentationChart tournamentIds={tournamentIds} side="corp" />
         <Title order={3} my="sm">
           Corp winrates
         </Title>
         <CorpSummary tournamentIds={tournamentIds} />
+
+        <Title order={3} my="sm">
+          Runner representation
+        </Title>
+        <RepresentationChart tournamentIds={tournamentIds} side="runner" />
         <Title order={3} my="sm">
           Matchup spread
         </Title>

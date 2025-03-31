@@ -145,7 +145,6 @@ export async function getCorpPopularity(
   tournamentFilter?: number[]
 ): Promise<PopularityData[]> {
   const supabase = await createClient();
-  console.log(tournamentFilter);
 
   const { data, error } = await supabase
     .rpc("get_corp_popularity", {
@@ -159,5 +158,25 @@ export async function getCorpPopularity(
     throw new Error(error.message);
   }
 
+  return data;
+}
+
+export async function getPopularity(
+  tournamentFilter: number[] = [],
+  side: "runner" | "corp"
+): Promise<PopularityData[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .rpc(side === "runner" ? "get_runner_popularity" : "get_corp_popularity", {
+      tournament_filter: tournamentFilter ?? null,
+      include_swiss: true,
+      include_cut: true,
+    })
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
   return data;
 }
