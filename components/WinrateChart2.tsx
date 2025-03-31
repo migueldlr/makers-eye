@@ -1,6 +1,6 @@
 "use client";
 
-import { CorpWinrateData } from "@/app/stats/actions";
+import { IdentityWinrateData } from "@/app/stats/actions";
 import { FACTION_NAMES, idToFaction, factionToColor } from "@/lib/util";
 import {
   Paper,
@@ -16,15 +16,17 @@ import { useState } from "react";
 
 export default function WinrateChart({
   winrates,
+  side,
 }: {
-  winrates: CorpWinrateData[];
+  winrates: IdentityWinrateData[];
+  side: "runner" | "corp";
 }) {
   const [sortBy, setSortBy] = useState<string>("winrate");
   const [minMatches, setMinMatches] = useState<number>(10);
   const data = winrates
     .filter((winrate) => winrate.total_games >= minMatches)
     .map((winrate) => {
-      const id = winrate.corp_id;
+      const id = winrate.id;
       const winrates: { [key: string]: number | null } = {};
       const total =
         winrate.total_wins + winrate.total_losses + winrate.total_draws;
@@ -33,7 +35,7 @@ export default function WinrateChart({
         winrates[`${faction}-wr`] = idToFaction(id) === faction ? wr : null;
       });
       return {
-        name: winrate.corp_id,
+        name: winrate.id,
         ...winrates,
         value: wr,
         total_games: winrate.total_games,

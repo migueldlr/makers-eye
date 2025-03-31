@@ -102,7 +102,7 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Corp winrates
         </Title>
-        <WinrateSummary tournamentIds={tournamentIds} />
+        <WinrateSummary tournamentIds={tournamentIds} side="corp" />
 
         <Title order={3} my="sm">
           Corp matchups
@@ -113,6 +113,11 @@ export default async function StatsPage({
           Runner representation
         </Title>
         <RepresentationChart tournamentIds={tournamentIds} side="runner" />
+
+        <Title order={3} my="sm">
+          Runner winrates
+        </Title>
+        <WinrateSummary tournamentIds={tournamentIds} side="runner" />
 
         <Title order={3} my="sm">
           Runner matchups
