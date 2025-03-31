@@ -2,9 +2,13 @@
 
 import { TournamentRow } from "@/lib/localtypes";
 import { BarChart } from "@mantine/charts";
-import { Box, RangeSlider, Stack } from "@mantine/core";
-import { format, parse } from "date-fns";
+import { Box, Button, RangeSlider, Stack } from "@mantine/core";
+import { format, max, min, parse } from "date-fns";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+
+export const TOURNAMENT_FILTER_KEY = "tournamentFilter";
 
 function getRangeOfDates(startDate: string, endDate: string) {
   const start = parse(startDate, "yyyy-MM-dd", new Date());
@@ -25,6 +29,19 @@ function isInRange(
   return index >= range[0] && index <= range[1];
 }
 
+function getMinMaxDate(dates?: string[]) {
+  if (dates == null || dates.length == 0) return ["", ""];
+  const minDate = format(
+    min(dates.map((date) => parse(date, "yyyy-MM-dd", new Date()))),
+    "yyyy-MM-dd"
+  );
+  const maxDate = format(
+    max(dates.map((date) => parse(date, "yyyy-MM-dd", new Date()))),
+    "yyyy-MM-dd"
+  );
+  return [minDate, maxDate];
+}
+
 const WIDTH = 300;
 
 export default function TournamentFilter({
@@ -32,9 +49,9 @@ export default function TournamentFilter({
 }: {
   tournaments: TournamentRow[];
 }) {
-  const [selectedDateRange, setSelectedDateRange] = useState<[number, number]>([
-    0, 1,
-  ]);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const startDate = useMemo(
     () =>
@@ -74,6 +91,31 @@ export default function TournamentFilter({
     [groupedByDate]
   );
 
+  const initialIds =
+    searchParams
+      .get(TOURNAMENT_FILTER_KEY)
+      ?.split(",")
+      .map((x) => Number(x)) ?? [];
+
+  const initialDates = initialIds
+    .map((id) => {
+      const tournament = tournaments.find((tournament) => tournament.id === id);
+      return tournament?.date ?? "";
+    })
+    .filter((x) => x.length > 0)
+    .sort();
+  const minMaxDate = getMinMaxDate(initialDates);
+
+  const [initialStartIndex, initialEndIndex] = [
+    uniqueDates.indexOf(minMaxDate[0] as string),
+    uniqueDates.indexOf(minMaxDate[1] as string),
+  ];
+
+  const [selectedDateRange, setSelectedDateRange] = useState<[number, number]>([
+    initialStartIndex === -1 ? 0 : initialStartIndex,
+    initialEndIndex === -1 ? 0 : initialEndIndex,
+  ]);
+
   const data = useMemo(
     () =>
       dateRange
@@ -102,7 +144,9 @@ export default function TournamentFilter({
   );
 
   useEffect(() => {
-    setSelectedDateRange([0, uniqueDates.length - 1]);
+    if (!searchParams.has(TOURNAMENT_FILTER_KEY)) {
+      setSelectedDateRange([0, uniqueDates.length - 1]);
+    }
   }, [uniqueDates]);
 
   const selectedTournaments = tournaments.filter((tournament) => {
@@ -115,37 +159,47 @@ export default function TournamentFilter({
     // console.log(selectedTournaments.map((tournament) => tournament.name));
   }, [selectedTournaments]);
 
+  const ids = selectedTournaments.map((tournament) => tournament.id);
+  ids.sort();
+
+  const href = `${pathname}?${TOURNAMENT_FILTER_KEY}=${ids.join(",")}`;
+
   return (
-    <Stack gap="xs">
-      <BarChart
-        data={data}
-        series={[
-          { name: "selectedCount", color: "blue" },
-          { name: "unselectedCount", color: "gray" },
-        ]}
-        type="stacked"
-        dataKey="date"
-        h={100}
-        w={WIDTH}
-        withXAxis={false}
-        withYAxis={false}
-        withTooltip={false}
-        gridAxis="none"
-      />
-      <RangeSlider
-        restrictToMarks
-        max={filteredDates.length - 1}
-        minRange={0}
-        w={WIDTH}
-        value={selectedDateRange}
-        onChange={setSelectedDateRange}
-        label={(value) =>
-          format(
-            parse(filteredDates[value], "yyyy-MM-dd", new Date()),
-            "d MMMM yyyy"
-          )
-        }
-      />
-    </Stack>
+    <Box>
+      <Stack gap="xs">
+        <BarChart
+          data={data}
+          series={[
+            { name: "selectedCount", color: "blue" },
+            { name: "unselectedCount", color: "gray" },
+          ]}
+          type="stacked"
+          dataKey="date"
+          h={100}
+          w={WIDTH}
+          withXAxis={false}
+          withYAxis={false}
+          withTooltip={false}
+          gridAxis="none"
+        />
+        <RangeSlider
+          restrictToMarks
+          max={filteredDates.length - 1}
+          minRange={0}
+          w={WIDTH}
+          value={selectedDateRange}
+          onChange={setSelectedDateRange}
+          label={(value) =>
+            format(
+              parse(filteredDates[value], "yyyy-MM-dd", new Date()),
+              "d MMMM yyyy"
+            )
+          }
+        />
+      </Stack>
+      <Button mt="lg" component={Link} href={href}>
+        Filter
+      </Button>
+    </Box>
   );
 }
