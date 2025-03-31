@@ -19,6 +19,7 @@ import {
   DEFAULT_NONE,
   END_DATE_FILTER_KEY,
   isWithinDateRange,
+  ONLINE_FILTER_KEY,
   REGION_FILTER_KEY,
   SITE_TITLE,
   START_DATE_FILTER_KEY,
@@ -48,12 +49,16 @@ export default async function StatsPage({
   const startDate = (params[START_DATE_FILTER_KEY] ?? "") as string;
   const endDate = (params[END_DATE_FILTER_KEY] ?? "") as string;
   const region = (params[REGION_FILTER_KEY] ?? "") as string;
+  const online = (params[ONLINE_FILTER_KEY] ?? "") as string;
   const tournamentIds = tournaments
     ?.filter((t) => isWithinDateRange(startDate, endDate, t.date))
     .filter((t) =>
       region === ""
         ? true
         : region.split(",").includes(t.region ?? DEFAULT_NONE)
+    )
+    .filter((t) =>
+      online === "" ? true : online.split(",").includes(t.location ?? "Paper")
     )
     .map((t) => t.id);
 

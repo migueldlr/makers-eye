@@ -4,6 +4,7 @@ import { TournamentRow } from "@/lib/localtypes";
 import {
   DEFAULT_NONE,
   END_DATE_FILTER_KEY,
+  ONLINE_FILTER_KEY,
   REGION_FILTER_KEY,
   REGION_OPTIONS,
   START_DATE_FILTER_KEY,
@@ -24,8 +25,10 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import DateFilter from "./DateFilter";
 import RegionFilter from "./RegionFilter";
+import OnlineFilter from "./OnlineFilter";
 
 export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
+export const ONLINE_OPTIONS = ["Online", "Paper"];
 
 export default function TournamentFilter({
   tournaments,
@@ -55,14 +58,24 @@ export default function TournamentFilter({
   const [regionsSelected, setRegionsSelected] = useState<string[]>(
     initialRegion.length > 0 ? initialRegion : ALL_REGION_OPTIONS
   );
+  const initialOnline_raw = searchParams.get(ONLINE_FILTER_KEY);
+  const initialOnline = (initialOnline_raw ?? "")
+    .split(",")
+    .filter((x) => x.length > 0);
+  const [onlineSelected, setOnlineSelected] = useState(
+    initialOnline.length > 0 ? initialOnline : ONLINE_OPTIONS
+  );
 
   const hasFilters =
     searchParams.has(START_DATE_FILTER_KEY) ||
-    searchParams.has(END_DATE_FILTER_KEY);
+    searchParams.has(END_DATE_FILTER_KEY) ||
+    searchParams.has(REGION_FILTER_KEY) ||
+    searchParams.has(ONLINE_FILTER_KEY);
 
   const startDateParam = searchParams.get(START_DATE_FILTER_KEY);
   const endDateParam = searchParams.get(END_DATE_FILTER_KEY);
   const regionParam = searchParams.get(REGION_FILTER_KEY);
+  const onlineParam = searchParams.get(ONLINE_FILTER_KEY);
 
   const href = useMemo(
     () =>
@@ -74,8 +87,11 @@ export default function TournamentFilter({
         ...(regionsSelected.length !== ALL_REGION_OPTIONS.length && {
           [REGION_FILTER_KEY]: regionsSelected.join(","),
         }),
+        ...(onlineSelected.length !== ONLINE_OPTIONS.length && {
+          [ONLINE_FILTER_KEY]: onlineSelected.join(","),
+        }),
       }).toString(),
-    [startDateSelected, endDateSelected, regionsSelected]
+    [startDateSelected, endDateSelected, regionsSelected, onlineSelected]
   );
 
   const startDateTag = startDateParam ? (
@@ -86,6 +102,9 @@ export default function TournamentFilter({
   ) : null;
   const regionTag = regionParam ? (
     <Pill>Regions: {regionParam.split(",").join(" || ")}</Pill>
+  ) : null;
+  const onlineTag = onlineParam ? (
+    <Pill>Location: {onlineParam.split(",").join(" || ")}</Pill>
   ) : null;
 
   return (
@@ -102,13 +121,12 @@ export default function TournamentFilter({
         <AccordionControl bg="dark.6">
           <Group>
             <Title order={3}>Filters</Title>
-            {hasFilters && (
-              <Group>
-                {startDateTag}
-                {endDateTag}
-                {regionTag}
-              </Group>
-            )}
+            <Group>
+              {startDateTag}
+              {endDateTag}
+              {regionTag}
+              {onlineTag}
+            </Group>
           </Group>
         </AccordionControl>
         <AccordionPanel>
@@ -123,6 +141,10 @@ export default function TournamentFilter({
             <RegionFilter
               regions={regionsSelected}
               setRegions={setRegionsSelected}
+            />
+            <OnlineFilter
+              online={onlineSelected}
+              setOnline={setOnlineSelected}
             />
           </Group>
           <Group mt="lg">

@@ -211,6 +211,7 @@ export const TOURNAMENT_FILTER_KEY = "tournamentFilter";
 export const START_DATE_FILTER_KEY = "startDate";
 export const END_DATE_FILTER_KEY = "endDate";
 export const REGION_FILTER_KEY = "region";
+export const ONLINE_FILTER_KEY = "online";
 
 export function isWithinDateRange(
   startDate: string,

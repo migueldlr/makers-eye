@@ -1,5 +1,4 @@
 import { Checkbox, CheckboxGroup, Group, Stack, Title } from "@mantine/core";
-import { useSearchParams } from "next/navigation";
 import { ALL_REGION_OPTIONS } from "./TournamentFilter";
 
 export default function RegionFilter({
@@ -9,8 +8,6 @@ export default function RegionFilter({
   regions: string[];
   setRegions: (regions: string[]) => void;
 }) {
-  const params = useSearchParams();
-
   return (
     <Stack gap="xs">
       <Title order={4}>Region</Title>
