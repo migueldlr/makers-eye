@@ -104,11 +104,27 @@ export default function TournamentFilter({
     <Pill>End date: {endDateParam}</Pill>
   ) : null;
   const regionTag = regionParam ? (
-    <Pill>Regions: {regionParam.split(",").join(" || ")}</Pill>
+    <Pill>Regions: {regionParam.split(",").join(", ")}</Pill>
   ) : null;
   const onlineTag = onlineParam ? (
-    <Pill>Location: {onlineParam.split(",").join(" || ")}</Pill>
+    <Pill>Location: {onlineParam.split(",").join(", ")}</Pill>
   ) : null;
+
+  const tournamentsFiltered = useMemo(
+    () =>
+      tournaments
+        .filter(
+          (t) =>
+            regionsSelected.length === 0 ||
+            regionsSelected.includes(t.region ?? DEFAULT_NONE)
+        )
+        .filter(
+          (t) =>
+            onlineSelected.length === 0 ||
+            onlineSelected.includes(t.location ?? "Paper")
+        ),
+    [regionsSelected, onlineSelected]
+  );
 
   return (
     <Accordion
@@ -145,7 +161,7 @@ export default function TournamentFilter({
               />
             </Stack>
             <DateFilter
-              tournaments={tournaments}
+              tournaments={tournamentsFiltered}
               startDate={startDateSelected}
               setStartDate={setStartDateSelected}
               endDate={endDateSelected}
@@ -153,6 +169,9 @@ export default function TournamentFilter({
             />
           </Group>
           <Group mt="lg">
+            <Button component={Link} href={href} scroll={false}>
+              Filter
+            </Button>
             {hasFilters && (
               <Button
                 component={Link}
@@ -163,9 +182,6 @@ export default function TournamentFilter({
                 Clear filters
               </Button>
             )}
-            <Button component={Link} href={href} scroll={false}>
-              Filter
-            </Button>
           </Group>
         </AccordionPanel>
       </AccordionItem>

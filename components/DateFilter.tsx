@@ -63,7 +63,10 @@ export default function DateFilter({
     if (!searchParams.has(START_DATE_FILTER_KEY)) {
       setSelectedStartIndex(0);
     }
-    if (!searchParams.has(END_DATE_FILTER_KEY)) {
+    if (
+      !searchParams.has(END_DATE_FILTER_KEY) ||
+      selectedEndIndex >= uniqueDates.length
+    ) {
       setSelectedEndIndex(uniqueDates.length - 1);
     }
   }, [uniqueDates]);
@@ -110,6 +113,7 @@ export default function DateFilter({
         };
       }),
     [
+      tournaments,
       uniqueDates,
       groupedByDate,
       uniqueDates,
@@ -148,12 +152,15 @@ export default function DateFilter({
           setSelectedStartIndex(start);
           setSelectedEndIndex(end);
         }}
-        label={(value) =>
-          format(
+        label={(value) => {
+          if (value > filteredDates.length - 1) {
+            return "";
+          }
+          return format(
             parse(filteredDates[value], "yyyy-MM-dd", new Date()),
             "d MMMM yyyy"
-          )
-        }
+          );
+        }}
       />
     </Stack>
   );
