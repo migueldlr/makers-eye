@@ -1,10 +1,7 @@
 import {
   Alert,
-  Box,
-  Card,
   Center,
   Container,
-  Paper,
   ScrollArea,
   Space,
   Stack,
@@ -26,7 +23,7 @@ import {
 } from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
-import CorpSummary from "./CorpSummary";
+import WinrateSummary from "./CorpSummary";
 import RepresentationChart from "./RepresentationChart";
 import { BackButton } from "@/components/BackButton";
 import TournamentFilter from "@/components/TournamentFilter";
@@ -103,12 +100,17 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Corp winrates
         </Title>
-        <CorpSummary tournamentIds={tournamentIds} />
+        <WinrateSummary tournamentIds={tournamentIds} side="corp" />
 
         <Title order={3} my="sm">
           Runner representation
         </Title>
         <RepresentationChart tournamentIds={tournamentIds} side="runner" />
+
+        <Title order={3} my="sm">
+          Runner winrates
+        </Title>
+        <WinrateSummary tournamentIds={tournamentIds} side="runner" />
         <Title order={3} my="sm">
           Matchup spread
         </Title>

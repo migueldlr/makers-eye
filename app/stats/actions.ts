@@ -130,15 +130,20 @@ export async function getTournaments() {
   return data;
 }
 
-export async function getCorpWinrates(
-  corps: string[],
-  tournamentFilter?: number[]
+export async function getSideWinrates(
+  ids: string[],
+  tournamentFilter?: number[],
+  side: "corp" | "runner" = "corp"
 ): Promise<WinrateData[]> {
   const supabase = await createClient();
 
+  const rpcMethod =
+    side === "corp" ? "get_corp_winrates" : "get_runner_winrates";
+  const idFilter = side === "corp" ? "corp_filter" : "runner_filter";
+
   const { data, error } = await supabase
-    .rpc("get_corp_winrates", {
-      corp_filter: corps,
+    .rpc(rpcMethod, {
+      [idFilter]: ids,
       tournament_filter: tournamentFilter ?? null,
     })
     .select();

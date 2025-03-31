@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Box,
   Group,
   MultiSelect,
   NumberInput,
@@ -9,19 +8,23 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
-import { getCorpWinrates, getMatchesMetadata, WinrateData } from "./actions";
+import { getMatchesMetadata, getSideWinrates, WinrateData } from "./actions";
 import { useEffect, useState } from "react";
-import CorpWinrateChart from "@/components/CorpWinrateChart";
+import StatsPageWinrateChart from "@/components/StatsPageWinrateChart";
 
-export default function CorpSummary({
+export default function WinrateSummary({
   tournamentIds,
+  side,
 }: {
   tournamentIds: number[];
+  side: "corp" | "runner";
 }) {
-  const [allCorps, setAllCorps] = useState<string[]>([]);
-  const [corps, setCorps] = useState<string[]>(allCorps);
-  const [allRunners, setAllRunners] = useState<string[]>([]);
-  const [runners, setRunners] = useState<string[]>(allRunners);
+  const [allMainSideIds, setAllMainSideIds] = useState<string[]>([]);
+  const [mainSideIds, setMainSideIds] = useState<string[]>(allMainSideIds);
+
+  const [allOffSideIds, setAllOffSideIds] = useState<string[]>([]);
+  const [offSideIds, setOffSideIds] = useState<string[]>(allOffSideIds);
+
   const [data, setData] = useState<WinrateData[]>([]);
   const [minMatches, setMinMatches] = useState(1);
   const [showDraws, setShowDraws] = useState(false);
@@ -32,64 +35,79 @@ export default function CorpSummary({
       const res = await getMatchesMetadata({
         includeCut: true,
         includeSwiss: true,
+        tournamentFilter: tournamentIds,
       });
-      const corpIds = res.corpData.map((c) => c.identity).filter(Boolean);
-      setAllCorps(corpIds);
-      setCorps(corpIds.slice(0, 5));
+      const mainSideIds = (side === "corp" ? res.corpData : res.runnerData)
+        .map((c) => c.identity)
+        .filter(Boolean);
 
-      const runnerIds = res.runnerData.map((c) => c.identity).filter(Boolean);
-      setAllRunners(runnerIds);
-      setRunners(runnerIds.slice(0, 7));
+      setAllMainSideIds(mainSideIds);
+      setMainSideIds(mainSideIds.slice(0, 5));
+
+      const offSideIds = (side === "corp" ? res.runnerData : res.corpData)
+        .map((c) => c.identity)
+        .filter(Boolean);
+      setAllOffSideIds(offSideIds);
+      setOffSideIds(offSideIds.slice(0, 7));
     })();
   }, []);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const res = await getCorpWinrates(corps, tournamentIds);
+      const res = await getSideWinrates(mainSideIds, tournamentIds, side);
       setData(res);
       setLoading(false);
     })();
-  }, [corps, tournamentIds]);
+  }, [mainSideIds, tournamentIds]);
 
   return (
     <Stack>
-      <CorpWinrateChart
+      <StatsPageWinrateChart
         data_raw={data}
-        runners={runners}
-        corps={corps}
+        mainSideIds={mainSideIds}
+        offSideIds={offSideIds}
         minMatches={minMatches}
         showDraws={showDraws}
+        side={side}
       />
       <Group>
-        <MultiSelect
-          placeholder="Select corp(s)"
-          value={corps}
-          onChange={setCorps}
-          data={allCorps}
-          searchable
-          clearable
-        />
-        <MultiSelect
-          placeholder="Select runner(s)"
-          value={runners}
-          onChange={setRunners}
-          data={allRunners}
-          searchable
-        />
-        <Group gap="xs">
-          <Text>Min matches:</Text>
-          <NumberInput
-            value={minMatches}
-            onChange={(e) => setMinMatches(+e)}
-            min={1}
+        <Stack>
+          <MultiSelect
+            placeholder={
+              side === "corp" ? "Select corp(s)" : "Select runner(s)"
+            }
+            value={mainSideIds}
+            onChange={setMainSideIds}
+            data={allMainSideIds}
+            searchable
+            clearable
           />
-        </Group>
-        <Switch
-          checked={showDraws}
-          onChange={(e) => setShowDraws(e.currentTarget.checked)}
-          label="Show draws"
-        />
+          <MultiSelect
+            placeholder={
+              side === "corp" ? "Select runner(s)" : "Select corp(s)"
+            }
+            value={offSideIds}
+            onChange={setOffSideIds}
+            data={allOffSideIds}
+            searchable
+          />{" "}
+          <Group>
+            <Group gap="xs">
+              <Text>Min matches:</Text>
+              <NumberInput
+                value={minMatches}
+                onChange={(e) => setMinMatches(+e)}
+                min={1}
+              />
+            </Group>
+            <Switch
+              checked={showDraws}
+              onChange={(e) => setShowDraws(e.currentTarget.checked)}
+              label="Show draws"
+            />
+          </Group>
+        </Stack>
       </Group>
     </Stack>
   );
