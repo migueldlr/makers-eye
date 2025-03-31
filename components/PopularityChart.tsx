@@ -6,7 +6,7 @@ import {
   shortenId,
 } from "@/lib/util";
 import { DonutChart } from "@mantine/charts";
-import { luminance } from "@mantine/core";
+import { Card, luminance, Paper, Text } from "@mantine/core";
 
 const RADIAN = Math.PI / 180;
 
@@ -56,10 +56,12 @@ export default function PopularityChart({
   data: PopularityData[];
   sortBy: "faction" | "popularity";
 }) {
+  const total = data.reduce((acc, curr) => acc + curr.player_count, 0);
   const series = data.map((corp) => {
     return {
       name: corp.identity ?? DEFAULT_UNKNOWN_ID,
       value: corp.player_count,
+      percentage: (corp.player_count / total) * 100,
       color: factionToColor(idToFaction(corp.identity)),
     };
   });
@@ -89,6 +91,31 @@ export default function PopularityChart({
       size={700}
       withTooltip
       tooltipDataSource="segment"
+      tooltipProps={{
+        content: ({ payload }) => {
+          if (payload == null || payload.length === 0) {
+            return <Paper></Paper>;
+          }
+
+          const { color, name, value, percentage } = payload[0]
+            .payload as unknown as {
+            color: string;
+            name: string;
+            value: number;
+            percentage: number;
+          };
+
+          return (
+            <Card withBorder>
+              <Text>{name}</Text>
+              <Text>
+                {percentage.toPrecision(2)}%, {value} player
+                {value > 1 ? "s" : ""}
+              </Text>
+            </Card>
+          );
+        },
+      }}
     />
   );
 }
