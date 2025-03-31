@@ -40,6 +40,7 @@ import { tournamentToMatches, tournamentToStandings } from "@/lib/tournament";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { Database } from "@/lib/supabase";
 import TournamentTable from "../stats/TournamentTable";
+import { TournamentRow } from "@/lib/localtypes";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {
   const [verified, setVerified] = useState(false);
@@ -141,9 +142,7 @@ export default function Dashboard() {
 
   const [success, setSuccess] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [tournaments, setTournaments] = useState<
-    Database["public"]["Tables"]["tournaments"]["Row"][]
-  >([]);
+  const [tournaments, setTournaments] = useState<TournamentRow[]>([]);
   const [sortBy, setSortBy] = useState<string>("last_updated_at");
 
   useEffect(() => {
