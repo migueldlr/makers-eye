@@ -11,7 +11,7 @@ import MatchupTable from "./MatchupTable";
 import TournamentTable from "./TournamentTable";
 import { createClient } from "@/utils/supabase/server";
 import { Metadata } from "next";
-import { SITE_TITLE } from "@/lib/util";
+import { SITE_TITLE, TOURNAMENT_FILTER_KEY } from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
 import CorpSummary from "./CorpSummary";
@@ -23,8 +23,19 @@ export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
 };
 
-export default async function StatsPage() {
+export default async function StatsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const supabase = await createClient();
+  const params = await searchParams;
+  const tournamentIds =
+    params[TOURNAMENT_FILTER_KEY] == null
+      ? undefined
+      : (params[TOURNAMENT_FILTER_KEY] as string)
+          .split(",")
+          .map((id) => Number(id));
 
   const { data: tournaments } = await supabase.from("tournaments").select("*");
   return (
@@ -34,7 +45,7 @@ export default async function StatsPage() {
         <Alert variant="light" color="gray" icon={<IconInfoCircle />}>
           This page is under construction. Expect frequent updates.
         </Alert>
-        <SummaryStats />
+        <SummaryStats tournamentIds={tournamentIds} />
         {process.env.NODE_ENV === "development" && (
           <TournamentFilter tournaments={tournaments ?? []} />
         )}

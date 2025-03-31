@@ -94,11 +94,11 @@ export async function getMatchesMetadata({
   };
 }
 
-export async function getSummaryStats() {
+export async function getSummaryStats(tournamentFilter?: number[]) {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .rpc("get_summary_stats", { tournament_filter: null })
+    .rpc("get_summary_stats", { tournament_filter: tournamentFilter ?? null })
     .select();
 
   if (error) {

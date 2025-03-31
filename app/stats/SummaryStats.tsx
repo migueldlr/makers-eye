@@ -6,8 +6,12 @@ function transformDate(date: string) {
   return format(parse(date, "yyyy-MM-dd", new Date()), "d MMMM yyyy");
 }
 
-export default async function SummaryStats() {
-  const data = await getSummaryStats();
+export default async function SummaryStats({
+  tournamentIds,
+}: {
+  tournamentIds?: number[];
+}) {
+  const data = await getSummaryStats(tournamentIds);
   const {
     total_matches,
     total_players,

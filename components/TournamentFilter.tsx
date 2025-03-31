@@ -1,14 +1,13 @@
 "use client";
 
 import { TournamentRow } from "@/lib/localtypes";
+import { TOURNAMENT_FILTER_KEY } from "@/lib/util";
 import { BarChart } from "@mantine/charts";
 import { Box, Button, RangeSlider, Stack } from "@mantine/core";
 import { format, max, min, parse } from "date-fns";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-
-export const TOURNAMENT_FILTER_KEY = "tournamentFilter";
 
 function getRangeOfDates(startDate: string, endDate: string) {
   const start = parse(startDate, "yyyy-MM-dd", new Date());
@@ -49,7 +48,6 @@ export default function TournamentFilter({
 }: {
   tournaments: TournamentRow[];
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
