@@ -23,7 +23,7 @@ import {
 } from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
-import WinrateSummary from "./CorpSummary";
+import WinrateSummary from "./WinrateSummary";
 import RepresentationChart from "./RepresentationChart";
 import { BackButton } from "@/components/BackButton";
 import TournamentFilter from "@/components/TournamentFilter";
