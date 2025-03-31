@@ -108,7 +108,7 @@ export default async function StatsPage({
         <BackButton />
       </Stack>
       <Center>
-        <Text mt="40vh" c="gray.7">
+        <Text mt="2em" c="gray.7">
           created by spiderbro
         </Text>
       </Center>
