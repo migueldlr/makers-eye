@@ -187,7 +187,7 @@ export default function TournamentFilter({
                 </Button>
               )}
             </Group>
-            <Button variant="outline" color="gray" onClick={toggleSticky}>
+            <Button variant="subtle" color="gray" onClick={toggleSticky}>
               {sticky ? "Unstick from top" : "Stick to top"}
               {os === "macos" || os === "windows" ? (
                 <>
