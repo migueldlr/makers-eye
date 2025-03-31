@@ -8,8 +8,6 @@ import {
   AccordionControl,
   AccordionItem,
   AccordionPanel,
-  ActionIcon,
-  Box,
   Button,
   Group,
   Pill,
@@ -17,7 +15,7 @@ import {
   Stack,
   Title,
 } from "@mantine/core";
-import { IconChevronDown } from "@tabler/icons-react";
+import { useHotkeys } from "@mantine/hooks";
 import { format, parse } from "date-fns";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -49,7 +47,12 @@ export default function TournamentFilter({
 }: {
   tournaments: TournamentRow[];
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [accordionValue, setAccordionValue] = useState<string | null>(
+    "filters"
+  );
+  const toggleAccordion = () =>
+    setAccordionValue(accordionValue == null ? "filters" : null);
+  useHotkeys([["alt+F", toggleAccordion]]);
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -205,7 +208,7 @@ export default function TournamentFilter({
             variant="outline"
             scroll={false}
           >
-            Reset
+            Clear filters
           </Button>
         )}
         <Button component={Link} href={href} scroll={false}>
@@ -222,18 +225,6 @@ export default function TournamentFilter({
     </>
   );
 
-  const collapsedContent = (
-    <Box>
-      <ActionIcon
-        variant="transparent"
-        mt="md"
-        onClick={() => setCollapsed(false)}
-      >
-        <IconChevronDown style={{ width: "70%", height: "70%" }} />
-      </ActionIcon>
-    </Box>
-  );
-
   const startDateTag = startDateParam ? (
     <Pill>Start date: {startDateParam}</Pill>
   ) : null;
@@ -248,6 +239,8 @@ export default function TournamentFilter({
       pos="sticky"
       top={0}
       style={{ zIndex: 100 }}
+      value={accordionValue}
+      onChange={setAccordionValue}
     >
       <AccordionItem value="filters">
         <AccordionControl bg="dark.6">
