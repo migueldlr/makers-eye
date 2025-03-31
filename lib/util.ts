@@ -128,6 +128,17 @@ const FACTION_MAPPING = {
   [DEFAULT_UNKNOWN_ID]: "_Neutral",
 };
 
+export const FACTION_NAMES = [
+  "Anarch",
+  "Criminal",
+  "Shaper",
+  "HB",
+  "Jinteki",
+  "NBN",
+  "Weyland",
+  "_Neutral",
+];
+
 const FACTION_COLORS = {
   Anarch: "#d9693f",
   Criminal: "#3862df",

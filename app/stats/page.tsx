@@ -29,6 +29,7 @@ import { BackButton } from "@/components/BackButton";
 import TournamentFilter from "@/components/TournamentFilter";
 import { TournamentRow } from "@/lib/localtypes";
 import GameResultsSummary from "./GameResultsSummary";
+import WinrateSummary from "@/components/WinrateSummary";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -97,6 +98,12 @@ export default async function StatsPage({
           Corp representation
         </Title>
         <RepresentationChart tournamentIds={tournamentIds} side="corp" />
+
+        <Title order={3} my="sm">
+          Corp winrates
+        </Title>
+        <WinrateSummary tournamentIds={tournamentIds} />
+
         <Title order={3} my="sm">
           Corp matchups
         </Title>

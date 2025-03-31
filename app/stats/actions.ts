@@ -11,6 +11,15 @@ export type WinrateData = {
   draws: number;
 };
 
+export type CorpWinrateData = {
+  corp_id: string;
+  total_games: number;
+  total_wins: number;
+  total_losses: number;
+  total_draws: number;
+  win_rate: number;
+};
+
 export type GameResults = {
   total_games: number;
   runner_wins: number;
