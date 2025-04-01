@@ -261,6 +261,8 @@ export default function MatchupTable({
               minMatches={minMatches}
               wrRange={wrRange}
               tournamentIds={tournamentIds}
+              includeCut={includeCut}
+              includeSwiss={includeSwiss}
             />
           ))}
         </TableTbody>

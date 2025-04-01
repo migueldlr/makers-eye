@@ -28,11 +28,15 @@ function MatchupHistory({
   sideTwoId,
   mainSide,
   tournamentIds,
+  includeCut,
+  includeSwiss,
 }: {
   sideOneId: string;
   sideTwoId: string;
   mainSide: "runner" | "corp";
   tournamentIds?: number[];
+  includeCut: boolean;
+  includeSwiss: boolean;
 }) {
   const [matchHistory, setMatchHistory] = useState<MatchesByIdentity[] | null>(
     null
@@ -43,7 +47,9 @@ function MatchupHistory({
       const data = await getMatchesByIdentity(
         mainSide === "runner" ? sideOneId : sideTwoId,
         mainSide === "runner" ? sideTwoId : sideOneId,
-        tournamentIds
+        tournamentIds,
+        includeCut,
+        includeSwiss
       );
       setMatchHistory(data ?? []);
     })();
@@ -177,6 +183,8 @@ function Cell_unmemoized({
   minMatches,
   wrRange,
   tournamentIds,
+  includeCut,
+  includeSwiss,
 }: {
   sideOneId: string;
   sideTwoId: string;
@@ -191,6 +199,8 @@ function Cell_unmemoized({
   minMatches: number;
   wrRange: [number, number];
   tournamentIds?: number[];
+  includeCut: boolean;
+  includeSwiss: boolean;
 }) {
   const hovered = hoveredCoords.row === i && hoveredCoords.col === j;
   const games = gamesWithSideOneId.filter(
@@ -277,6 +287,8 @@ function Cell_unmemoized({
           sideTwoId={sideTwoId}
           tournamentIds={tournamentIds}
           mainSide={mainSide}
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
         />
       </PopoverDropdown>
     </Popover>

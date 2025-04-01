@@ -18,6 +18,8 @@ function Row_unmemoized({
   minMatches,
   wrRange,
   tournamentIds,
+  includeCut,
+  includeSwiss,
 }: {
   sideOneId: string;
   allSideTwoIds: string[];
@@ -31,6 +33,8 @@ function Row_unmemoized({
   i: number;
   wrRange: [number, number];
   tournamentIds?: number[];
+  includeCut: boolean;
+  includeSwiss: boolean;
 }) {
   const gamesWithSideOneId = useMemo(
     () =>
@@ -97,6 +101,8 @@ function Row_unmemoized({
             minMatches={minMatches}
             wrRange={wrRange}
             tournamentIds={tournamentIds}
+            includeCut={includeCut}
+            includeSwiss={includeSwiss}
           />
         );
       })}

@@ -240,15 +240,24 @@ export async function getGameResults(
 export async function getMatchesByIdentity(
   runner_id: string,
   corp_id: string,
-  tournamentFilter?: number[]
+  tournamentFilter?: number[],
+  include_cut: boolean = true,
+  include_swiss: boolean = true
 ): Promise<MatchesByIdentity[]> {
   console.log({ runner_id, corp_id, tournamentFilter });
   const supabase = await createClient();
+  const phase_filter =
+    include_cut && !include_swiss
+      ? "cut"
+      : !include_cut && include_swiss
+      ? "swiss"
+      : null;
   const { data, error } = await supabase
     .rpc("get_matches_by_id", {
       corp_filter: corp_id,
       runner_filter: runner_id,
       tournament_filter: tournamentFilter ?? null,
+      phase_filter,
     })
     .select();
 
