@@ -14,27 +14,27 @@ export default async function FaqPage() {
         <Title order={1}>FAQ</Title>
         <Title order={3}>What is this?</Title>
         <Text>
-          The Maker's Eye is a Netrunner tournament and meta analysis tool.
+          The Maker&#39;s Eye is a Netrunner tournament and meta analysis tool.
         </Text>
         <Title order={3}>
           How do I look at stats from a single tournament?
         </Title>
         <Text>
-          From the homepage, paste in a link from Cobra or Aesop's and click the
-          eye.
+          From the homepage, paste in a link from Cobra or Aesop&#39;s and click
+          the eye.
         </Text>
         <Title order={3}>Can I view a tournament in progress?</Title>
         <Text>
-          Yes! In fact, that's one of the ways I intended to use this tool
+          Yes! In fact, that&#39;s one of the ways I intended to use this tool
           personally, to help me scout opponents for large tournaments. In
           progress tournaments are not guaranteed to show the most up-to-date
           game results.
         </Text>
         <Title order={3}>What is cut conversion?</Title>
         <Text>
-          Cut conversion represents a given identity's rate of making the top
-          cut after swiss relative to an expected baseline. It is expressed as a
-          ratio, not a percentage. The Surveyor has a good writeup about it{" "}
+          Cut conversion represents a given identity&#39;s rate of making the
+          top cut after swiss relative to an expected baseline. It is expressed
+          as a ratio, not a percentage. The Surveyor has a good writeup about it{" "}
           <Anchor href="https://tracex.substack.com/i/149874256/about-the-cut-conversion-metric">
             here
           </Anchor>
@@ -50,7 +50,7 @@ export default async function FaqPage() {
             the NSG article
           </Anchor>{" "}
           for an explanation of the OP season. Additionally, uploading results
-          is a manual process. Eventually I'll try to automate it.
+          is a manual process. Eventually I&#39;ll try to automate it.
         </Text>
       </Stack>
       <Box mt="xl">
