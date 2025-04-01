@@ -19,13 +19,12 @@ import {
   Pill,
   Stack,
   Title,
-  Text,
   Kbd,
 } from "@mantine/core";
-import { useHotkeys, useOs } from "@mantine/hooks";
+import { useHotkeys, useOs, useWindowScroll } from "@mantine/hooks";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import DateFilter from "./DateFilter";
 import RegionFilter from "./RegionFilter";
 import OnlineFilter from "./OnlineFilter";
@@ -38,19 +37,113 @@ export default function TournamentFilter({
 }: {
   tournaments: TournamentRow[];
 }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [accordionValue, setAccordionValue] = useState<string | null>(
     "filters"
   );
+  const [interacted, setInteracted] = useState(false);
+  const [scroll] = useWindowScroll();
   const [sticky, setSticky] = useState(true);
-  const toggleSticky = () => setSticky(sticky ? false : true);
-  const showHide = () => setAccordionValue(accordionValue ? null : "filters");
-  const os = useOs();
+  const toggleSticky = useCallback(
+    () => setSticky(sticky ? false : true),
+    [setSticky]
+  );
+  const showHide = useCallback(
+    () => setAccordionValue((oldVal) => (oldVal ? null : "filters")),
+    [setAccordionValue]
+  );
   useHotkeys([
     ["alt+F", toggleSticky],
     ["alt+H", showHide],
   ]);
+
+  useEffect(() => {
+    if (scroll.y > 400 && !interacted && accordionValue === "filters") {
+      setAccordionValue(null);
+    }
+  }, [scroll.y]);
+
+  return (
+    <Accordion
+      defaultValue="filters"
+      variant="filled"
+      pos={sticky ? "sticky" : "unset"}
+      top={0}
+      style={{ zIndex: 100 }}
+      value={accordionValue}
+      onChange={setAccordionValue}
+      onClick={() => {
+        setInteracted(true);
+      }}
+    >
+      <AccordionItem value="filters">
+        <AccordionControl bg="dark.6">
+          <AccordionControlContent />
+        </AccordionControl>
+        <AccordionPanel>
+          <AccordionPanelContent
+            tournaments={tournaments}
+            sticky={sticky}
+            toggleSticky={toggleSticky}
+            showHide={showHide}
+            showing={accordionValue === "filters"}
+          />
+        </AccordionPanel>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
+function AccordionControlContent() {
+  const searchParams = useSearchParams();
+
+  const startDateParam = searchParams.get(START_DATE_FILTER_KEY);
+  const endDateParam = searchParams.get(END_DATE_FILTER_KEY);
+  const regionParam = searchParams.get(REGION_FILTER_KEY);
+  const onlineParam = searchParams.get(ONLINE_FILTER_KEY);
+
+  const startDateTag = startDateParam ? (
+    <Pill>Start date: {startDateParam}</Pill>
+  ) : null;
+  const endDateTag = endDateParam ? (
+    <Pill>End date: {endDateParam}</Pill>
+  ) : null;
+  const regionTag = regionParam ? (
+    <Pill>Region: {regionParam.split(",").join(", ")}</Pill>
+  ) : null;
+  const onlineTag = onlineParam ? (
+    <Pill>Location: {onlineParam.split(",").join(", ")}</Pill>
+  ) : null;
+
+  return (
+    <Group>
+      <Title order={3}>Filters</Title>
+      <Group>
+        {regionTag}
+        {onlineTag}
+        {startDateTag}
+        {endDateTag}
+      </Group>
+    </Group>
+  );
+}
+
+function AccordionPanelContent_raw({
+  tournaments,
+  sticky,
+  toggleSticky,
+  showing,
+  showHide,
+}: {
+  tournaments: TournamentRow[];
+  sticky: boolean;
+  toggleSticky: () => void;
+  showing: boolean;
+  showHide: () => void;
+}) {
+  console.log("rendering!");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const os = useOs();
 
   const [startDateSelected, setStartDateSelected] = useState(
     searchParams.get(START_DATE_FILTER_KEY) ?? ""
@@ -80,11 +173,6 @@ export default function TournamentFilter({
     searchParams.has(REGION_FILTER_KEY) ||
     searchParams.has(ONLINE_FILTER_KEY);
 
-  const startDateParam = searchParams.get(START_DATE_FILTER_KEY);
-  const endDateParam = searchParams.get(END_DATE_FILTER_KEY);
-  const regionParam = searchParams.get(REGION_FILTER_KEY);
-  const onlineParam = searchParams.get(ONLINE_FILTER_KEY);
-
   const href = useMemo(
     () =>
       pathname +
@@ -104,19 +192,6 @@ export default function TournamentFilter({
     [startDateSelected, endDateSelected, regionsSelected, onlineSelected]
   );
 
-  const startDateTag = startDateParam ? (
-    <Pill>Start date: {startDateParam}</Pill>
-  ) : null;
-  const endDateTag = endDateParam ? (
-    <Pill>End date: {endDateParam}</Pill>
-  ) : null;
-  const regionTag = regionParam ? (
-    <Pill>Region: {regionParam.split(",").join(", ")}</Pill>
-  ) : null;
-  const onlineTag = onlineParam ? (
-    <Pill>Location: {onlineParam.split(",").join(", ")}</Pill>
-  ) : null;
-
   const tournamentsFiltered = useMemo(
     () =>
       tournaments
@@ -132,92 +207,65 @@ export default function TournamentFilter({
         ),
     [regionsSelected, onlineSelected]
   );
-
   return (
-    <Accordion
-      defaultValue="filters"
-      variant="filled"
-      pos={sticky ? "sticky" : "unset"}
-      top={0}
-      style={{ zIndex: 100 }}
-      value={accordionValue}
-      onChange={setAccordionValue}
-    >
-      <AccordionItem value="filters">
-        <AccordionControl bg="dark.6">
-          <Group>
-            <Title order={3}>Filters</Title>
-            <Group>
-              {regionTag}
-              {onlineTag}
-              {startDateTag}
-              {endDateTag}
-            </Group>
-          </Group>
-        </AccordionControl>
-        <AccordionPanel>
-          <Group gap="xl" align="flex-start">
-            <Stack>
-              <RegionFilter
-                regions={regionsSelected}
-                setRegions={setRegionsSelected}
-              />
-              <OnlineFilter
-                online={onlineSelected}
-                setOnline={setOnlineSelected}
-              />
-            </Stack>
-            <DateFilter
-              tournaments={tournamentsFiltered}
-              startDate={startDateSelected}
-              setStartDate={setStartDateSelected}
-              endDate={endDateSelected}
-              setEndDate={setEndDateSelected}
-            />
-          </Group>
-          <Group
-            style={{ justifyContent: "space-between", alignItems: "flex-end" }}
-          >
-            <Group>
-              <Button component={Link} href={href} scroll={false}>
-                Apply
-              </Button>
-              {hasFilters && (
-                <Button
-                  component={Link}
-                  href={pathname}
-                  variant="outline"
-                  scroll={false}
-                >
-                  Clear filters
-                </Button>
-              )}
-            </Group>
-            <Stack align="flex-end">
-              <Button variant="subtle" color="gray" onClick={toggleSticky}>
-                {sticky ? "Unstick from top" : "Stick to top"}
-                {os === "macos" || os === "windows" ? (
-                  <>
-                    {" ("}
-                    <Kbd>{os === "macos" ? "⌥" : "Alt"}</Kbd> + <Kbd>F</Kbd>{" "}
-                    {")"}
-                  </>
-                ) : null}
-              </Button>
-              <Button variant="subtle" color="gray" onClick={showHide}>
-                {accordionValue === null ? "Expand" : "Collapse"}
-                {os === "macos" || os === "windows" ? (
-                  <>
-                    {" ("}
-                    <Kbd>{os === "macos" ? "⌥" : "Alt"}</Kbd> + <Kbd>H</Kbd>{" "}
-                    {")"}
-                  </>
-                ) : null}
-              </Button>
-            </Stack>
-          </Group>
-        </AccordionPanel>
-      </AccordionItem>
-    </Accordion>
+    <>
+      <Group gap="xl" align="flex-start">
+        <Stack>
+          <RegionFilter
+            regions={regionsSelected}
+            setRegions={setRegionsSelected}
+          />
+          <OnlineFilter online={onlineSelected} setOnline={setOnlineSelected} />
+        </Stack>
+        <DateFilter
+          tournaments={tournamentsFiltered}
+          startDate={startDateSelected}
+          setStartDate={setStartDateSelected}
+          endDate={endDateSelected}
+          setEndDate={setEndDateSelected}
+        />
+      </Group>
+      <Group
+        style={{ justifyContent: "space-between", alignItems: "flex-end" }}
+      >
+        <Group>
+          <Button component={Link} href={href} scroll={false}>
+            Apply
+          </Button>
+          {hasFilters && (
+            <Button
+              component={Link}
+              href={pathname}
+              variant="outline"
+              scroll={false}
+            >
+              Clear filters
+            </Button>
+          )}
+        </Group>
+        <Stack align="flex-end">
+          <Button variant="subtle" color="gray" onClick={toggleSticky}>
+            {sticky ? "Unstick from top" : "Stick to top"}
+            {os === "macos" || os === "windows" ? (
+              <>
+                {" ("}
+                <Kbd>{os === "macos" ? "⌥" : "Alt"}</Kbd> + <Kbd>F</Kbd> {")"}
+              </>
+            ) : null}
+          </Button>
+          <Button variant="subtle" color="gray" onClick={showHide}>
+            {!showing ? "Expand" : "Collapse"}
+            {os === "macos" || os === "windows" ? (
+              <>
+                {" ("}
+                <Kbd>{os === "macos" ? "⌥" : "Alt"}</Kbd> + <Kbd>H</Kbd> {")"}
+              </>
+            ) : null}
+          </Button>
+        </Stack>
+      </Group>
+    </>
   );
 }
+
+const AccordionPanelContent = memo(AccordionPanelContent_raw);
