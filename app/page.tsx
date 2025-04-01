@@ -20,7 +20,7 @@ import {
 import { IconEye } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { PropsWithChildren, useEffect, useRef, useState } from "react";
 
 const FancyTitle = () => (
   <Stack align="center" gap={0}>
@@ -37,6 +37,32 @@ const FancyTitle = () => (
     <Title order={4}>Netrunner tournament and meta analysis</Title>
   </Stack>
 );
+
+const FancyLink = ({
+  href,
+  hoverText,
+  children,
+}: PropsWithChildren<{ href: string; hoverText: string }>) => {
+  const [isHovered, setHovered] = useState(false);
+  return (
+    <Box
+      w={210}
+      onFocus={() => setHovered(true)}
+      onMouseEnter={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <Center>
+        <Button component={Link} href={href} variant="outline" color="orange">
+          <Text className={netrunnerFont.className} size="14">
+            
+          </Text>
+          : {isHovered ? hoverText : children}
+        </Button>
+      </Center>
+    </Box>
+  );
+};
 
 export default function HomePage() {
   const router = useRouter();
@@ -83,7 +109,7 @@ export default function HomePage() {
         />
         <TextInput
           color="orange"
-          placeholder="Tournament URL"
+          placeholder="Cobra / Aesop's URL"
           labelProps={{ align: "right" }}
           value={value}
           onChange={(e) => {
@@ -125,31 +151,18 @@ export default function HomePage() {
             </Stack>
             <Divider label="or" mx="xl" />
             <Stack align="center" gap="xs">
-              <Button
-                component={Link}
-                href="/stats"
-                variant="outline"
-                color="orange"
-              >
-                <Text className={netrunnerFont.className} size="14">
-                  
-                </Text>
-                : Run
-              </Button>
-              <Button
-                component={Link}
-                href="/credits"
-                variant="outline"
-                color="orange"
-              >
-                <Text className={netrunnerFont.className} size="14">
-                  
-                </Text>
-                : Gain 1
+              <FancyLink href="/stats" hoverText="Meta analysis">
+                Run
+              </FancyLink>
+              <FancyLink href="/faq" hoverText="FAQ">
+                Draw 1 card
+              </FancyLink>
+              <FancyLink href="/credits" hoverText="Credits">
+                Gain 1
                 <Text className={netrunnerFont.className} size="14">
                   
                 </Text>
-              </Button>
+              </FancyLink>
             </Stack>
           </Stack>
         </Stack>
