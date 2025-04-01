@@ -23,7 +23,10 @@ export type IdentityWinrateData = {
 export type MatchesByIdentity = {
   tournament_id: number;
   tournament_name: string;
+  tournament_url: string;
+  tournament_date: string;
   round: number;
+  round_table: number;
   phase: string;
   corp_player_name: string;
   runner_player_name: string;

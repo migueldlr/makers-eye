@@ -13,6 +13,7 @@ import {
   TableTh,
   TableTbody,
   TableThead,
+  Anchor,
 } from "@mantine/core";
 import { memo, useEffect, useState } from "react";
 import {
@@ -21,7 +22,6 @@ import {
   WinrateData,
 } from "./actions";
 import { HOVER_STYLE } from "./MatchupTable";
-import { useDisclosure } from "@mantine/hooks";
 
 function MatchupHistory({
   sideOneId,
@@ -34,47 +34,117 @@ function MatchupHistory({
   mainSide: "runner" | "corp";
   tournamentIds?: number[];
 }) {
-  const [matchHistory, setMatchHistory] = useState<MatchesByIdentity[]>([]);
+  const [matchHistory, setMatchHistory] = useState<MatchesByIdentity[] | null>(
+    null
+  );
 
   useEffect(() => {
     (async () => {
-      console.log({ sideOneId, sideTwoId, tournamentIds });
       const data = await getMatchesByIdentity(
         mainSide === "runner" ? sideOneId : sideTwoId,
         mainSide === "runner" ? sideTwoId : sideOneId,
         tournamentIds
       );
-      setMatchHistory(data);
+      setMatchHistory(data ?? []);
     })();
   }, []);
+
+  const matchResultToText = (matchResult: string) => {
+    if (mainSide === "runner") {
+      if (matchResult === "runnerWin") {
+        return ">";
+      } else if (matchResult === "corpWin") {
+        return "<";
+      } else if (matchResult === "draw") {
+        return "=";
+      } else {
+        return "?";
+      }
+    } else {
+      if (matchResult === "runnerWin") {
+        return "<";
+      } else if (matchResult === "corpWin") {
+        return ">";
+      } else if (matchResult === "draw") {
+        return "=";
+      } else {
+        return "?";
+      }
+    }
+  };
+
+  function augmentUrl(url: string, round: number) {
+    if (url.includes("aesops")) {
+      return `${url}/${round}`;
+    }
+    if (url.includes("nullsignal")) {
+      return `${url}/rounds/view_pairings`;
+    }
+    return url;
+  }
 
   const matches = (
     <Table>
       <TableThead>
         <TableTr>
+          <TableTh>Date</TableTh>
           <TableTh>Tournament</TableTh>
           <TableTh>Round</TableTh>
-          <TableTh>Corp</TableTh>
-          <TableTh>Runner</TableTh>
+          <TableTh>Table</TableTh>
+          <TableTh>Phase</TableTh>
+          <TableTh>{sideOneId}</TableTh>
           <TableTh>Result</TableTh>
+          <TableTh>{sideTwoId}</TableTh>
         </TableTr>
       </TableThead>
       <TableTbody>
-        {matchHistory.map((match) => {
+        {matchHistory?.map((match) => {
           return (
             <TableTr
               key={`${match.tournament_id}-${match.round}-${match.corp_player_name}-${match.runner_player_name}`}
             >
-              <TableTd>{match.tournament_name}</TableTd>
+              <TableTd>{match.tournament_date}</TableTd>
+              <TableTd>
+                <Anchor
+                  href={augmentUrl(match.tournament_url, match.round)}
+                  target="_blank"
+                >
+                  {match.tournament_name}
+                </Anchor>
+              </TableTd>
               <TableTd>{match.round}</TableTd>
-              <TableTd>{match.corp_player_name}</TableTd>
-              <TableTd>{match.runner_player_name}</TableTd>
-              <TableTd>{match.result}</TableTd>
+              <TableTd>{match.round_table}</TableTd>
+              <TableTd>{match.phase}</TableTd>
+              <TableTd>
+                {mainSide === "corp"
+                  ? match.corp_player_name
+                  : match.runner_player_name}
+              </TableTd>
+              <TableTd align="center">
+                {matchResultToText(match.result)}
+              </TableTd>
+              <TableTd>
+                {mainSide === "corp"
+                  ? match.runner_player_name
+                  : match.corp_player_name}
+              </TableTd>
             </TableTr>
           );
         })}
       </TableTbody>
     </Table>
+  );
+
+  const loading = (
+    <Center>
+      <Loader color="gray" type="dots" />
+    </Center>
+  );
+
+  const noMatches = (
+    <Center>
+      <Text>No matches found</Text>
+    </Center>
   );
 
   return (
@@ -83,11 +153,11 @@ function MatchupHistory({
         {sideOneId} vs {sideTwoId}
       </Text>
       <Center>
-        {matchHistory.length === 0 ? (
-          <Loader color="gray" type="dots" />
-        ) : (
-          matches
-        )}
+        {matchHistory == null
+          ? loading
+          : matchHistory.length === 0
+          ? noMatches
+          : matches}
       </Center>
     </Box>
   );
@@ -153,7 +223,7 @@ function Cell_unmemoized({
   const gradient = (Math.sin(Math.PI * (rawWr - 0.5)) + 1) / 2;
 
   return (
-    <Popover>
+    <Popover withArrow>
       <PopoverTarget>
         <TableTd
           key={sideTwoId}
@@ -184,6 +254,9 @@ function Cell_unmemoized({
                   (1 - gradient) * 100
                 }%, #1864ab ${gradient * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
               }),
+            ...(hasResults && {
+              cursor: "pointer",
+            }),
             ...(hasResults && hovered && HOVER_STYLE),
           }}
         >
