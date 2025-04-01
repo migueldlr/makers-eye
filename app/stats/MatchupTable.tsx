@@ -149,7 +149,8 @@ export default function MatchupTable({
   }
 
   const controls = (
-    <Stack>
+    <Stack align="end">
+      <Text c="dimmed">(Click any cell to view matchup history)</Text>
       <Group gap="xs" justify="end">
         <ActionIcon variant="default" onClick={() => switchSides()}>
           <IconTransfer style={{ width: "50%", height: "50%" }} />
