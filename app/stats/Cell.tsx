@@ -1,9 +1,100 @@
-import { TableTd, Overlay, Text } from "@mantine/core";
-import { memo } from "react";
-import { WinrateData } from "./actions";
+import {
+  TableTd,
+  Overlay,
+  Text,
+  Popover,
+  PopoverTarget,
+  PopoverDropdown,
+  Box,
+  Loader,
+  Center,
+  Table,
+  TableTr,
+  TableTh,
+  TableTbody,
+  TableThead,
+} from "@mantine/core";
+import { memo, useEffect, useState } from "react";
+import {
+  getMatchesByIdentity,
+  MatchesByIdentity,
+  WinrateData,
+} from "./actions";
 import { HOVER_STYLE } from "./MatchupTable";
+import { useDisclosure } from "@mantine/hooks";
+
+function MatchupHistory({
+  sideOneId,
+  sideTwoId,
+  mainSide,
+  tournamentIds,
+}: {
+  sideOneId: string;
+  sideTwoId: string;
+  mainSide: "runner" | "corp";
+  tournamentIds?: number[];
+}) {
+  const [matchHistory, setMatchHistory] = useState<MatchesByIdentity[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      console.log({ sideOneId, sideTwoId, tournamentIds });
+      const data = await getMatchesByIdentity(
+        mainSide === "runner" ? sideOneId : sideTwoId,
+        mainSide === "runner" ? sideTwoId : sideOneId,
+        tournamentIds
+      );
+      setMatchHistory(data);
+    })();
+  }, []);
+
+  const matches = (
+    <Table>
+      <TableThead>
+        <TableTr>
+          <TableTh>Tournament</TableTh>
+          <TableTh>Round</TableTh>
+          <TableTh>Corp</TableTh>
+          <TableTh>Runner</TableTh>
+          <TableTh>Result</TableTh>
+        </TableTr>
+      </TableThead>
+      <TableTbody>
+        {matchHistory.map((match) => {
+          return (
+            <TableTr
+              key={`${match.tournament_id}-${match.round}-${match.corp_player_name}-${match.runner_player_name}`}
+            >
+              <TableTd>{match.tournament_name}</TableTd>
+              <TableTd>{match.round}</TableTd>
+              <TableTd>{match.corp_player_name}</TableTd>
+              <TableTd>{match.runner_player_name}</TableTd>
+              <TableTd>{match.result}</TableTd>
+            </TableTr>
+          );
+        })}
+      </TableTbody>
+    </Table>
+  );
+
+  return (
+    <Box>
+      <Text>
+        {sideOneId} vs {sideTwoId}
+      </Text>
+      <Center>
+        {matchHistory.length === 0 ? (
+          <Loader color="gray" type="dots" />
+        ) : (
+          matches
+        )}
+      </Center>
+    </Box>
+  );
+}
 
 function Cell_unmemoized({
+  sideOneId,
   sideTwoId,
   gamesWithSideOneId,
   mainSide,
@@ -15,7 +106,9 @@ function Cell_unmemoized({
   j,
   minMatches,
   wrRange,
+  tournamentIds,
 }: {
+  sideOneId: string;
   sideTwoId: string;
   gamesWithSideOneId: WinrateData[];
   mainSide: "runner" | "corp";
@@ -27,6 +120,7 @@ function Cell_unmemoized({
   j: number;
   minMatches: number;
   wrRange: [number, number];
+  tournamentIds?: number[];
 }) {
   const hovered = hoveredCoords.row === i && hoveredCoords.col === j;
   const games = gamesWithSideOneId.filter(
@@ -59,43 +153,60 @@ function Cell_unmemoized({
   const gradient = (Math.sin(Math.PI * (rawWr - 0.5)) + 1) / 2;
 
   return (
-    <TableTd
-      key={sideTwoId}
-      pos="relative"
-      onMouseEnter={
-        hasResults
-          ? () =>
-              setHoveredCoords({
-                row: i,
-                col: j,
-              })
-          : undefined
-      }
-      onMouseLeave={
-        hasResults ? () => setHoveredCoords({ row: -1, col: -1 }) : undefined
-      }
-      style={{
-        cursor: "default",
-        ...(showColors &&
-          inRange &&
-          hasMinResults && {
-            backgroundColor: `color-mix(in oklab, #071d31 ${
-              (1 - gradient) * 100
-            }%, #1864ab ${gradient * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
-          }),
-        ...(hasResults && hovered && HOVER_STYLE),
-      }}
-    >
-      {games.length === 0 ? (
-        <Overlay backgroundOpacity={0} />
-      ) : (
-        <Text size="sm">
-          {showPercentages && !hovered
-            ? percentageDisplay
-            : `${sideOneWins}-${sideTwoWins}`}
-        </Text>
-      )}
-    </TableTd>
+    <Popover>
+      <PopoverTarget>
+        <TableTd
+          key={sideTwoId}
+          pos="relative"
+          onMouseEnter={
+            hasResults
+              ? () => {
+                  setHoveredCoords({
+                    row: i,
+                    col: j,
+                  });
+                }
+              : undefined
+          }
+          onMouseLeave={
+            hasResults
+              ? () => {
+                  setHoveredCoords({ row: -1, col: -1 });
+                }
+              : undefined
+          }
+          style={{
+            cursor: "default",
+            ...(showColors &&
+              inRange &&
+              hasMinResults && {
+                backgroundColor: `color-mix(in oklab, #071d31 ${
+                  (1 - gradient) * 100
+                }%, #1864ab ${gradient * 100}%)`, //lighten("#580e0e", rawWr * 0.7),
+              }),
+            ...(hasResults && hovered && HOVER_STYLE),
+          }}
+        >
+          {games.length === 0 ? (
+            <Overlay backgroundOpacity={0} />
+          ) : (
+            <Text size="sm">
+              {showPercentages && !hovered
+                ? percentageDisplay
+                : `${sideOneWins}-${sideTwoWins}`}
+            </Text>
+          )}
+        </TableTd>
+      </PopoverTarget>
+      <PopoverDropdown>
+        <MatchupHistory
+          sideOneId={sideOneId}
+          sideTwoId={sideTwoId}
+          tournamentIds={tournamentIds}
+          mainSide={mainSide}
+        />
+      </PopoverDropdown>
+    </Popover>
   );
 }
 

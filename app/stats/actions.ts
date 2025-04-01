@@ -20,6 +20,18 @@ export type IdentityWinrateData = {
   win_rate: number;
 };
 
+export type MatchesByIdentity = {
+  tournament_id: number;
+  tournament_name: string;
+  round: number;
+  phase: string;
+  corp_player_name: string;
+  runner_player_name: string;
+  corp_id: string;
+  runner_id: string;
+  result: string;
+};
+
 export type GameResults = {
   total_games: number;
   runner_wins: number;
@@ -220,4 +232,27 @@ export async function getGameResults(
   }
 
   return data[0];
+}
+
+export async function getMatchesByIdentity(
+  runner_id: string,
+  corp_id: string,
+  tournamentFilter?: number[]
+): Promise<MatchesByIdentity[]> {
+  console.log({ runner_id, corp_id, tournamentFilter });
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .rpc("get_matches_by_id", {
+      corp_filter: corp_id,
+      runner_filter: runner_id,
+      tournament_filter: tournamentFilter ?? null,
+    })
+    .select();
+
+  console.log(error);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
 }

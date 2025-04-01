@@ -260,6 +260,7 @@ export default function MatchupTable({
               i={i}
               minMatches={minMatches}
               wrRange={wrRange}
+              tournamentIds={tournamentIds}
             />
           ))}
         </TableTbody>

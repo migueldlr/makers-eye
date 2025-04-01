@@ -17,6 +17,7 @@ function Row_unmemoized({
   i,
   minMatches,
   wrRange,
+  tournamentIds,
 }: {
   sideOneId: string;
   allSideTwoIds: string[];
@@ -29,6 +30,7 @@ function Row_unmemoized({
   minMatches: number;
   i: number;
   wrRange: [number, number];
+  tournamentIds?: number[];
 }) {
   const gamesWithSideOneId = useMemo(
     () =>
@@ -82,6 +84,7 @@ function Row_unmemoized({
         return (
           <Cell
             key={sideTwoId}
+            sideOneId={sideOneId}
             sideTwoId={sideTwoId}
             gamesWithSideOneId={gamesWithSideOneId}
             mainSide={mainSide}
@@ -93,6 +96,7 @@ function Row_unmemoized({
             j={j}
             minMatches={minMatches}
             wrRange={wrRange}
+            tournamentIds={tournamentIds}
           />
         );
       })}
