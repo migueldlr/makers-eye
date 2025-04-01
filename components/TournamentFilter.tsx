@@ -140,7 +140,6 @@ function AccordionPanelContent_raw({
   showing: boolean;
   showHide: () => void;
 }) {
-  console.log("rendering!");
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const os = useOs();

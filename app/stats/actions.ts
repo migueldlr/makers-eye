@@ -244,7 +244,6 @@ export async function getMatchesByIdentity(
   include_cut: boolean = true,
   include_swiss: boolean = true
 ): Promise<MatchesByIdentity[]> {
-  console.log({ runner_id, corp_id, tournamentFilter });
   const supabase = await createClient();
   const phase_filter =
     include_cut && !include_swiss
@@ -260,8 +259,6 @@ export async function getMatchesByIdentity(
       phase_filter,
     })
     .select();
-
-  console.log(error);
 
   if (error) {
     throw new Error(error.message);
