@@ -31,6 +31,7 @@ import TournamentFilter from "@/components/stats/TournamentFilter";
 import { TournamentRow } from "@/lib/localtypes";
 import GameResultsSummary from "../../components/stats/charts/GameResultsSummary";
 import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
+import CutSwissComparison from "@/components/stats/wrappers/CutSwissComparison";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -126,6 +127,7 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Corp cut vs swiss
         </Title>
+        <CutSwissComparison tournamentIds={tournamentIds} side="corp" />
 
         <Title order={3} my="sm">
           Corp matchups

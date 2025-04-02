@@ -220,6 +220,16 @@ export async function getIdentityWinrates({
   return data;
 }
 
+export async function getCutVsSwiss({
+  tournamentIds,
+  side,
+}: {
+  tournamentIds: number[];
+  side: "corp" | "runner";
+}) {
+  const supabase = await createClient();
+}
+
 export async function getCorpPopularity(
   tournamentFilter?: number[]
 ): Promise<PopularityData[]> {
