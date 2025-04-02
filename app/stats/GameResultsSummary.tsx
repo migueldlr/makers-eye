@@ -47,14 +47,22 @@ const CustomLabel = ({
 
 export default function GameResultsSummary({
   tournamentIds,
+  includeCut,
+  includeSwiss,
 }: {
   tournamentIds?: number[];
+  includeCut: boolean;
+  includeSwiss: boolean;
 }) {
   const [data, setData] = useState<GameResults>();
 
   useEffect(() => {
     (async () => {
-      const res = await getGameResults(tournamentIds);
+      const res = await getGameResults({
+        tournamentFilter: tournamentIds,
+        includeCut,
+        includeSwiss,
+      });
       setData(res);
     })();
   }, [tournamentIds]);

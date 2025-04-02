@@ -8,16 +8,25 @@ import PopularityChart from "@/components/stats/charts/PopularityChart";
 export default function RepresentationChart({
   tournamentIds,
   side,
+  includeCut,
+  includeSwiss,
 }: {
-  tournamentIds?: number[];
+  tournamentIds: number[];
   side: "corp" | "runner";
+  includeCut: boolean;
+  includeSwiss: boolean;
 }) {
   const [sortBy, setSortBy] = useState<"faction" | "popularity">("popularity");
   const [data, setData] = useState<PopularityData[]>([]);
 
   useEffect(() => {
     (async () => {
-      const res = await getPopularity(tournamentIds, side);
+      const res = await getPopularity({
+        tournamentFilter: tournamentIds,
+        side,
+        includeCut,
+        includeSwiss,
+      });
       setData(res);
     })();
   }, [tournamentIds]);

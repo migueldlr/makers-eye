@@ -97,12 +97,21 @@ export default async function StatsPage({
           )}
         </ScrollArea>
 
-        <GameResultsSummary tournamentIds={tournamentIds} />
+        <GameResultsSummary
+          tournamentIds={tournamentIds}
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
 
         <Title order={3} my="sm">
           Corp representation
         </Title>
-        <RepresentationChart tournamentIds={tournamentIds} side="corp" />
+        <RepresentationChart
+          tournamentIds={tournamentIds}
+          side="corp"
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
 
         <Title order={3} my="sm">
           Corp winrates
@@ -121,12 +130,22 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Corp matchups
         </Title>
-        <MatchupSummary tournamentIds={tournamentIds} side="corp" />
+        <MatchupSummary
+          tournamentIds={tournamentIds}
+          side="corp"
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
 
         <Title order={3} my="sm">
           Runner representation
         </Title>
-        <RepresentationChart tournamentIds={tournamentIds} side="runner" />
+        <RepresentationChart
+          tournamentIds={tournamentIds}
+          side="runner"
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
 
         <Title order={3} my="sm">
           Runner winrates
@@ -141,7 +160,12 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Runner matchups
         </Title>
-        <MatchupSummary tournamentIds={tournamentIds} side="runner" />
+        <MatchupSummary
+          tournamentIds={tournamentIds}
+          side="runner"
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
         <Title order={3} my="sm">
           Matchup spread
         </Title>

@@ -19,9 +19,13 @@ import MatchupChart from "@/components/stats/charts/MatchupChart";
 export default function MatchupSummary({
   tournamentIds,
   side,
+  includeCut,
+  includeSwiss,
 }: {
   tournamentIds: number[];
   side: "corp" | "runner";
+  includeCut: boolean;
+  includeSwiss: boolean;
 }) {
   const [allMainSideIds, setAllMainSideIds] = useState<string[]>([]);
   const [mainSideIds, setMainSideIds] = useState<string[]>(allMainSideIds);
@@ -59,11 +63,17 @@ export default function MatchupSummary({
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const res = await getSideWinrates(mainSideIds, tournamentIds, side);
+      const res = await getSideWinrates({
+        ids: mainSideIds,
+        tournamentFilter: tournamentIds,
+        side,
+        includeCut,
+        includeSwiss,
+      });
       setData(res);
       setLoading(false);
     })();
-  }, [mainSideIds, tournamentIds]);
+  }, [mainSideIds, tournamentIds, includeCut, includeSwiss]);
 
   return (
     <Stack>

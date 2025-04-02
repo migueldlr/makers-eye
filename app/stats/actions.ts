@@ -154,11 +154,19 @@ export async function getTournaments() {
   return data;
 }
 
-export async function getSideWinrates(
-  ids: string[],
-  tournamentFilter?: number[],
-  side: "corp" | "runner" = "corp"
-): Promise<WinrateData[]> {
+export async function getSideWinrates({
+  ids,
+  tournamentFilter,
+  side = "corp",
+  includeCut = true,
+  includeSwiss = true,
+}: {
+  ids: string[];
+  tournamentFilter?: number[];
+  side: "corp" | "runner";
+  includeCut: boolean;
+  includeSwiss: boolean;
+}): Promise<WinrateData[]> {
   const supabase = await createClient();
 
   const rpcMethod =
@@ -169,6 +177,8 @@ export async function getSideWinrates(
     .rpc(rpcMethod, {
       [idFilter]: ids,
       tournament_filter: tournamentFilter ?? null,
+      include_swiss: includeSwiss,
+      include_cut: includeCut,
     })
     .select();
 
@@ -230,17 +240,24 @@ export async function getCorpPopularity(
   return data;
 }
 
-export async function getPopularity(
-  tournamentFilter: number[] = [],
-  side: "runner" | "corp"
-): Promise<PopularityData[]> {
+export async function getPopularity({
+  tournamentFilter = [],
+  side,
+  includeSwiss = true,
+  includeCut = true,
+}: {
+  tournamentFilter: number[];
+  side: "runner" | "corp";
+  includeSwiss?: boolean;
+  includeCut?: boolean;
+}): Promise<PopularityData[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .rpc(side === "runner" ? "get_runner_popularity" : "get_corp_popularity", {
       tournament_filter: tournamentFilter ?? null,
-      include_swiss: true,
-      include_cut: true,
+      include_swiss: includeSwiss,
+      include_cut: includeCut,
     })
     .select();
 
@@ -250,14 +267,22 @@ export async function getPopularity(
   return data;
 }
 
-export async function getGameResults(
-  tournamentFilter?: number[]
-): Promise<GameResults> {
+export async function getGameResults({
+  tournamentFilter,
+  includeCut,
+  includeSwiss,
+}: {
+  tournamentFilter?: number[];
+  includeCut: boolean;
+  includeSwiss: boolean;
+}): Promise<GameResults> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .rpc("get_tournament_game_outcomes", {
       tournament_filter: tournamentFilter ?? null,
+      include_swiss: includeSwiss,
+      include_cut: includeCut,
     })
     .select();
 
