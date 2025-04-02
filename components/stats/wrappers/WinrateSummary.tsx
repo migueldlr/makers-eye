@@ -1,7 +1,7 @@
 "use client";
 
 import { getIdentityWinrates, IdentityWinrateData } from "@/app/stats/actions";
-import WinrateChart from "./WinrateChart2";
+import WinrateChart from "../charts/WinrateChart2";
 import { useEffect, useState } from "react";
 
 export default function WinrateSummary({

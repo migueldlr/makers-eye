@@ -30,7 +30,7 @@ import { BackButton } from "@/components/BackButton";
 import TournamentFilter from "@/components/TournamentFilter";
 import { TournamentRow } from "@/lib/localtypes";
 import GameResultsSummary from "./GameResultsSummary";
-import WinrateSummary from "@/components/WinrateSummary";
+import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,

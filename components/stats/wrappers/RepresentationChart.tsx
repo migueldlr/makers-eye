@@ -1,8 +1,8 @@
 "use client";
 
 import { DonutChart } from "@mantine/charts";
-import { Player, Tournament } from "../lib/types";
-import { representationById } from "../lib/tournament";
+import { Player, Tournament } from "@/lib/types";
+import { representationById } from "@/lib/tournament";
 import {
   Group,
   luminance,
@@ -13,7 +13,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { idToFaction, shortenId } from "../lib/util";
+import { idToFaction, shortenId } from "@/lib/util";
 import { useState } from "react";
 
 function ChartTooltip({

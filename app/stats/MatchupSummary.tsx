@@ -10,7 +10,7 @@ import {
 } from "@mantine/core";
 import { getMatchesMetadata, getSideWinrates, WinrateData } from "./actions";
 import { useEffect, useState } from "react";
-import MatchupChart from "@/components/MatchupChart";
+import MatchupChart from "@/components/stats/charts/MatchupChart";
 
 export default function MatchupSummary({
   tournamentIds,

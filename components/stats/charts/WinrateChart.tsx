@@ -12,9 +12,9 @@ import {
   groupRoundsByCorp,
   groupRoundsByRunner,
   winrateById,
-} from "../lib/tournament";
+} from "../../../lib/tournament";
 import { Checkbox, Group, Paper, Stack, Text, Title } from "@mantine/core";
-import { Tournament } from "../lib/types";
+import { Tournament } from "../../../lib/types";
 import { useState } from "react";
 
 function ChartTooltip({
