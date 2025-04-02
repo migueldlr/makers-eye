@@ -90,13 +90,20 @@ function processData(
     const cut = cutDataMap[id];
     const swiss = swissDataMap[id];
 
+    const swissWr =
+      swiss.total_wins /
+      (swiss.total_wins + swiss.total_losses + swiss.total_draws);
+    const cutWr = cut
+      ? cut.total_wins / (cut.total_wins + cut.total_losses + cut.total_draws)
+      : 0;
+
     return {
       name: id,
       color: factionToColor(idToFaction(id)),
       data: [
         {
-          cutWr: cut ? cut.win_rate : 0,
-          swissWr: swiss.win_rate,
+          cutWr: cutWr * 100,
+          swissWr: swissWr * 100,
           cutGames: cut ? cut.total_games : 0,
           swissGames: swiss.total_games,
           totalGames: swiss.total_games + (cut ? cut.total_games : 0),
