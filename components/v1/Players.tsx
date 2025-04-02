@@ -1,6 +1,6 @@
 "use client";
 
-import { Player, Tournament } from "../lib/types";
+import { Player, Tournament } from "@/lib/types";
 import {
   Flex,
   Text,
@@ -23,8 +23,8 @@ import {
   isDss,
   playerInGame,
   PlayerResult,
-} from "../lib/tournament";
-import { shortenId } from "../lib/util";
+} from "@/lib/tournament";
+import { shortenId } from "@/lib/util";
 
 function SideRow({
   games,
