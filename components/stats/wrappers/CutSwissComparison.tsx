@@ -66,7 +66,7 @@ function CustomDot({
     <Dot
       cx={cx}
       cy={cy}
-      r={convertRange(cutGames, gameRange, [3, 20])}
+      r={Math.sqrt(convertRange(cutGames, gameRange, DOT_SIZE_RANGE))}
       fill={color}
     />
   );
@@ -122,6 +122,8 @@ interface CutSwissChartData {
   color: string;
   data: Payload[];
 }
+
+const DOT_SIZE_RANGE: [number, number] = [25, 500];
 
 export default function CutSwissComparison({
   tournamentIds,
