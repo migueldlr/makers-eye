@@ -17,7 +17,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: any }) {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="en" {...mantineHtmlProps} style={{ scrollPaddingTop: "100px" }}>
       <head>
         <ColorSchemeScript defaultColorScheme="dark" />
         <meta
