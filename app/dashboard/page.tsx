@@ -16,7 +16,7 @@ import {
   Code,
 } from "@mantine/core";
 import { signOut } from "../login/actions";
-import { BackButton } from "@/components/BackButton";
+import { BackButton } from "@/components/common/BackButton";
 import { useEffect, useState } from "react";
 import { Tournament } from "@/lib/types";
 import { User } from "@supabase/supabase-js";
@@ -37,9 +37,9 @@ import {
   uploadTournament,
 } from "./actions";
 import { tournamentToMatches, tournamentToStandings } from "@/lib/tournament";
-import { SearchableSelect } from "@/components/SearchableSelect";
+import { SearchableSelect } from "@/components/common/SearchableSelect";
 import { Database } from "@/lib/supabase";
-import TournamentTable from "../stats/TournamentTable";
+import TournamentTable from "../../components/stats/TournamentTable";
 import { TournamentRow } from "@/lib/localtypes";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {

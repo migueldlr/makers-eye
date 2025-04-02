@@ -26,10 +26,10 @@ import { useHotkeys, useOs, useWindowScroll } from "@mantine/hooks";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import DateFilter from "./stats/filters/DateFilter";
-import RegionFilter from "./stats/filters/RegionFilter";
-import OnlineFilter from "./stats/filters/OnlineFilter";
-import PhaseFilter from "./stats/filters/PhaseFilter";
+import DateFilter from "./filters/DateFilter";
+import RegionFilter from "./filters/RegionFilter";
+import OnlineFilter from "./filters/OnlineFilter";
+import PhaseFilter from "./filters/PhaseFilter";
 
 export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
 export const ONLINE_OPTIONS = ["Online", "Paper"];

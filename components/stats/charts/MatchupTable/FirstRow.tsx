@@ -1,6 +1,6 @@
 import { TableTr, TableTd } from "@mantine/core";
-import { WinrateData } from "./actions";
-import { FillerTd } from "./MatchupTable";
+import { WinrateData } from "@/app/stats/actions";
+import { FillerTd } from "../MatchupTable";
 
 export default function FirstRow({
   allSideTwoIds,

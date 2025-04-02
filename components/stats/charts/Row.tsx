@@ -1,9 +1,9 @@
 import { shortenId } from "@/lib/util";
 import { TableTr, TableTd, Text } from "@mantine/core";
 import { memo, useMemo } from "react";
-import Cell from "./Cell";
+import Cell from "./MatchupTable/Cell";
 import { WinrateData } from "./actions";
-import { HOVER_STYLE } from "./MatchupTable";
+import { HOVER_STYLE } from "../../components/stats/charts/MatchupTable";
 
 function Row_unmemoized({
   sideOneId,

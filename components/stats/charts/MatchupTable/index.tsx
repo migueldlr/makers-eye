@@ -20,7 +20,7 @@ import {
   RangeSlider,
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
-import { getMatchesMetadata, getWinrates } from "./actions";
+import { getMatchesMetadata, getWinrates } from "../../../../app/stats/actions";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Row from "./Row";
 import FirstRow from "./FirstRow";

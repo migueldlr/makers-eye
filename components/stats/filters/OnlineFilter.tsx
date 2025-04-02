@@ -1,5 +1,5 @@
 import { Checkbox, CheckboxGroup, Group, Stack, Title } from "@mantine/core";
-import { ONLINE_OPTIONS } from "../../TournamentFilter";
+import { ONLINE_OPTIONS } from "../TournamentFilter";
 
 export default function OnlineFilter({
   online,

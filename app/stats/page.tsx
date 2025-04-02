@@ -8,8 +8,8 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import MatchupTable from "./MatchupTable";
-import TournamentTable from "./TournamentTable";
+import MatchupTable from "../../components/stats/charts/MatchupTable";
+import TournamentTable from "../../components/stats/TournamentTable";
 import { createClient } from "@/utils/supabase/server";
 import { Metadata } from "next";
 import {
@@ -24,10 +24,10 @@ import {
 } from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "./SummaryStats";
-import MatchupSummary from "./MatchupSummary";
-import RepresentationChart from "./RepresentationChart";
-import { BackButton } from "@/components/BackButton";
-import TournamentFilter from "@/components/TournamentFilter";
+import MatchupSummary from "../../components/stats/wrappers/MatchupSummary";
+import RepresentationChart from "../../components/stats/wrappers/RepresentationChart";
+import { BackButton } from "@/components/common/BackButton";
+import TournamentFilter from "@/components/stats/TournamentFilter";
 import { TournamentRow } from "@/lib/localtypes";
 import GameResultsSummary from "./GameResultsSummary";
 import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";

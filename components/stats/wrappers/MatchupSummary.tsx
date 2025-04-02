@@ -8,7 +8,11 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
-import { getMatchesMetadata, getSideWinrates, WinrateData } from "./actions";
+import {
+  getMatchesMetadata,
+  getSideWinrates,
+  WinrateData,
+} from "../../../app/stats/actions";
 import { useEffect, useState } from "react";
 import MatchupChart from "@/components/stats/charts/MatchupChart";
 

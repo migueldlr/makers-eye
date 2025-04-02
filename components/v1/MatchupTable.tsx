@@ -29,8 +29,8 @@ import {
   groupPlayersByRunner,
   groupRoundsByCorp,
   groupRoundsByRunner,
-} from "../../../lib/tournament";
-import { DEFAULT_UNKNOWN_ID, shortenId } from "../../../lib/util";
+} from "../../lib/tournament";
+import { DEFAULT_UNKNOWN_ID, shortenId } from "../../lib/util";
 import { useState } from "react";
 import { IconTransfer } from "@tabler/icons-react";
 

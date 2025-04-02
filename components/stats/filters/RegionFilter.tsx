@@ -1,5 +1,5 @@
 import { Checkbox, CheckboxGroup, Group, Stack, Title } from "@mantine/core";
-import { ALL_REGION_OPTIONS } from "../../TournamentFilter";
+import { ALL_REGION_OPTIONS } from "../TournamentFilter";
 
 export default function RegionFilter({
   regions,

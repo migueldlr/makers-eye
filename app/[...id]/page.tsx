@@ -1,12 +1,12 @@
 import { Tournament } from "../../lib/types";
 import { Alert, Anchor, Container, Stack, Title } from "@mantine/core";
-import { Players } from "../../components/Players";
-import { MatchupTable } from "../../components/stats/charts/MatchupTable";
+import { Players } from "@/components/v1/Players";
+import { MatchupTable } from "../../components/v1/MatchupTable";
 import { createPlayerMap, augmentRounds } from "../../lib/tournament";
-import { WinrateChart } from "../../components/stats/charts/WinrateChart";
+import { WinrateChart } from "../../components/v1/WinrateChart";
 import { IconAlertHexagon } from "@tabler/icons-react";
-import { BackButton } from "../../components/BackButton";
-import { RepresentationChart } from "@/components/stats/wrappers/RepresentationChart";
+import { BackButton } from "../../components/common/BackButton";
+import { RepresentationChart } from "@/components/v1/RepresentationChart";
 import { SITE_TITLE, URLS } from "@/lib/util";
 import SideComparison from "../stats/SideComparison";
 

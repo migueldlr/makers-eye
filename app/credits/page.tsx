@@ -1,4 +1,4 @@
-import { BackButton } from "@/components/BackButton";
+import { BackButton } from "@/components/common/BackButton";
 import { SITE_TITLE } from "@/lib/util";
 import { netrunnerFont } from "@/styles/fonts";
 import {

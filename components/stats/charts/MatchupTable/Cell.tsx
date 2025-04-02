@@ -20,8 +20,8 @@ import {
   getMatchesByIdentity,
   MatchesByIdentity,
   WinrateData,
-} from "./actions";
-import { HOVER_STYLE } from "./MatchupTable";
+} from "@/app/stats/actions";
+import { HOVER_STYLE } from "./index";
 
 function MatchupHistory({
   sideOneId,

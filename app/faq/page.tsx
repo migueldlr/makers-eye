@@ -1,4 +1,4 @@
-import { BackButton } from "@/components/BackButton";
+import { BackButton } from "@/components/common/BackButton";
 import { SITE_TITLE } from "@/lib/util";
 import { Container, Stack, Title, Text, Box, Anchor } from "@mantine/core";
 import { Metadata } from "next";

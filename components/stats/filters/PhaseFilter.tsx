@@ -1,5 +1,5 @@
 import { Stack, Title, CheckboxGroup, Group, Checkbox } from "@mantine/core";
-import { PHASE_OPTIONS } from "../../TournamentFilter";
+import { PHASE_OPTIONS } from "../TournamentFilter";
 
 export default function PhaseFilter({
   phase,

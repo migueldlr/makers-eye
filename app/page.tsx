@@ -1,6 +1,6 @@
 "use client";
 
-import LinkToDashboard from "@/components/LinkToDashboard";
+import LinkToDashboard from "@/components/common/LinkToDashboard";
 import { parseUrl } from "@/lib/util";
 import { netrunnerFont } from "@/styles/fonts";
 import {
