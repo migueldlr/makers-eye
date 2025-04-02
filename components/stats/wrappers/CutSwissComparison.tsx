@@ -131,7 +131,6 @@ export default function CutSwissComparison({
   side: "corp" | "runner";
 }) {
   const theme = useMantineTheme();
-  console.log(theme.colors.dark[8]);
   const [data, setData] = useState<CutSwissChartData[]>([]);
   const [range, setRange] = useState<[number, number]>([0, 1]);
   useEffect(() => {
@@ -167,8 +166,6 @@ export default function CutSwissComparison({
       ]);
     })();
   }, [tournamentIds, side]);
-
-  console.log(range);
 
   return (
     <ResponsiveContainer height={500} width={"70%"} style={{ padding: 10 }}>

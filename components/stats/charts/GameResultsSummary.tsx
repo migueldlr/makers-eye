@@ -108,7 +108,6 @@ export default function GameResultsSummary({
 
   return (
     <Stack>
-      <Title order={3}>Game results</Title>
       <DonutChart
         data={chartData}
         startAngle={90}

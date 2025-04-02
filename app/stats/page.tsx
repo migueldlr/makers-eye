@@ -32,6 +32,7 @@ import { TournamentRow } from "@/lib/localtypes";
 import GameResultsSummary from "../../components/stats/charts/GameResultsSummary";
 import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
 import CutSwissComparison from "@/components/stats/wrappers/CutSwissComparison";
+import TitleWithAnchor from "@/components/common/TitleWithAnchor";
 
 export const metadata: Metadata = {
   title: `24.12 Meta Analysis | ${SITE_TITLE}`,
@@ -83,10 +84,9 @@ export default async function StatsPage({
         <SummaryStats tournamentIds={tournamentIds} />
 
         <Space h="md" />
-        <Title order={4} mb="sm">
+        <TitleWithAnchor id="tournaments" order={4}>
           Included tournaments ({tournamentIds?.length ?? 0})
-        </Title>
-        <Space h="xs" />
+        </TitleWithAnchor>
         <ScrollArea h={400}>
           {tournaments == null ? (
             <div>Loading...</div>
@@ -98,15 +98,18 @@ export default async function StatsPage({
           )}
         </ScrollArea>
 
+        <TitleWithAnchor id="game-results">
+          Game results summary
+        </TitleWithAnchor>
         <GameResultsSummary
           tournamentIds={tournamentIds}
           includeCut={includeCut}
           includeSwiss={includeSwiss}
         />
 
-        <Title order={3} my="sm">
+        <TitleWithAnchor id="corp-representation">
           Corp representation
-        </Title>
+        </TitleWithAnchor>
         <RepresentationChart
           tournamentIds={tournamentIds}
           side="corp"
@@ -114,9 +117,7 @@ export default async function StatsPage({
           includeSwiss={includeSwiss}
         />
 
-        <Title order={3} my="sm">
-          Corp winrates
-        </Title>
+        <TitleWithAnchor id="corp-winrates">Corp winrates</TitleWithAnchor>
         <WinrateSummary
           tournamentIds={tournamentIds}
           side="corp"
@@ -124,14 +125,12 @@ export default async function StatsPage({
           includeSwiss={includeSwiss}
         />
 
-        <Title order={3} my="sm">
+        <TitleWithAnchor id="corp-cut-vs-swiss">
           Corp cut vs swiss
-        </Title>
+        </TitleWithAnchor>
         <CutSwissComparison tournamentIds={tournamentIds} side="corp" />
 
-        <Title order={3} my="sm">
-          Corp matchups
-        </Title>
+        <TitleWithAnchor id="corp-matchups">Corp matchups</TitleWithAnchor>
         <MatchupSummary
           tournamentIds={tournamentIds}
           side="corp"
@@ -139,9 +138,9 @@ export default async function StatsPage({
           includeSwiss={includeSwiss}
         />
 
-        <Title order={3} my="sm">
+        <TitleWithAnchor id="runner-representation">
           Runner representation
-        </Title>
+        </TitleWithAnchor>
         <RepresentationChart
           tournamentIds={tournamentIds}
           side="runner"
@@ -149,32 +148,28 @@ export default async function StatsPage({
           includeSwiss={includeSwiss}
         />
 
-        <Title order={3} my="sm">
-          Runner winrates
-        </Title>
+        <TitleWithAnchor id="runner-winrates">Runner winrates</TitleWithAnchor>
         <WinrateSummary
           tournamentIds={tournamentIds}
           side="runner"
           includeCut={includeCut}
           includeSwiss={includeSwiss}
         />
-        <Title order={3} my="sm">
+
+        <TitleWithAnchor id="runner-cut-vs-swiss">
           Runner cut vs swiss
-        </Title>
+        </TitleWithAnchor>
         <CutSwissComparison tournamentIds={tournamentIds} side="runner" />
 
-        <Title order={3} my="sm">
-          Runner matchups
-        </Title>
+        <TitleWithAnchor id="runner-matchups">Runner matchups</TitleWithAnchor>
         <MatchupSummary
           tournamentIds={tournamentIds}
           side="runner"
           includeCut={includeCut}
           includeSwiss={includeSwiss}
         />
-        <Title order={3} my="sm">
-          Matchup spread
-        </Title>
+
+        <TitleWithAnchor id="matchup-spread">Matchup spread</TitleWithAnchor>
         <MatchupTable
           tournamentIds={tournamentIds}
           includeCut={includeCut}
