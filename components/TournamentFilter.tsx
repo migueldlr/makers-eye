@@ -27,9 +27,9 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import DateFilter from "./DateFilter";
-import RegionFilter from "./RegionFilter";
-import OnlineFilter from "./OnlineFilter";
-import PhaseFilter from "./PhaseFilter";
+import RegionFilter from "./stats/filter/RegionFilter";
+import OnlineFilter from "./stats/filter/OnlineFilter";
+import PhaseFilter from "./stats/filter/PhaseFilter";
 
 export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
 export const ONLINE_OPTIONS = ["Online", "Paper"];
