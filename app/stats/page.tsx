@@ -17,6 +17,7 @@ import {
   END_DATE_FILTER_KEY,
   isWithinDateRange,
   ONLINE_FILTER_KEY,
+  PHASE_FILTER_KEY,
   REGION_FILTER_KEY,
   SITE_TITLE,
   START_DATE_FILTER_KEY,
@@ -61,6 +62,10 @@ export default async function StatsPage({
     )
     .map((t) => t.id);
 
+  const phase = (params[PHASE_FILTER_KEY] ?? "") as string;
+  const includeSwiss = phase.length === 0 || phase.split(",").includes("Swiss");
+  const includeCut = phase.length === 0 || phase.split(",").includes("Cut");
+
   return (
     <Container fluid px="lg" py="lg">
       <Stack display="block" pos="relative">
@@ -102,7 +107,16 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Corp winrates
         </Title>
-        <WinrateSummary tournamentIds={tournamentIds} side="corp" />
+        <WinrateSummary
+          tournamentIds={tournamentIds}
+          side="corp"
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
+
+        <Title order={3} my="sm">
+          Corp cut vs swiss
+        </Title>
 
         <Title order={3} my="sm">
           Corp matchups
@@ -117,7 +131,12 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Runner winrates
         </Title>
-        <WinrateSummary tournamentIds={tournamentIds} side="runner" />
+        <WinrateSummary
+          tournamentIds={tournamentIds}
+          side="runner"
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
 
         <Title order={3} my="sm">
           Runner matchups

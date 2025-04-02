@@ -1,24 +1,32 @@
-import { IdentityWinrateData } from "@/app/stats/actions";
-import { createClient } from "@/utils/supabase/server";
-import WinrateChart from "./WinrateChart2";
+"use client";
 
-export default async function WinrateSummary({
+import { getIdentityWinrates, IdentityWinrateData } from "@/app/stats/actions";
+import WinrateChart from "./WinrateChart2";
+import { useEffect, useState } from "react";
+
+export default function WinrateSummary({
   tournamentIds,
   side,
+  includeCut,
+  includeSwiss,
 }: {
   tournamentIds: number[];
   side: "corp" | "runner";
+  includeCut: boolean;
+  includeSwiss: boolean;
 }) {
-  const supabase = await createClient();
-
-  const { data: winrates, error } = await supabase.rpc(
-    side === "corp"
-      ? "get_corp_identity_winrates"
-      : "get_runner_identity_winrates",
-    {
-      tournament_filter: tournamentIds,
-    }
-  );
+  const [winrates, setWinrates] = useState<IdentityWinrateData[]>([]);
+  useEffect(() => {
+    (async () => {
+      const data = await getIdentityWinrates({
+        tournamentIds,
+        side,
+        includeCut,
+        includeSwiss,
+      });
+      setWinrates(data);
+    })();
+  }, [tournamentIds]);
 
   return <WinrateChart winrates={winrates as IdentityWinrateData[]} />;
 }

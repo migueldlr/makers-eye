@@ -5,6 +5,7 @@ import {
   DEFAULT_NONE,
   END_DATE_FILTER_KEY,
   ONLINE_FILTER_KEY,
+  PHASE_FILTER_KEY,
   REGION_FILTER_KEY,
   REGION_OPTIONS,
   START_DATE_FILTER_KEY,
@@ -28,9 +29,11 @@ import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import DateFilter from "./DateFilter";
 import RegionFilter from "./RegionFilter";
 import OnlineFilter from "./OnlineFilter";
+import PhaseFilter from "./PhaseFilter";
 
 export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
 export const ONLINE_OPTIONS = ["Online", "Paper"];
+export const PHASE_OPTIONS = ["Swiss", "Cut"];
 
 export default function TournamentFilter({
   tournaments,
@@ -100,6 +103,7 @@ function AccordionControlContent() {
   const endDateParam = searchParams.get(END_DATE_FILTER_KEY);
   const regionParam = searchParams.get(REGION_FILTER_KEY);
   const onlineParam = searchParams.get(ONLINE_FILTER_KEY);
+  const phaseParam = searchParams.get(PHASE_FILTER_KEY);
 
   const startDateTag = startDateParam ? (
     <Pill>Start date: {startDateParam}</Pill>
@@ -113,6 +117,9 @@ function AccordionControlContent() {
   const onlineTag = onlineParam ? (
     <Pill>Location: {onlineParam.split(",").join(", ")}</Pill>
   ) : null;
+  const phaseTag = phaseParam ? (
+    <Pill>Phase: {phaseParam.split(",").join(", ")}</Pill>
+  ) : null;
 
   return (
     <Group>
@@ -122,6 +129,7 @@ function AccordionControlContent() {
         {onlineTag}
         {startDateTag}
         {endDateTag}
+        {phaseTag}
       </Group>
     </Group>
   );
@@ -150,7 +158,7 @@ function AccordionPanelContent_raw({
   const [endDateSelected, setEndDateSelected] = useState(
     searchParams.get(END_DATE_FILTER_KEY) ?? ""
   );
-  const initialRegion_raw = searchParams.get("region");
+  const initialRegion_raw = searchParams.get(REGION_FILTER_KEY);
   const initialRegion = (initialRegion_raw ?? "")
     .split(",")
     .filter((x) => x.length > 0);
@@ -166,11 +174,20 @@ function AccordionPanelContent_raw({
     initialOnline.length > 0 ? initialOnline : ONLINE_OPTIONS
   );
 
+  const initialPhase_raw = searchParams.get(PHASE_FILTER_KEY);
+  const initialPhase = (initialPhase_raw ?? "")
+    .split(",")
+    .filter((x) => x.length > 0);
+  const [phaseSelected, setPhaseSelected] = useState(
+    initialPhase.length > 0 ? initialPhase : PHASE_OPTIONS
+  );
+
   const hasFilters =
     searchParams.has(START_DATE_FILTER_KEY) ||
     searchParams.has(END_DATE_FILTER_KEY) ||
     searchParams.has(REGION_FILTER_KEY) ||
-    searchParams.has(ONLINE_FILTER_KEY);
+    searchParams.has(ONLINE_FILTER_KEY) ||
+    searchParams.has(PHASE_FILTER_KEY);
 
   const href = useMemo(
     () =>
@@ -187,8 +204,17 @@ function AccordionPanelContent_raw({
         ...(onlineSelected.length !== ONLINE_OPTIONS.length && {
           [ONLINE_FILTER_KEY]: onlineSelected.join(","),
         }),
+        ...(phaseSelected.length !== PHASE_OPTIONS.length && {
+          [PHASE_FILTER_KEY]: phaseSelected.join(","),
+        }),
       }).toString(),
-    [startDateSelected, endDateSelected, regionsSelected, onlineSelected]
+    [
+      startDateSelected,
+      endDateSelected,
+      regionsSelected,
+      onlineSelected,
+      phaseSelected,
+    ]
   );
 
   const tournamentsFiltered = useMemo(
@@ -215,6 +241,7 @@ function AccordionPanelContent_raw({
             setRegions={setRegionsSelected}
           />
           <OnlineFilter online={onlineSelected} setOnline={setOnlineSelected} />
+          <PhaseFilter phase={phaseSelected} setPhase={setPhaseSelected} />
         </Stack>
         <DateFilter
           tournaments={tournamentsFiltered}

@@ -179,6 +179,37 @@ export async function getSideWinrates(
   return data;
 }
 
+export async function getIdentityWinrates({
+  tournamentIds,
+  side,
+  includeCut = true,
+  includeSwiss = true,
+}: {
+  tournamentIds: number[];
+  side: "corp" | "runner";
+  includeCut?: boolean;
+  includeSwiss?: boolean;
+}) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc(
+    side === "corp"
+      ? "get_corp_identity_winrates"
+      : "get_runner_identity_winrates",
+    {
+      tournament_filter: tournamentIds,
+      include_swiss: includeSwiss,
+      include_cut: includeCut,
+    }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 export async function getCorpPopularity(
   tournamentFilter?: number[]
 ): Promise<PopularityData[]> {
