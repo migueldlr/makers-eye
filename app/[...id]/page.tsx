@@ -8,7 +8,7 @@ import { IconAlertHexagon } from "@tabler/icons-react";
 import { BackButton } from "../../components/common/BackButton";
 import { RepresentationChart } from "@/components/v1/RepresentationChart";
 import { SITE_TITLE, URLS } from "@/lib/util";
-import SideComparison from "../stats/SideComparison";
+import SideComparison from "../../components/v1/SideComparison";
 
 export async function generateMetadata({
   params,

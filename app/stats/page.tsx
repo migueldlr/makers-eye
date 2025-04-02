@@ -23,13 +23,13 @@ import {
   START_DATE_FILTER_KEY,
 } from "@/lib/util";
 import { IconInfoCircle } from "@tabler/icons-react";
-import SummaryStats from "./SummaryStats";
+import SummaryStats from "../../components/stats/SummaryStats";
 import MatchupSummary from "../../components/stats/wrappers/MatchupSummary";
 import RepresentationChart from "../../components/stats/wrappers/RepresentationChart";
 import { BackButton } from "@/components/common/BackButton";
 import TournamentFilter from "@/components/stats/TournamentFilter";
 import { TournamentRow } from "@/lib/localtypes";
-import GameResultsSummary from "./GameResultsSummary";
+import GameResultsSummary from "../../components/stats/charts/GameResultsSummary";
 import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
 
 export const metadata: Metadata = {

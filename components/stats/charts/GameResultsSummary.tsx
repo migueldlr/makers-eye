@@ -1,7 +1,7 @@
 "use client";
 
 import { DonutChart } from "@mantine/charts";
-import { GameResults, getGameResults } from "./actions";
+import { GameResults, getGameResults } from "../../../app/stats/actions";
 import { Card, luminance, Paper, Stack, Text, Title } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { RADIAN } from "@/lib/util";
