@@ -1,7 +1,7 @@
 "use client";
 
 import { getIdentityWinrates, IdentityWinrateData } from "@/app/stats/actions";
-import { Paper, Text, useMantineTheme } from "@mantine/core";
+import { Paper, Stack, Switch, Text, useMantineTheme } from "@mantine/core";
 import { useEffect, useState } from "react";
 import {
   ValueType,
@@ -52,6 +52,7 @@ function CustomDot({
   color,
   gameRange,
   id,
+  scaleDots,
   ...rest
 }: {
   cx: number;
@@ -60,13 +61,18 @@ function CustomDot({
   cutGames: number;
   color: string;
   id: string;
+  scaleDots: boolean;
   gameRange: [number, number];
 }) {
   return (
     <Dot
       cx={cx}
       cy={cy}
-      r={Math.sqrt(convertRange(cutGames, gameRange, DOT_SIZE_RANGE))}
+      r={
+        scaleDots
+          ? Math.sqrt(convertRange(cutGames, gameRange, DOT_SIZE_RANGE))
+          : 5
+      }
       fill={color}
     />
   );
@@ -142,6 +148,7 @@ export default function CutSwissComparison({
   const theme = useMantineTheme();
   const [data, setData] = useState<CutSwissChartData[]>([]);
   const [range, setRange] = useState<[number, number]>([0, 1]);
+  const [scaleDots, setScaleDots] = useState(true);
   useEffect(() => {
     (async () => {
       const cutData = await getIdentityWinrates({
@@ -177,57 +184,64 @@ export default function CutSwissComparison({
   }, [tournamentIds, side]);
 
   return (
-    <ResponsiveContainer height={500} width={"70%"} style={{ padding: 10 }}>
-      <ScatterChart
-        data={data}
-        margin={{ top: 25, right: 25, left: 25, bottom: 25 }}
-      >
-        <XAxis
-          dataKey="swissWr"
-          type="number"
-          name="Swiss WR (%)"
-          fill={theme.colors.dark[2]}
-          domain={[0, 100]}
+    <Stack>
+      <ResponsiveContainer height={500} width={"70%"} style={{ padding: 10 }}>
+        <ScatterChart
+          data={data}
+          margin={{ top: 25, right: 25, left: 25, bottom: 25 }}
         >
-          <Label
-            value={"Swiss WR (%)"}
-            offset={0}
-            position="bottom"
+          <XAxis
+            dataKey="swissWr"
+            type="number"
+            name="Swiss WR (%)"
             fill={theme.colors.dark[2]}
-          />
-        </XAxis>
-        <YAxis
-          dataKey="cutWr"
-          type="number"
-          fill={theme.colors.dark[2]}
-          domain={[0, 100]}
-        >
-          <Label
-            value={"Cut WR (%)"}
-            angle={-90}
-            position="insideLeft"
+            domain={[0, 100]}
+          >
+            <Label
+              value={"Swiss WR (%)"}
+              offset={0}
+              position="bottom"
+              fill={theme.colors.dark[2]}
+            />
+          </XAxis>
+          <YAxis
+            dataKey="cutWr"
+            type="number"
             fill={theme.colors.dark[2]}
+            domain={[0, 100]}
+          >
+            <Label
+              value={"Cut WR (%)"}
+              angle={-90}
+              position="insideLeft"
+              fill={theme.colors.dark[2]}
+            />
+          </YAxis>
+          <ZAxis dataKey="cutGames" type="number" range={range} />
+          <ReferenceLine x={50} stroke={theme.colors.dark[4]} />
+          <ReferenceLine y={50} stroke={theme.colors.dark[4]} />
+          <Tooltip
+            isAnimationActive={false}
+            cursor={{ strokeDasharray: "5 5", stroke: theme.colors.dark[2] }}
+            content={ChartTooltip}
           />
-        </YAxis>
-        <ZAxis dataKey="cutGames" type="number" range={range} />
-        <ReferenceLine x={50} stroke={theme.colors.dark[4]} />
-        <ReferenceLine y={50} stroke={theme.colors.dark[4]} />
-        <Tooltip
-          isAnimationActive={false}
-          cursor={{ strokeDasharray: "5 5", stroke: theme.colors.dark[2] }}
-          content={ChartTooltip}
-        />
-        {data.map((series) => (
-          <Scatter
-            key={series.name}
-            name={series.name}
-            data={series.data}
-            fill={series.color}
-            // @ts-ignore
-            shape={<CustomDot gameRange={range} />}
-          ></Scatter>
-        ))}
-      </ScatterChart>
-    </ResponsiveContainer>
+          {data.map((series) => (
+            <Scatter
+              key={series.name}
+              name={series.name}
+              data={series.data}
+              fill={series.color}
+              // @ts-ignore
+              shape={<CustomDot gameRange={range} scaleDots={scaleDots} />}
+            ></Scatter>
+          ))}
+        </ScatterChart>
+      </ResponsiveContainer>
+      <Switch
+        checked={scaleDots}
+        onChange={(e) => setScaleDots(e.currentTarget.checked)}
+        label="Scale dots"
+      />
+    </Stack>
   );
 }
