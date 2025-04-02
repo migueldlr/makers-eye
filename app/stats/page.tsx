@@ -158,6 +158,10 @@ export default async function StatsPage({
           includeCut={includeCut}
           includeSwiss={includeSwiss}
         />
+        <Title order={3} my="sm">
+          Runner cut vs swiss
+        </Title>
+        <CutSwissComparison tournamentIds={tournamentIds} side="runner" />
 
         <Title order={3} my="sm">
           Runner matchups

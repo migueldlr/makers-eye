@@ -181,6 +181,7 @@ export default function CutSwissComparison({
           type="number"
           name="Swiss WR (%)"
           fill={theme.colors.dark[2]}
+          domain={[0, 100]}
         >
           <Label
             value={"Swiss WR (%)"}
@@ -189,7 +190,12 @@ export default function CutSwissComparison({
             fill={theme.colors.dark[2]}
           />
         </XAxis>
-        <YAxis dataKey="cutWr" type="number" fill={theme.colors.dark[2]}>
+        <YAxis
+          dataKey="cutWr"
+          type="number"
+          fill={theme.colors.dark[2]}
+          domain={[0, 100]}
+        >
           <Label
             value={"Cut WR (%)"}
             angle={-90}
