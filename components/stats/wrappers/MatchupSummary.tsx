@@ -41,8 +41,8 @@ export default function MatchupSummary({
   useEffect(() => {
     (async () => {
       const res = await getMatchesMetadata({
-        includeCut: true,
-        includeSwiss: true,
+        includeCut,
+        includeSwiss,
         tournamentFilter: tournamentIds,
       });
       const mainSideIds = (side === "corp" ? res.corpData : res.runnerData)
