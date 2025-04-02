@@ -199,7 +199,7 @@ export async function getIdentityWinrates({
   side: "corp" | "runner";
   includeCut?: boolean;
   includeSwiss?: boolean;
-}) {
+}): Promise<IdentityWinrateData[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc(

@@ -34,10 +34,11 @@ function ChartTooltip(props: TooltipProps<ValueType, NameType>) {
     <Paper px="md" py="sm" withBorder shadow="md" radius="md">
       <Text>{id}</Text>
       <Text>
-        Cut WR: {cutWr.toFixed(2)}% ({cutGames} game{cutGames !== 1 ? "s" : ""})
+        Cut WR: {cutWr.toPrecision(3)}% ({cutGames} game
+        {cutGames !== 1 ? "s" : ""})
       </Text>
       <Text>
-        Swiss WR: {swissWr.toFixed(2)}% ({swissGames} game
+        Swiss WR: {swissWr.toPrecision(3)}% ({swissGames} game
         {swissGames !== 1 ? "s" : ""})
       </Text>
     </Paper>
@@ -148,6 +149,8 @@ export default function CutSwissComparison({
   const theme = useMantineTheme();
   const [data, setData] = useState<CutSwissChartData[]>([]);
   const [range, setRange] = useState<[number, number]>([0, 1]);
+  const [overallCutWr, setOverallCutWr] = useState(50);
+  const [overallSwissWr, setOverallSwissWr] = useState(50);
   const [scaleDots, setScaleDots] = useState(true);
   useEffect(() => {
     (async () => {
@@ -180,6 +183,17 @@ export default function CutSwissComparison({
           )
         ),
       ]);
+
+      setOverallCutWr(
+        (cutData.reduce((acc, cur) => acc + cur.total_wins, 0) /
+          (cutData.reduce((acc, cur) => acc + cur.total_games, 0) || 1)) *
+          100
+      );
+      setOverallSwissWr(
+        (swissData.reduce((acc, cur) => acc + cur.total_wins, 0) /
+          (swissData.reduce((acc, cur) => acc + cur.total_games, 0) || 1)) *
+          100
+      );
     })();
   }, [tournamentIds, side]);
 
@@ -218,8 +232,23 @@ export default function CutSwissComparison({
             />
           </YAxis>
           <ZAxis dataKey="cutGames" type="number" range={range} />
-          <ReferenceLine x={50} stroke={theme.colors.dark[4]} />
-          <ReferenceLine y={50} stroke={theme.colors.dark[4]} />
+          <ReferenceLine x={overallSwissWr} stroke={theme.colors.dark[4]}>
+            <Label
+              position="insideTopRight"
+              angle={90}
+              style={{
+                textAnchor: "start",
+                translate: 20,
+              }}
+            >
+              {`${overallSwissWr.toPrecision(3)}%`}
+            </Label>
+          </ReferenceLine>
+          <ReferenceLine y={overallCutWr} stroke={theme.colors.dark[4]}>
+            <Label position="insideBottomLeft">{`${overallCutWr.toPrecision(
+              3
+            )}%`}</Label>
+          </ReferenceLine>
           <Tooltip
             isAnimationActive={false}
             cursor={{ strokeDasharray: "5 5", stroke: theme.colors.dark[2] }}
