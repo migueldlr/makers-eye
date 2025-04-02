@@ -41,8 +41,12 @@ export const HOVER_STYLE = {
 
 export default function MatchupTable({
   tournamentIds,
+  includeCut,
+  includeSwiss,
 }: {
   tournamentIds: number[];
+  includeCut: boolean;
+  includeSwiss: boolean;
 }) {
   const [winrates, setWinrates] = useState<
     Awaited<ReturnType<typeof getWinrates>> | undefined
@@ -56,8 +60,6 @@ export default function MatchupTable({
   const [groupByFaction, setGroupByFaction] = useState(false);
   const [showColors, setShowColors] = useState(true);
   const [showPercentages, setShowPercentages] = useState(false);
-  const [includeCut, setIncludeCut] = useState(true);
-  const [includeSwiss, setIncludeSwiss] = useState(true);
   const [wrRange, setWrRange] = useState<[number, number]>([0, 100]);
   const [hoveredCoords, setHoveredCoords] = useState<{
     row: number;
@@ -199,18 +201,6 @@ export default function MatchupTable({
           onChange={(e) => setShowPercentages(e.currentTarget.checked)}
           label="Show percentages"
         />
-        <Stack>
-          <Switch
-            checked={includeCut}
-            onChange={(e) => setIncludeCut(e.currentTarget.checked)}
-            label="Include cut"
-          />
-          <Switch
-            checked={includeSwiss}
-            onChange={(e) => setIncludeSwiss(e.currentTarget.checked)}
-            label="Include swiss"
-          />
-        </Stack>
       </Group>
     </Stack>
   );

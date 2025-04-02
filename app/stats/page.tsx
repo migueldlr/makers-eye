@@ -145,7 +145,11 @@ export default async function StatsPage({
         <Title order={3} my="sm">
           Matchup spread
         </Title>
-        <MatchupTable tournamentIds={tournamentIds} />
+        <MatchupTable
+          tournamentIds={tournamentIds}
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
         <BackButton />
       </Stack>
       <Center>
