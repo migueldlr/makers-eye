@@ -84,7 +84,7 @@ export default async function StatsPage({
         <SummaryStats tournamentIds={tournamentIds} />
 
         <Space h="md" />
-        <TitleWithAnchor id="tournaments" order={4}>
+        <TitleWithAnchor id="tournaments">
           Included tournaments ({tournamentIds?.length ?? 0})
         </TitleWithAnchor>
         <ScrollArea h={400}>
