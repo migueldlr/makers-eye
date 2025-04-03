@@ -1,4 +1,8 @@
 import {
+  Accordion,
+  AccordionControl,
+  AccordionItem,
+  AccordionPanel,
   Alert,
   Center,
   Container,
@@ -84,19 +88,28 @@ export default async function StatsPage({
         <SummaryStats tournamentIds={tournamentIds} />
 
         <Space h="md" />
-        <TitleWithAnchor id="tournaments">
-          Included tournaments ({tournamentIds?.length ?? 0})
-        </TitleWithAnchor>
-        <ScrollArea h={400}>
-          {tournaments == null ? (
-            <div>Loading...</div>
-          ) : (
-            <TournamentTable
-              tournaments={tournaments}
-              tournamentIds={tournamentIds}
-            />
-          )}
-        </ScrollArea>
+
+        <Accordion variant="separated">
+          <AccordionItem value="tournaments">
+            <AccordionControl>
+              <Title id="tournaments" order={3}>
+                Included tournaments ({tournamentIds?.length ?? 0})
+              </Title>
+            </AccordionControl>
+            <AccordionPanel>
+              <ScrollArea h={400}>
+                {tournaments == null ? (
+                  <div>Loading...</div>
+                ) : (
+                  <TournamentTable
+                    tournaments={tournaments}
+                    tournamentIds={tournamentIds}
+                  />
+                )}
+              </ScrollArea>
+            </AccordionPanel>
+          </AccordionItem>
+        </Accordion>
 
         <TitleWithAnchor id="game-results">
           Game results summary
