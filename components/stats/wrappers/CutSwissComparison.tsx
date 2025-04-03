@@ -199,7 +199,7 @@ export default function CutSwissComparison({
 
   return (
     <Stack>
-      <ResponsiveContainer height={600} width={"70%"} style={{ padding: 10 }}>
+      <ResponsiveContainer height={600} width={"100%"} style={{ padding: 10 }}>
         <ScatterChart
           data={data}
           margin={{ top: 25, right: 25, left: 25, bottom: 25 }}
