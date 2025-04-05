@@ -408,9 +408,8 @@ export function getCutPlayersByCorp(
 ): Record<string, Player[]> {
   const cutPlayersById: Record<string, Player[]> = {};
   eliminationPlayers.forEach((eliminationPlayer) => {
-    const player = players.find(
-      (player) => player.id === eliminationPlayer.id
-    )!;
+    const player = players.find((player) => player.id === eliminationPlayer.id);
+    if (!player) return;
     const corpId = player.corpIdentity ?? DEFAULT_UNKNOWN_ID;
     if (!cutPlayersById[corpId]) {
       cutPlayersById[corpId] = [];
@@ -426,9 +425,8 @@ export function getCutPlayersByRunner(
 ): Record<string, Player[]> {
   const cutPlayersById: Record<string, Player[]> = {};
   eliminationPlayers.forEach((eliminationPlayer) => {
-    const player = players.find(
-      (player) => player.id === eliminationPlayer.id
-    )!;
+    const player = players.find((player) => player.id === eliminationPlayer.id);
+    if (!player) return;
     const runnerId = player.runnerIdentity ?? DEFAULT_UNKNOWN_ID;
     if (!cutPlayersById[runnerId]) {
       cutPlayersById[runnerId] = [];
