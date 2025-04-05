@@ -14,6 +14,7 @@ import {
   Switch,
   Radio,
   Code,
+  Box,
 } from "@mantine/core";
 import { signOut } from "../login/actions";
 import { BackButton } from "@/components/common/BackButton";
@@ -42,6 +43,12 @@ import { Database } from "@/lib/supabase";
 import TournamentTable from "../../components/stats/TournamentTable";
 import { TournamentRow } from "@/lib/localtypes";
 import DecklistStats from "@/components/stats/DecklistStats";
+import {
+  getDecklist,
+  uploadAllCards,
+  uploadAllDecklists,
+  uploadDecklist,
+} from "../stats/actions";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {
   const [verified, setVerified] = useState(false);
@@ -146,6 +153,8 @@ export default function Dashboard() {
   const [tournaments, setTournaments] = useState<TournamentRow[]>([]);
   const [sortBy, setSortBy] = useState<string>("last_updated_at");
 
+  const [decklistId, setDecklistId] = useState<string>("");
+
   useEffect(() => {
     setData(undefined);
     setSuccess(false);
@@ -216,6 +225,22 @@ export default function Dashboard() {
     setUploadLoading(false);
   }
 
+  const loadDecklist = async () => {
+    if (!decklistId) return;
+    const data = await uploadDecklist({ decklistId: Number(decklistId) });
+
+    console.log(data);
+    console.log(JSON.stringify(data).length);
+  };
+
+  const refreshDecklists = async () => {
+    await uploadAllDecklists();
+  };
+
+  const loadAllCards = async () => {
+    await uploadAllCards();
+  };
+
   if (!user) {
     return null;
   }
@@ -279,6 +304,25 @@ export default function Dashboard() {
           Decklist stats
         </Title>
         <DecklistStats tournaments={tournaments} />
+
+        <Title order={3} mt="xl">
+          Decklist import
+        </Title>
+        <Group align="end">
+          <TextInput
+            label="Decklist ID"
+            value={decklistId}
+            onChange={(e) => setDecklistId(e.target.value)}
+          />
+          <Button onClick={() => loadDecklist()}>Load</Button>
+        </Group>
+        <Group>
+          <Button onClick={() => refreshDecklists()}>
+            Refresh all decklists
+          </Button>
+          <Button onClick={() => loadAllCards()}>Load all cards</Button>
+        </Group>
+
         <Title order={3} mt="xl">
           Uploaded
         </Title>

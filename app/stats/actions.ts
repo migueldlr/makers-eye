@@ -1,5 +1,11 @@
 "use server";
 
+import {
+  NrdbCardResponse,
+  NrdbDecklist,
+  NrdbDecklistResponse,
+} from "@/lib/nrdb";
+import { NRDB_URL } from "@/lib/util";
 import { createClient } from "@/utils/supabase/server";
 
 export type WinrateData = {
@@ -367,4 +373,167 @@ export async function updateAbrUrls({
   }
 
   return data;
+}
+
+export async function getDecklist({ decklistId }: { decklistId: number }) {
+  const res = await fetch(`${NRDB_URL}/decklist/${decklistId}`);
+  const decklistResponse: NrdbDecklistResponse = await res.json();
+  const decklist = decklistResponse.data[0];
+  const cards = decklist.cards;
+
+  // console.log(decklistId);
+  // console.log(decklistResponse);
+
+  // const cards = await getCardNames({ decklist });
+
+  console.log(cards);
+
+  return cards;
+}
+
+export async function uploadDecklist({ decklistId }: { decklistId: number }) {
+  const supabase = await createClient();
+
+  const { data: data1, error: error1 } = await supabase
+    .from("decklists")
+    .select()
+    .eq("id", decklistId);
+  if (error1) {
+    throw new Error(error1.message);
+  }
+  const alreadyExists = data1.length > 0;
+  if (alreadyExists) {
+    console.log("Decklist already exists in supabase");
+    return;
+  }
+
+  const cards = await getDecklist({ decklistId });
+
+  const { data, error } = await supabase
+    .from("decklists")
+    .insert({
+      id: decklistId,
+      cards,
+    })
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function uploadAllDecklists() {
+  const supabase = await createClient();
+
+  const { data: decklistIdData, error } = await supabase
+    .rpc("get_all_decklist_ids")
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const decklistIds = decklistIdData.map((decklistId: { deck_id: number }) => {
+    return decklistId.deck_id;
+  });
+
+  const decklists = await Promise.all(
+    decklistIds.map(async (decklistId: number) => {
+      const decklist = await uploadDecklist({ decklistId });
+      return decklist;
+    })
+  );
+
+  console.log("done!");
+
+  return decklists;
+}
+
+export async function uploadAllCards() {
+  const supabase = await createClient();
+
+  const { data: decklistsResponse, error } = await supabase
+    .from("decklists")
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  // console.log(decklistsResponse);
+  const cards = decklistsResponse
+    .flatMap((decklist: { cards: string }) => {
+      const cards = JSON.parse(decklist.cards);
+
+      const cardIds = Object.keys(cards);
+
+      // if (cardIds.some((cardId) => cardId[0] === "0")) {
+      //   console.log(cardIds);
+      // }
+      return cardIds;
+    })
+    .map((card) => Number(card));
+
+  const uniqueCards = Array.from(new Set(cards));
+
+  console.log(uniqueCards.length);
+
+  // fetchAllCards({ cardIds: uniqueCards });
+
+  await Promise.all(
+    uniqueCards.map(async (cardId) => {
+      await uploadCard({ cardId });
+    })
+  );
+
+  return uniqueCards;
+}
+
+export async function uploadCard({ cardId }: { cardId: number }) {
+  // console.log("uploading card", cardId);
+  const supabase = await createClient();
+
+  const { data: data1, error: error1 } = await supabase
+    .from("cards")
+    .select()
+    .eq("id", cardId);
+  if (error1) {
+    throw new Error(error1.message);
+  }
+  const alreadyExists = data1.length > 0;
+  if (alreadyExists) {
+    // console.log(`Card ID ${cardId} already exists in supabase`);
+    return;
+  }
+
+  console.log(`fetching card ${cardId}`);
+
+  const cardIdPadded = String(cardId).padStart(5, "0");
+
+  const res = await fetch(`${NRDB_URL}/card/${cardIdPadded}`);
+  const cardResponse: NrdbCardResponse = await res.json();
+  const card = cardResponse.data[0];
+
+  console.log(`fetched ${card.title}`);
+
+  const { data, error } = await supabase
+    .from("cards")
+    .insert({
+      id: cardId,
+      name: card.title,
+      type: card.type_code,
+    })
+    .select();
+  if (error) {
+    throw new Error(error.message);
+  }
+  console.log(`uploaded ${card.title}`);
+
+  return data;
+}
+
+export async function saveAllCards() {
+  const supabase = await createClient();
 }
