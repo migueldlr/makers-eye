@@ -119,10 +119,18 @@ export type Database = {
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_with_player_count"
+            referencedColumns: ["id"]
+          },
         ]
       }
       standings: {
         Row: {
+          corp_deck_url: string | null
           corp_draws: number
           corp_identity: string
           corp_losses: number
@@ -132,6 +140,7 @@ export type Database = {
           id: number
           match_points: number
           name: string
+          runner_deck_url: string | null
           runner_draws: number
           runner_identity: string
           runner_losses: number
@@ -142,6 +151,7 @@ export type Database = {
           tournament_id: number
         }
         Insert: {
+          corp_deck_url?: string | null
           corp_draws?: number
           corp_identity?: string
           corp_losses?: number
@@ -151,6 +161,7 @@ export type Database = {
           id?: number
           match_points: number
           name?: string
+          runner_deck_url?: string | null
           runner_draws?: number
           runner_identity?: string
           runner_losses?: number
@@ -161,6 +172,7 @@ export type Database = {
           tournament_id: number
         }
         Update: {
+          corp_deck_url?: string | null
           corp_draws?: number
           corp_identity?: string
           corp_losses?: number
@@ -170,6 +182,7 @@ export type Database = {
           id?: number
           match_points?: number
           name?: string
+          runner_deck_url?: string | null
           runner_draws?: number
           runner_identity?: string
           runner_losses?: number
@@ -187,10 +200,18 @@ export type Database = {
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_with_player_count"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tournaments: {
         Row: {
+          abr_url: string | null
           created_at: string
           date: string | null
           format: string | null
@@ -203,6 +224,7 @@ export type Database = {
           url: string | null
         }
         Insert: {
+          abr_url?: string | null
           created_at?: string
           date?: string | null
           format?: string | null
@@ -215,6 +237,7 @@ export type Database = {
           url?: string | null
         }
         Update: {
+          abr_url?: string | null
           created_at?: string
           date?: string | null
           format?: string | null
@@ -232,20 +255,57 @@ export type Database = {
     Views: {
       matches_mapped: {
         Row: {
+          corp_id: number | null
           corp_short_id: string | null
           phase: string | null
           result: string | null
           round: number | null
+          runner_id: number | null
           runner_short_id: string | null
           table: number | null
           tournament_id: number | null
         }
         Relationships: [
           {
+            foreignKeyName: "matches_corp_id_fkey"
+            columns: ["corp_id"]
+            isOneToOne: false
+            referencedRelation: "standings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_corp_id_fkey"
+            columns: ["corp_id"]
+            isOneToOne: false
+            referencedRelation: "standings_mapped"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "standings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_runner_id_fkey"
+            columns: ["runner_id"]
+            isOneToOne: false
+            referencedRelation: "standings_mapped"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matches_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_with_player_count"
             referencedColumns: ["id"]
           },
         ]
@@ -280,7 +340,30 @@ export type Database = {
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments_with_player_count"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      tournaments_with_player_count: {
+        Row: {
+          created_at: string | null
+          date: string | null
+          format: string | null
+          id: number | null
+          last_modified_at: string | null
+          location: string | null
+          meta: string | null
+          name: string | null
+          player_count: number | null
+          region: string | null
+          url: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
@@ -288,6 +371,35 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      get_corp_identity_winrates:
+        | {
+            Args: {
+              tournament_filter?: number[]
+            }
+            Returns: {
+              id: string
+              total_games: number
+              total_wins: number
+              total_losses: number
+              total_draws: number
+              win_rate: number
+            }[]
+          }
+        | {
+            Args: {
+              tournament_filter?: number[]
+              include_swiss?: boolean
+              include_cut?: boolean
+            }
+            Returns: {
+              id: string
+              total_games: number
+              total_wins: number
+              total_losses: number
+              total_draws: number
+              win_rate: number
+            }[]
+          }
       get_corp_popularity: {
         Args: {
           tournament_filter?: number[]
@@ -313,18 +425,75 @@ export type Database = {
           corp_win_rate: number
         }[]
       }
-      get_corp_winrates: {
+      get_corp_winrates:
+        | {
+            Args: {
+              corp_filter?: string[]
+            }
+            Returns: {
+              corp_id: string
+              runner_id: string
+              total_games: number
+              corp_wins: number
+              runner_wins: number
+              draws: number
+              corp_win_rate: number
+            }[]
+          }
+        | {
+            Args: {
+              corp_filter?: string[]
+              tournament_filter?: number[]
+            }
+            Returns: {
+              corp_id: string
+              runner_id: string
+              total_games: number
+              corp_wins: number
+              runner_wins: number
+              draws: number
+              corp_win_rate: number
+            }[]
+          }
+        | {
+            Args: {
+              corp_filter?: string[]
+              tournament_filter?: number[]
+              include_swiss?: boolean
+              include_cut?: boolean
+            }
+            Returns: {
+              corp_id: string
+              runner_id: string
+              total_games: number
+              corp_wins: number
+              runner_wins: number
+              draws: number
+              corp_win_rate: number
+            }[]
+          }
+      get_cut_conversion: {
         Args: {
-          corp_filter?: string[]
+          tournament_filter?: number[]
         }
         Returns: {
-          corp_id: string
-          runner_id: string
-          total_games: number
-          corp_wins: number
-          runner_wins: number
-          draws: number
-          corp_win_rate: number
+          identity: string
+          total_entries: number
+          total_cut_appearances: number
+          cut_conversion_percentage: number
+        }[]
+      }
+      get_cut_conversion_rate: {
+        Args: {
+          tournament_filter?: number[]
+        }
+        Returns: {
+          identity: string
+          total_entries: number
+          total_cut_appearances: number
+          cut_conversion_percentage: number
+          baseline_cut_percentage: number
+          cut_conversion_rate: number
         }[]
       }
       get_head_to_head_winrates: {
@@ -344,6 +513,122 @@ export type Database = {
           runner_winrate: number
         }[]
       }
+      get_identity_winrates: {
+        Args: {
+          tournament_filter?: number[]
+        }
+        Returns: {
+          identity: string
+          total_games: number
+          total_wins: number
+          total_losses: number
+          total_draws: number
+          win_rate: number
+        }[]
+      }
+      get_matches_by_id:
+        | {
+            Args: {
+              runner_filter: string
+              corp_filter: string
+              tournament_filter?: number[]
+            }
+            Returns: {
+              tournament_id: number
+              tournament_name: string
+              tournament_url: string
+              tournament_date: string
+              round: number
+              round_table: number
+              phase: string
+              corp_player_name: string
+              runner_player_name: string
+              corp_id: string
+              runner_id: string
+              result: string
+            }[]
+          }
+        | {
+            Args: {
+              runner_filter: string
+              corp_filter: string
+              tournament_filter?: number[]
+              phase_filter?: string
+            }
+            Returns: {
+              tournament_id: number
+              tournament_name: string
+              tournament_url: string
+              tournament_date: string
+              round: number
+              round_table: number
+              phase: string
+              corp_player_name: string
+              runner_player_name: string
+              corp_id: string
+              runner_id: string
+              result: string
+            }[]
+          }
+      get_matches_by_identity: {
+        Args: {
+          runner_filter: string
+          corp_filter: string
+        }
+        Returns: {
+          tournament_id: number
+          tournament_name: string
+          round: number
+          phase: string
+          corp_player_name: string
+          runner_player_name: string
+          corp_id: string
+          runner_id: string
+          result: string
+        }[]
+      }
+      get_runner_cut_conversion_rate: {
+        Args: {
+          tournament_filter?: number[]
+        }
+        Returns: {
+          identity: string
+          total_entries: number
+          total_cut_appearances: number
+          cut_conversion_percentage: number
+          baseline_cut_percentage: number
+          cut_conversion_rate: number
+        }[]
+      }
+      get_runner_identity_winrates:
+        | {
+            Args: {
+              tournament_filter?: number[]
+            }
+            Returns: {
+              id: string
+              total_games: number
+              total_wins: number
+              total_losses: number
+              total_draws: number
+              win_rate: number
+            }[]
+          }
+        | {
+            Args: {
+              tournament_filter?: number[]
+              include_swiss?: boolean
+              include_cut?: boolean
+            }
+            Returns: {
+              id: string
+              total_games: number
+              total_wins: number
+              total_losses: number
+              total_draws: number
+              win_rate: number
+            }[]
+          }
       get_runner_popularity: {
         Args: {
           tournament_filter?: number[]
@@ -355,16 +640,91 @@ export type Database = {
           player_count: number
         }[]
       }
-      get_summary_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          total_matches: number
-          total_players: number
-          total_tournaments: number
-          earliest_tournament: string
-          latest_tournament: string
-        }[]
-      }
+      get_runner_winrates:
+        | {
+            Args: {
+              runner_filter?: string[]
+              tournament_filter?: number[]
+            }
+            Returns: {
+              runner_id: string
+              corp_id: string
+              total_games: number
+              runner_wins: number
+              corp_wins: number
+              draws: number
+              runner_win_rate: number
+            }[]
+          }
+        | {
+            Args: {
+              runner_filter?: string[]
+              tournament_filter?: number[]
+              include_swiss?: boolean
+              include_cut?: boolean
+            }
+            Returns: {
+              runner_id: string
+              corp_id: string
+              total_games: number
+              runner_wins: number
+              corp_wins: number
+              draws: number
+              runner_win_rate: number
+            }[]
+          }
+      get_summary_stats:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: {
+              total_matches: number
+              total_players: number
+              total_tournaments: number
+              earliest_tournament: string
+              latest_tournament: string
+            }[]
+          }
+        | {
+            Args: {
+              tournament_filter?: number[]
+            }
+            Returns: {
+              total_matches: number
+              total_players: number
+              total_tournaments: number
+              earliest_tournament: string
+              latest_tournament: string
+            }[]
+          }
+      get_tournament_game_outcomes:
+        | {
+            Args: {
+              tournament_filter?: number[]
+            }
+            Returns: {
+              total_games: number
+              corp_wins: number
+              runner_wins: number
+              draws: number
+              byes: number
+              unknowns: number
+            }[]
+          }
+        | {
+            Args: {
+              tournament_filter?: number[]
+              include_swiss?: boolean
+              include_cut?: boolean
+            }
+            Returns: {
+              total_games: number
+              corp_wins: number
+              runner_wins: number
+              draws: number
+              byes: number
+              unknowns: number
+            }[]
+          }
     }
     Enums: {
       [_ in never]: never

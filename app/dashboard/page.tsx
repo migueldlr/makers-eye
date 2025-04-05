@@ -41,6 +41,7 @@ import { SearchableSelect } from "@/components/common/SearchableSelect";
 import { Database } from "@/lib/supabase";
 import TournamentTable from "../../components/stats/TournamentTable";
 import { TournamentRow } from "@/lib/localtypes";
+import DecklistStats from "@/components/stats/DecklistStats";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {
   const [verified, setVerified] = useState(false);
@@ -274,6 +275,10 @@ export default function Dashboard() {
             </Button>
           )}
         </Stack>
+        <Title order={3} mt="xl">
+          Decklist stats
+        </Title>
+        <DecklistStats tournaments={tournaments} />
         <Title order={3} mt="xl">
           Uploaded
         </Title>

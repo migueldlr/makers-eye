@@ -50,6 +50,7 @@ export default function TournamentTable({
           <TableTh>URL</TableTh>
           <TableTh>The Maker&#39;s Eye</TableTh>
           {isAdmin && <TableTh>Last updated</TableTh>}
+          {isAdmin && <TableTh>ABR URL</TableTh>}
         </TableTr>
       </TableThead>
       <TableTbody>
@@ -80,6 +81,17 @@ export default function TournamentTable({
                 </Anchor>
               </TableTd>
               {isAdmin && <TableTd>{tournament.last_modified_at}</TableTd>}
+              {isAdmin && (
+                <TableTd>
+                  {tournament.abr_url ? (
+                    <Anchor href={tournament.abr_url} target="_blank">
+                      Link
+                    </Anchor>
+                  ) : (
+                    "N/A"
+                  )}
+                </TableTd>
+              )}
             </TableTr>
           );
         })}

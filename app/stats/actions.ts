@@ -331,3 +331,40 @@ export async function getMatchesByIdentity(
   }
   return data;
 }
+
+export async function updateAbrUrls({
+  runnerDeckId,
+  corpDeckId,
+  tournamentId,
+  name,
+}: {
+  runnerDeckId: number;
+  corpDeckId: number;
+  tournamentId: number;
+  name: string;
+}) {
+  const supabase = await createClient();
+
+  // const { data, error, status } = await supabase
+  //   .from("standings")
+  //   .select()
+  //   .eq("tournament_id", tournamentId)
+  //   .eq("name", name);
+
+  const { data, error, status } = await supabase
+    .from("standings")
+    .update({
+      runner_deck_id: runnerDeckId,
+      corp_deck_id: corpDeckId,
+    })
+    .eq("tournament_id", tournamentId)
+    .eq("name", name)
+    .select();
+
+  console.log(status);
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
