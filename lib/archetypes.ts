@@ -20,9 +20,11 @@ export const CORP_ARCHETYPES = {
     ["Jinja City Grid", "Jinja PD"],
   ],
   PE: [
-    ["See How They Run", "SHTR PE"],
-    ["Prāna Condenser", "Loud PE"],
+    ["See How They Run", "End of the Line", "Neurospike", "SHTR PE"],
     ["Punitive Counterstrike", "Punitive PE"],
+    ["Prāna Condenser", "Moon Pool", "Loud PE"],
+    ["assets>20", "Assets PE"],
+    "Other PE",
   ],
   Ampère: "Reg Ampère",
   Thule: [["End of the Line", "Barf Thule"]],
@@ -96,7 +98,10 @@ export const CORP_ARCHETYPES = {
   Ob: [
     ["Mutually Assured Destruction", "Venti Ob"],
     ["End of the Line", "Asset Kill Ob"],
-    ["Calibration Testing", "Tucana", "FA Ob"],
+    ["Calibration Testing", "Tucana", "Calicana Ob"],
+    ["ice>19", "Glacier Ob"],
+    ["asset>10", "Facet Ob"],
+    "Rush Ob",
   ],
   "Earth Station": "Other Earth Station",
 };

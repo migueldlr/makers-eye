@@ -43,6 +43,44 @@ function getIdentity(decklist: Decklist) {
   return identity;
 }
 
+function getCardTypeDistribution(decklist: Decklist) {
+  return decklist.reduce((acc, card) => {
+    acc[card.card_type] = (acc[card.card_type] || 0) + card.card_count;
+    return acc;
+  }, {} as { [key: string]: number });
+}
+
+function evalRule(decklist: Decklist, rule: string) {
+  const ruleParts = rule.split(/[^A-Za-z0-9]/);
+  const left = ruleParts[0];
+  const right = Number(ruleParts[1]);
+  const operator = rule.match(/[^A-Za-z0-9]/)?.[0];
+
+  const distribution = getCardTypeDistribution(decklist);
+
+  if (left === "total") {
+    const total = decklist.reduce((acc, card) => acc + card.card_count, 0);
+
+    if (operator === "<") {
+      return total < right;
+    } else if (operator === ">") {
+      return total > right;
+    } else if (operator === "=") {
+      return total === right;
+    }
+  }
+
+  if (operator === "<") {
+    return distribution[left] < right;
+  } else if (operator === ">") {
+    return distribution[left] > right;
+  } else if (operator === "=") {
+    return distribution[left] === right;
+  }
+
+  return false;
+}
+
 function getArchetype(decklist: Decklist, side: string) {
   const identity = getIdentity(decklist);
   if (!identity) {
@@ -70,7 +108,12 @@ function getArchetype(decklist: Decklist, side: string) {
     }
     let found = true;
     for (const archetypeCard of archetype.slice(0, archetype.length - 1)) {
-      if (!decklist.some((card) => card.card_name === archetypeCard)) {
+      if (archetypeCard.match(/[<>=]/)) {
+        if (!evalRule(decklist, archetypeCard)) {
+          found = false;
+          break;
+        }
+      } else if (!decklist.some((card) => card.card_name === archetypeCard)) {
         found = false;
         break;
       }
@@ -317,21 +360,27 @@ export default function Page() {
           <Space h="md" />
           <ScrollArea>
             <Group align="start" wrap="nowrap" gap="md">
-              {groupedDecklists[selectedIdentity].map((decklist) => {
-                const calculatedArchetype = getArchetype(
-                  decklist.decklist,
-                  side
-                );
-                return (
-                  <DecklistEntry
-                    key={decklist.id}
-                    decklist={decklist.decklist}
-                    id={decklist.id}
-                    archetypes={archetypes}
-                    calculatedArchetype={calculatedArchetype}
-                  />
-                );
-              })}
+              {groupedDecklists[selectedIdentity]
+                .sort((a, b) => {
+                  const aArchetype = getArchetype(a.decklist, side);
+                  const bArchetype = getArchetype(b.decklist, side);
+                  return aArchetype.localeCompare(bArchetype);
+                })
+                .map((decklist) => {
+                  const calculatedArchetype = getArchetype(
+                    decklist.decklist,
+                    side
+                  );
+                  return (
+                    <DecklistEntry
+                      key={decklist.id}
+                      decklist={decklist.decklist}
+                      id={decklist.id}
+                      archetypes={archetypes}
+                      calculatedArchetype={calculatedArchetype}
+                    />
+                  );
+                })}
             </Group>
           </ScrollArea>
         </Box>
