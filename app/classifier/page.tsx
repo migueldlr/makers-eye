@@ -19,7 +19,7 @@ import { getDecklistsBySide } from "./actions";
 import DecklistDisplay from "@/components/classifier/DecklistDisplay";
 import { FeatureVector, OnlineLogisticRegression } from "./logreg";
 
-function getNrdbLink(decklistId: string) {
+export function getNrdbLink(decklistId: string) {
   return `https://netrunnerdb.com/en/decklist/${decklistId}`;
 }
 

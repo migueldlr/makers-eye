@@ -1,7 +1,7 @@
 import { Decklist } from "@/app/classifier/page";
 import { List, ListItem } from "@mantine/core";
 
-const CARD_TYPES = [
+export const CARD_TYPES = [
   "identity",
   "agenda",
   "asset",
@@ -14,13 +14,17 @@ const CARD_TYPES = [
   "program",
 ];
 
-export default function DecklistDisplay({ decklist }: { decklist: Decklist }) {
-  decklist.sort((a, b) => {
+export const sortDecklist = (decklist: Decklist) => {
+  return decklist.sort((a, b) => {
     if (a.card_type === b.card_type) {
       return a.card_name.localeCompare(b.card_name);
     }
     return CARD_TYPES.indexOf(a.card_type) - CARD_TYPES.indexOf(b.card_type);
   });
+};
+
+export default function DecklistDisplay({ decklist }: { decklist: Decklist }) {
+  sortDecklist(decklist);
   return (
     <List>
       {decklist.map((card) => (
