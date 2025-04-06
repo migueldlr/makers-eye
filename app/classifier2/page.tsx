@@ -3,13 +3,18 @@
 import {
   ActionIcon,
   Anchor,
+  Badge,
   Box,
   Button,
   Container,
   Group,
   List,
   ListItem,
+  ScrollArea,
   Select,
+  Space,
+  Stack,
+  Text,
   TextInput,
   Title,
 } from "@mantine/core";
@@ -20,7 +25,7 @@ import { Decklist, getNrdbLink, SimilarityData } from "../classifier/page";
 import { sortDecklist } from "@/components/classifier/DecklistDisplay";
 import { IconCheck, IconUpload } from "@tabler/icons-react";
 import { getArchetypes, uploadArchetype } from "./actions";
-import { CORP_ARCHETYPES } from "@/lib/archetypes";
+import { CORP_ARCHETYPES, RUNNER_ARCHETYPES } from "@/lib/archetypes";
 import { shortenId } from "@/lib/util";
 
 type ArchetypeData = {
@@ -38,22 +43,40 @@ function getIdentity(decklist: Decklist) {
   return identity;
 }
 
-function getArchetype(decklist: Decklist) {
+function getArchetype(decklist: Decklist, side: string) {
   const identity = getIdentity(decklist);
   if (!identity) {
     return "Unknown";
   }
 
   const archetypes =
-    CORP_ARCHETYPES[shortenId(identity) as keyof typeof CORP_ARCHETYPES];
+    side === "corp"
+      ? CORP_ARCHETYPES[shortenId(identity) as keyof typeof CORP_ARCHETYPES]
+      : RUNNER_ARCHETYPES[
+          shortenId(identity) as keyof typeof RUNNER_ARCHETYPES
+        ];
 
   if (!archetypes) {
     return "Unknown";
   }
 
+  if (typeof archetypes === "string") {
+    return archetypes;
+  }
+
   for (const archetype of archetypes) {
-    if (decklist.some((card) => card.card_name === archetype[0])) {
-      return archetype[1];
+    if (typeof archetype === "string") {
+      return archetype;
+    }
+    let found = true;
+    for (const archetypeCard of archetype.slice(0, archetype.length - 1)) {
+      if (!decklist.some((card) => card.card_name === archetypeCard)) {
+        found = false;
+        break;
+      }
+    }
+    if (found) {
+      return archetype[archetype.length - 1];
     }
   }
 
@@ -103,25 +126,19 @@ function DecklistEntry({
 
   const list = sortDecklist(decklist);
 
-  const [archetype, setArchetype] = useState(
-    archetypes.find((a) => a.id === Number(id))?.archetype ??
-      calculatedArchetype ??
-      ""
-  );
-
   const upload = async () => {
     setUploading(true);
     setUploaded(false);
 
-    await uploadArchetype(archetype, Number(id));
+    // await uploadArchetype(archetype, Number(id));
 
     setUploading(false);
     setUploaded(true);
   };
 
   return (
-    <ListItem key={id}>
-      <Group>
+    <Stack gap="xs" style={{ minWidth: "350px" }}>
+      <Group wrap="nowrap" gap="xs">
         <Anchor
           href={getNrdbLink(id)}
           target="_blank"
@@ -129,14 +146,16 @@ function DecklistEntry({
         >
           {id}
         </Anchor>
-        <TextInput
-          value={archetype}
-          onChange={(e) => {
-            setArchetype(e.target.value);
-            setUploaded(false);
-          }}
-        />
-        {archetype && (
+        <Text>{calculatedArchetype}</Text>
+        {calculatedArchetype === "Unknown" && <Badge color="red">?</Badge>}
+        {/* <TextInput
+          value={calculatedArchetype}
+            onChange={(e) => {
+              setArchetype(e.target.value);
+              setUploaded(false);
+            }}
+        /> */}
+        {/* {archetype && (
           <ActionIcon
             onClick={upload}
             size="lg"
@@ -149,14 +168,14 @@ function DecklistEntry({
               <IconUpload style={{ width: "70%", height: "70%" }} />
             )}
           </ActionIcon>
-        )}
+        )} */}
       </Group>
-      <List withPadding>
+      <List>
         {list.map((card) => (
           <ListItem key={card.card_name}>{card.card_name}</ListItem>
         ))}
       </List>
-    </ListItem>
+    </Stack>
   );
 }
 
@@ -201,7 +220,8 @@ export default function Page() {
   }, [selectedIdentity]);
 
   const load = async () => {
-    const localData = localStorage.getItem("decklists");
+    const localStorageKey = `${side}-decklists`;
+    const localData = localStorage.getItem(localStorageKey);
     if (localData) {
       const parsedData = JSON.parse(localData);
 
@@ -216,15 +236,18 @@ export default function Page() {
 
     setLoading(true);
     const data = await getDecklistsBySide(side);
+    console.log("loaded from server");
 
     setLoading(false);
     if (data) {
       setIdToCardsMap(data.idToCardsMap);
       setPairwiseSimilarities(data.pairWiseSimilarities);
+      setGroupedDecklists(groupDecklistsByIdentity(data.idToCardsMap));
+      setLoading(false);
       setLoaded(true);
 
       localStorage.setItem(
-        "decklists",
+        localStorageKey,
         JSON.stringify({
           idToCardsMap: data.idToCardsMap,
           pairWiseSimilarities: data.pairWiseSimilarities,
@@ -237,6 +260,21 @@ export default function Page() {
     return null;
   }
 
+  const status = Object.entries(groupedDecklists).map(
+    ([identity, decklists]) => {
+      return {
+        identity: identity,
+        results: decklists.map(({ id, decklist }) => {
+          const archetype = getArchetype(decklist, side);
+
+          return archetype !== "Unknown";
+        }),
+      };
+    }
+  );
+
+  status.sort((a, b) => b.results.length - a.results.length);
+
   return (
     <Container pt="xl">
       <Title order={3}>Classifier v2</Title>
@@ -248,26 +286,54 @@ export default function Page() {
         onChange={setSelectedIdentity}
       />
 
+      <List>
+        {status.map(({ identity, results }) => {
+          return (
+            <ListItem
+              key={identity}
+              onClick={() => {
+                setSelectedIdentity(identity);
+              }}
+            >
+              <Group gap="xs">
+                <Text>{shortenId(identity)}</Text>
+                <Badge
+                  color={results.every((result) => result) ? "green" : "red"}
+                >
+                  {results.filter((result) => result).length} / {results.length}
+                </Badge>
+              </Group>
+            </ListItem>
+          );
+        })}
+      </List>
+
       {selectedIdentity && archetypes.length > 0 && (
         <Box>
           <Title order={4}>
             {groupedDecklists[selectedIdentity].length} decklists for{" "}
             {selectedIdentity}
           </Title>
-          <List>
-            {groupedDecklists[selectedIdentity].map((decklist) => {
-              const calculatedArchetype = getArchetype(decklist.decklist);
-              return (
-                <DecklistEntry
-                  key={decklist.id}
-                  decklist={decklist.decklist}
-                  id={decklist.id}
-                  archetypes={archetypes}
-                  calculatedArchetype={calculatedArchetype}
-                />
-              );
-            })}
-          </List>
+          <Space h="md" />
+          <ScrollArea>
+            <Group align="start" wrap="nowrap" gap="md">
+              {groupedDecklists[selectedIdentity].map((decklist) => {
+                const calculatedArchetype = getArchetype(
+                  decklist.decklist,
+                  side
+                );
+                return (
+                  <DecklistEntry
+                    key={decklist.id}
+                    decklist={decklist.decklist}
+                    id={decklist.id}
+                    archetypes={archetypes}
+                    calculatedArchetype={calculatedArchetype}
+                  />
+                );
+              })}
+            </Group>
+          </ScrollArea>
         </Box>
       )}
     </Container>
