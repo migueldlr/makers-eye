@@ -40,6 +40,42 @@ export type SimilarityData = {
   sameIdentity: boolean;
 };
 
+function deckDifferencePerCard(
+  deckA: Decklist,
+  deckB: Decklist
+): Record<string, number> {
+  const allCards = Array.from(
+    new Set([
+      ...deckA.map((card) => card.card_name),
+      ...deckB.map((card) => card.card_name),
+    ])
+  );
+  const deckAMap = new Map<string, number>();
+  for (const card of deckA) {
+    deckAMap.set(card.card_name, card.card_count);
+  }
+  const deckBMap = new Map<string, number>();
+  for (const card of deckB) {
+    deckBMap.set(card.card_name, card.card_count);
+  }
+
+  const differenceMap: Record<string, number> = {};
+  for (const card of allCards) {
+    const countA = deckAMap.get(card) ?? 0;
+    const countB = deckBMap.get(card) ?? 0;
+    differenceMap[card] = Math.abs(countA - countB);
+  }
+  return differenceMap;
+}
+
+function normalize(map: Record<string, number>): Record<string, number> {
+  const sum = Object.values(map).reduce((a, b) => a + b, 0);
+
+  return Object.fromEntries(
+    Object.entries(map).map(([key, value]) => [key, value / sum])
+  );
+}
+
 const PAGE_SIZE = 10;
 
 export default function ClassifierPage() {
@@ -104,63 +140,6 @@ export default function ClassifierPage() {
 
     setPair(randomSimilarity);
   };
-
-  function deckOverlapPerCard(
-    deckA: Decklist,
-    deckB: Decklist
-  ): Record<string, number> {
-    const deckAMap = new Map<string, number>();
-    for (const card of deckA) {
-      deckAMap.set(card.card_name, card.card_count);
-    }
-
-    const overlapMap: Record<string, number> = {};
-
-    for (const card of deckB) {
-      const countA = deckAMap.get(card.card_name);
-      if (countA !== undefined) {
-        overlapMap[card.card_name] = Math.min(countA, card.card_count);
-      }
-    }
-
-    return overlapMap;
-  }
-
-  function deckDifferencePerCard(
-    deckA: Decklist,
-    deckB: Decklist
-  ): Record<string, number> {
-    const allCards = Array.from(
-      new Set([
-        ...deckA.map((card) => card.card_name),
-        ...deckB.map((card) => card.card_name),
-      ])
-    );
-    const deckAMap = new Map<string, number>();
-    for (const card of deckA) {
-      deckAMap.set(card.card_name, card.card_count);
-    }
-    const deckBMap = new Map<string, number>();
-    for (const card of deckB) {
-      deckBMap.set(card.card_name, card.card_count);
-    }
-
-    const differenceMap: Record<string, number> = {};
-    for (const card of allCards) {
-      const countA = deckAMap.get(card) ?? 0;
-      const countB = deckBMap.get(card) ?? 0;
-      differenceMap[card] = Math.abs(countA - countB);
-    }
-    return differenceMap;
-  }
-
-  function normalize(map: Record<string, number>): Record<string, number> {
-    const sum = Object.values(map).reduce((a, b) => a + b, 0);
-
-    return Object.fromEntries(
-      Object.entries(map).map(([key, value]) => [key, value / sum])
-    );
-  }
 
   const features = pair
     ? {
