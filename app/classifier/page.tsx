@@ -8,16 +8,14 @@ import {
   Group,
   List,
   ListItem,
-  Pagination,
   ScrollArea,
   Stack,
   Text,
-  TextInput,
   Title,
 } from "@mantine/core";
 import useAuth from "@/hooks/useAuth";
-import { useEffect, useMemo, useState } from "react";
-import { getCardList, getDecklistsBySide, getSimilarity } from "./actions";
+import { useEffect, useState } from "react";
+import { getDecklistsBySide } from "./actions";
 import DecklistDisplay from "@/components/classifier/DecklistDisplay";
 import { FeatureVector, OnlineLogisticRegression } from "./logreg";
 
