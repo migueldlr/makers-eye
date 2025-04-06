@@ -9,6 +9,7 @@ import {
   List,
   ListItem,
   Pagination,
+  ScrollArea,
   Stack,
   Text,
   TextInput,
@@ -18,7 +19,7 @@ import useAuth from "@/hooks/useAuth";
 import { useEffect, useMemo, useState } from "react";
 import { getCardList, getDecklistsBySide, getSimilarity } from "./actions";
 import DecklistDisplay from "@/components/classifier/DecklistDisplay";
-import { OnlineLogisticRegression } from "./logreg";
+import { FeatureVector, OnlineLogisticRegression } from "./logreg";
 
 function getNrdbLink(decklistId: string) {
   return `https://netrunnerdb.com/en/decklist/${decklistId}`;
@@ -58,7 +59,7 @@ export default function ClassifierPage() {
   const [pair, setPair] = useState<SimilarityData>();
 
   const [model, setModel] = useState<OnlineLogisticRegression | null>(null);
-  const [weights, setWeights] = useState<number[]>([]);
+  const [weights, setWeights] = useState<FeatureVector>({});
   const [bias, setBias] = useState(0);
 
   const load = async () => {
@@ -80,9 +81,7 @@ export default function ClassifierPage() {
     })();
 
     const numFeatures = 4;
-    setWeights(Array(numFeatures).fill(0));
     const logisticModel = new OnlineLogisticRegression(
-      numFeatures, // Number of features
       0.01, // Learning rate
       (updatedModel) => {
         setWeights(updatedModel.weights); // Update weights in state
@@ -108,16 +107,83 @@ export default function ClassifierPage() {
     setPair(randomSimilarity);
   };
 
+  function deckOverlapPerCard(
+    deckA: Decklist,
+    deckB: Decklist
+  ): Record<string, number> {
+    const deckAMap = new Map<string, number>();
+    for (const card of deckA) {
+      deckAMap.set(card.card_name, card.card_count);
+    }
+
+    const overlapMap: Record<string, number> = {};
+
+    for (const card of deckB) {
+      const countA = deckAMap.get(card.card_name);
+      if (countA !== undefined) {
+        overlapMap[card.card_name] = Math.min(countA, card.card_count);
+      }
+    }
+
+    return overlapMap;
+  }
+
+  function deckDifferencePerCard(
+    deckA: Decklist,
+    deckB: Decklist
+  ): Record<string, number> {
+    const allCards = Array.from(
+      new Set([
+        ...deckA.map((card) => card.card_name),
+        ...deckB.map((card) => card.card_name),
+      ])
+    );
+    const deckAMap = new Map<string, number>();
+    for (const card of deckA) {
+      deckAMap.set(card.card_name, card.card_count);
+    }
+    const deckBMap = new Map<string, number>();
+    for (const card of deckB) {
+      deckBMap.set(card.card_name, card.card_count);
+    }
+
+    const differenceMap: Record<string, number> = {};
+    for (const card of allCards) {
+      const countA = deckAMap.get(card) ?? 0;
+      const countB = deckBMap.get(card) ?? 0;
+      differenceMap[card] = Math.abs(countA - countB);
+    }
+    return differenceMap;
+  }
+
+  function normalize(map: Record<string, number>): Record<string, number> {
+    const sum = Object.values(map).reduce((a, b) => a + b, 0);
+
+    return Object.fromEntries(
+      Object.entries(map).map(([key, value]) => [key, value / sum])
+    );
+  }
+
+  const features = pair
+    ? {
+        ...normalize(
+          deckDifferencePerCard(
+            idToCardsMap[pair.decklist1],
+            idToCardsMap[pair.decklist2]
+          )
+        ),
+        cosine: pair.cosine,
+        jaccard: pair.jaccard,
+        weightedJaccard: pair.weightedJaccard,
+        composition: pair.composition,
+      }
+    : {};
+
   const handleTrain = (same: boolean) => {
     if (!pair) return;
-    const features = [
-      pair.cosine,
-      pair.jaccard,
-      pair.weightedJaccard,
-      pair.composition,
-    ];
+    console.log(features);
 
-    model?.train(features, same ? 1 : 0);
+    model?.update(features, same ? 1 : 0);
 
     getTwoRandomDecklists();
   };
@@ -126,36 +192,7 @@ export default function ClassifierPage() {
     return null;
   }
 
-  const prediction = model?.predict(weights);
-
-  function getDifferenceBetweenDecklists() {
-    if (!pair) return [];
-    const decklist1 = idToCardsMap[pair.decklist1];
-    const decklist2 = idToCardsMap[pair.decklist2];
-
-    const decklist1Cards = decklist1.map((card) => card.card_name);
-    const decklist2Cards = decklist2.map((card) => card.card_name);
-
-    const decklist1CardsSet = new Set(decklist1Cards);
-    const decklist2CardsSet = new Set(decklist2Cards);
-
-    const decklist1Only = decklist1Cards.filter(
-      (card) => !decklist2CardsSet.has(card)
-    );
-    const decklist2Only = decklist2Cards.filter(
-      (card) => !decklist1CardsSet.has(card)
-    );
-
-    const commonCards = decklist1Cards.filter((card) =>
-      decklist2Cards.includes(card)
-    );
-
-    const commonCadsSet = new Set(commonCards);
-
-    return [decklist1Only, decklist2Only, commonCards];
-  }
-
-  const difference = getDifferenceBetweenDecklists();
+  const prediction = model?.predict(features);
 
   return (
     <Container pt="xl">
@@ -182,7 +219,15 @@ export default function ClassifierPage() {
 
         {model && (
           <Box>
-            <Text>Weights: {weights.join(", ")}</Text>
+            <ScrollArea h="200">
+              <pre>
+                {JSON.stringify(
+                  Object.entries(weights).sort(([k1, v1], [k2, v2]) => v2 - v1),
+                  null,
+                  2
+                )}
+              </pre>
+            </ScrollArea>
             <Text>Bias: {bias}</Text>
             <Text>Prediction: {prediction}</Text>
           </Box>
@@ -196,7 +241,6 @@ export default function ClassifierPage() {
         <Group align="start">
           <Stack w="400">
             <Title order={5}>Decklist 1</Title>
-            {difference[0].join(", ")}
             {pair?.decklist1 && (
               <>
                 <Anchor href={getNrdbLink(pair.decklist1.toString())}>
@@ -209,7 +253,6 @@ export default function ClassifierPage() {
 
           <Stack w="400">
             <Title order={5}>Decklist 2</Title>
-            {difference[1].join(", ")}
             {pair?.decklist2 && (
               <>
                 <Anchor href={getNrdbLink(pair.decklist2.toString())}>

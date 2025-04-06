@@ -1,51 +1,57 @@
-export class OnlineLogisticRegression {
-  weights: number[];
-  bias: number;
-  lr: number;
-  onUpdate: (params: { weights: number[]; bias: number }) => void;
+export type FeatureVector = Record<string, number>;
 
-  constructor(
-    numFeatures: number,
-    learningRate = 0.01,
-    onUpdate: typeof this.onUpdate
-  ) {
-    this.weights = Array(numFeatures).fill(0); // Initialize weights
-    this.bias = 0;
-    this.lr = learningRate;
-    this.onUpdate = onUpdate; // callback to update weights in React state
+export class OnlineLogisticRegression {
+  private weights: FeatureVector = {};
+  private bias: number = 0;
+  private learningRate: number;
+  onUpdate: (params: { weights: FeatureVector; bias: number }) => void;
+
+  constructor(learningRate = 0.01, onUpdate: typeof this.onUpdate) {
+    this.learningRate = learningRate;
+    this.onUpdate = onUpdate;
   }
 
-  // Sigmoid activation
-  sigmoid(z: number) {
+  private sigmoid(z: number): number {
     return 1 / (1 + Math.exp(-z));
   }
 
-  // Predict probability
-  predict(features: number[]) {
-    const z = this.weights.reduce(
-      (sum, w, i) => sum + w * features[i],
-      this.bias
-    );
-    return this.sigmoid(z);
+  private dotProduct(features: FeatureVector): number {
+    let sum = this.bias;
+    for (const [key, value] of Object.entries(features)) {
+      const weight = this.weights[key] ?? 0;
+      sum += weight * value;
+    }
+    return sum;
   }
 
-  // Single step of online gradient descent
-  train(features: number[], label: number) {
+  public predict(features: FeatureVector): number {
+    return this.sigmoid(this.dotProduct(features));
+  }
+
+  public update(features: FeatureVector, label: 0 | 1): void {
     const prediction = this.predict(features);
-    const error = prediction - label;
+    const error = label - prediction;
 
-    // Gradient update
-    for (let i = 0; i < this.weights.length; i++) {
-      this.weights[i] -= this.lr * error * features[i];
+    for (const [key, value] of Object.entries(features)) {
+      if (!(key in this.weights)) {
+        this.weights[key] = 0;
+      }
+      this.weights[key] += this.learningRate * error * value;
     }
-    this.bias -= this.lr * error;
 
-    // Call the provided callback to update the state in React
-    if (this.onUpdate) {
-      this.onUpdate({
-        weights: this.weights,
-        bias: this.bias,
-      });
-    }
+    this.bias += this.learningRate * error;
+
+    this.onUpdate({
+      weights: this.weights,
+      bias: this.bias,
+    });
+  }
+
+  public getWeights(): Record<string, number> {
+    return this.weights;
+  }
+
+  public getBias(): number {
+    return this.bias;
   }
 }
