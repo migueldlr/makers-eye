@@ -21,7 +21,6 @@ export async function getAllCards({
       const res = await fetch(`${NRDB_URL}/card/${id}`);
 
       const data = await res.json();
-      console.log(data.data[0]);
       mapIdToCard[id] = data.data[0];
       return data.data[0];
     })

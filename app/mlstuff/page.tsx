@@ -99,7 +99,6 @@ export default function ClassifierPage() {
 
     setLoading(false);
     if (data) {
-      console.log(data);
       setIdToCardsMap(data.idToCardsMap);
       setPairwiseSimilarities(data.pairWiseSimilarities);
       setLoaded(true);
