@@ -71,7 +71,9 @@ export default function Page() {
           Check
         </Button>
 
-        {decklist.length > 0 && <Text>{getArchetype(decklist)}</Text>}
+        {decklist.length > 0 && (
+          <Text>Calculated archetype: {getArchetype(decklist)}</Text>
+        )}
 
         {decklist.length > 0 && <DecklistDisplay decklist={decklist} />}
       </Stack>
