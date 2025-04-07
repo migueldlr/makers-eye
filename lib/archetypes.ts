@@ -182,3 +182,8 @@ export const RUNNER_ARCHETYPES = {
   Az: "Reg Az",
   Quetzal: "Reg Quetzal",
 };
+
+export const ALL_ARCHETYPES = {
+  ...RUNNER_ARCHETYPES,
+  ...CORP_ARCHETYPES,
+};

@@ -1,5 +1,9 @@
 import { Decklist } from "@/app/mlstuff/page";
-import { CORP_ARCHETYPES, RUNNER_ARCHETYPES } from "./archetypes";
+import {
+  ALL_ARCHETYPES,
+  CORP_ARCHETYPES,
+  RUNNER_ARCHETYPES,
+} from "./archetypes";
 
 export const DEFAULT_UNKNOWN_ID = "<Missing ID>";
 
@@ -308,18 +312,14 @@ export function evalRule(decklist: Decklist, rule: string) {
   return false;
 }
 
-export function getArchetype(decklist: Decklist, side: string) {
+export function getArchetype(decklist: Decklist) {
   const identity = getIdentity(decklist);
   if (!identity) {
     return "Unknown";
   }
 
   const archetypes =
-    side === "corp"
-      ? CORP_ARCHETYPES[shortenId(identity) as keyof typeof CORP_ARCHETYPES]
-      : RUNNER_ARCHETYPES[
-          shortenId(identity) as keyof typeof RUNNER_ARCHETYPES
-        ];
+    ALL_ARCHETYPES[shortenId(identity) as keyof typeof ALL_ARCHETYPES];
 
   if (!archetypes) {
     return "Unknown";

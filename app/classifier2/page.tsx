@@ -196,7 +196,7 @@ export default function Page() {
       return {
         identity: identity,
         results: decklists.map(({ id, decklist }) => {
-          const archetype = getArchetype(decklist, side);
+          const archetype = getArchetype(decklist);
 
           return archetype !== "Unknown";
         }),
@@ -250,15 +250,12 @@ export default function Page() {
             <Group align="start" wrap="nowrap" gap="md">
               {groupedDecklists[selectedIdentity]
                 .sort((a, b) => {
-                  const aArchetype = getArchetype(a.decklist, side);
-                  const bArchetype = getArchetype(b.decklist, side);
+                  const aArchetype = getArchetype(a.decklist);
+                  const bArchetype = getArchetype(b.decklist);
                   return aArchetype.localeCompare(bArchetype);
                 })
                 .map((decklist) => {
-                  const calculatedArchetype = getArchetype(
-                    decklist.decklist,
-                    side
-                  );
+                  const calculatedArchetype = getArchetype(decklist.decklist);
                   return (
                     <DecklistEntry
                       key={decklist.id}
