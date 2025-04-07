@@ -18,10 +18,7 @@ import { useEffect, useState } from "react";
 import { getDecklistsBySide } from "./actions";
 import DecklistDisplay from "@/components/classifier/DecklistDisplay";
 import { FeatureVector, OnlineLogisticRegression } from "./logreg";
-
-export function getNrdbLink(decklistId: string) {
-  return `https://netrunnerdb.com/en/decklist/${decklistId}`;
-}
+import { getNrdbLink } from "@/lib/util";
 
 export type Decklist = {
   card_name: string;

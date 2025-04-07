@@ -252,3 +252,7 @@ export function convertRange(
 }
 
 export const NRDB_URL = "https://netrunnerdb.com/api/2.0/public";
+
+export function getNrdbLink(decklistId: string) {
+  return `https://netrunnerdb.com/en/decklist/${decklistId}`;
+}

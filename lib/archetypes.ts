@@ -117,8 +117,9 @@ export const RUNNER_ARCHETYPES = {
     ["Buzzsaw", "Cleaver", "Echelon", "Reg Hosh"],
     ["Daeg, First Net-Cat", "Companion Hosh"],
   ],
+  Esâ: "Reg Esâ",
   Lat: [
-    ["Aesop’s Pawnshop", "Aesop's Lat"],
+    ["Aesop’s Pawnshop", "LilyPAD", "Aesop's Lat"],
     ["Aniccam", "Deep Dive", "Boring Lat"],
     ["Swift", "Swift Lat"],
     "Other Lat",
@@ -130,7 +131,7 @@ export const RUNNER_ARCHETYPES = {
   ],
   Arissana: [
     ["K2CP Turbine", "Kyuban", "Urban Art Vernissage", "Turbine Ari"],
-    ["Spree", "Pichação", "Botulus", "Aruzanna"],
+    ["Spree", "Pichação", "Botulus", "Spree Ari"],
     ["Swift", "Swift Ari"],
     ["Aesop’s Pawnshop", "Aesop's Ari"],
     "Other Ari",
@@ -155,8 +156,17 @@ export const RUNNER_ARCHETYPES = {
     ["Audrey v2", "Zombie Freedom"],
   ],
   Tāo: [["Hermes", "Hermes Tāo"]],
-  Mercury: [["Femme Fatale", "Femme Fatale Mercury"]],
-  Loup: [["Simulchip", "Mulch Loup"]],
+  Mercury: [
+    ["Femme Fatale", "Femme Fatale Mercury"],
+    ["Hermes", "Hermes Mercury"],
+  ],
+  Loup: [["Simulchip", "Mulch Loup"], "Other Loup"],
+  Seb: [
+    ["Audrey v2", "Buffer Drive", "Audrey Seb"],
+    ["Buzzsaw", "Cleaver", "Reg Seb"],
+    ["Arruaceiras Crew", "Devil Charm", "Crew Charm Seb"],
+    "Other Seb",
+  ],
   419: [
     ["Counter Surveillance", "Tagme 419"],
     ["Mining Accident", "Econ Denial 419"],

@@ -21,12 +21,12 @@ import {
 import { useEffect, useState } from "react";
 import { getDecklistsBySide } from "../classifier/actions";
 import useAuth from "@/hooks/useAuth";
-import { Decklist, getNrdbLink, SimilarityData } from "../classifier/page";
+import { Decklist, SimilarityData } from "../classifier/page";
 import { sortDecklist } from "@/components/classifier/DecklistDisplay";
 import { IconCheck, IconUpload } from "@tabler/icons-react";
 import { getArchetypes, uploadArchetype } from "./actions";
 import { CORP_ARCHETYPES, RUNNER_ARCHETYPES } from "@/lib/archetypes";
-import { shortenId } from "@/lib/util";
+import { getNrdbLink, shortenId } from "@/lib/util";
 
 type ArchetypeData = {
   archetype: string | null;
@@ -224,7 +224,7 @@ function DecklistEntry({
 
 export default function Page() {
   const user = useAuth();
-  const side = "corp";
+  const side = "runner";
 
   const [idToCardsMap, setIdToCardsMap] = useState<{
     [key: number]: Decklist;
@@ -299,9 +299,9 @@ export default function Page() {
     }
   };
 
-  if (!user) {
-    return null;
-  }
+  // if (!user) {
+  //   return null;
+  // }
 
   const status = Object.entries(groupedDecklists).map(
     ([identity, decklists]) => {
