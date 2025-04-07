@@ -217,7 +217,7 @@ export default function ClassifierPage() {
             <Title order={5}>Decklist 1</Title>
             {pair?.decklist1 && (
               <>
-                <Text>{getArchetype(idToCardsMap[pair?.decklist1], side)}</Text>
+                <Text>{getArchetype(idToCardsMap[pair?.decklist1])}</Text>
                 <Anchor href={getNrdbLink(pair.decklist1.toString())}>
                   {pair.decklist1}
                 </Anchor>
@@ -230,7 +230,7 @@ export default function ClassifierPage() {
             <Title order={5}>Decklist 2</Title>
             {pair?.decklist2 && (
               <>
-                <Text>{getArchetype(idToCardsMap[pair?.decklist2], side)}</Text>
+                <Text>{getArchetype(idToCardsMap[pair?.decklist2])}</Text>
                 <Anchor href={getNrdbLink(pair.decklist2.toString())}>
                   {pair.decklist2}
                 </Anchor>
