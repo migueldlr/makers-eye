@@ -23,9 +23,8 @@ export default function DecklistStats({
   const load = async () => {
     setLoading(true);
     const out = await Promise.all(
-      (UPLOAD_PARTIAL ? tournaments.slice(0, 1) : tournaments)
-        .filter((t) => t.id === 73)
-        .map(async (t) => {
+      (UPLOAD_PARTIAL ? tournaments.slice(0, 1) : tournaments).map(
+        async (t) => {
           const url = new URL(t.abr_url ?? "");
           const abrId = url.pathname.split("/")[2];
           const abrApiUrl = `https://alwaysberunning.net/api/entries?id=${abrId}`;
@@ -38,7 +37,8 @@ export default function DecklistStats({
             id: t.id,
             entries: json,
           };
-        })
+        }
+      )
     );
 
     setTotalUpload(

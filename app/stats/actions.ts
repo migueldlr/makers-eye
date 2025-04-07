@@ -465,8 +465,8 @@ export async function uploadAllCards() {
 
   // console.log(decklistsResponse);
   const cards = decklistsResponse
-    .flatMap((decklist: { cards: string }) => {
-      const cards = JSON.parse(decklist.cards);
+    .flatMap((decklist: { cards: { [key: string]: number } }) => {
+      const { cards } = decklist;
 
       const cardIds = Object.keys(cards);
 
@@ -505,7 +505,7 @@ export async function uploadCard({ cardId }: { cardId: number }) {
   }
   const alreadyExists = data1.length > 0;
   if (alreadyExists) {
-    // console.log(`Card ID ${cardId} already exists in supabase`);
+    console.log(`Card ID ${cardId} already exists in supabase`);
     return;
   }
 

@@ -27,13 +27,16 @@ export const CORP_ARCHETYPES = {
     "Other PE",
   ],
   Ampère: "Reg Ampère",
-  Thule: [["End of the Line", "Barf Thule"]],
+  Thule: [
+    ["End of the Line", "Barf Thule"],
+    ["Cohort Guidance Program", "Cohort Thule"],
+  ],
   MirrorMorph: [
     ["Salvo Testing", "Core MirrorMorph"],
     ["Cold Site Server", "IcyHot MirrorMorph"],
   ],
   Saraswati: [["Punitive Counterstrike", "Punitive Saraswati"]],
-  GameNET: [["Surveyor", "Glacier GameNET"]],
+  GameNET: "GameNET",
   Asa: [
     ["Punitive Counterstrike", "Punitive Asa"],
     ["Salvo Testing", "Core Asa"],
@@ -48,6 +51,7 @@ export const CORP_ARCHETYPES = {
     ["Moon Pool", "Ontological Dependence", "Mooncore Sports"],
     ["Arella Salvatore", "Arella Sports"],
     ["Amani Senai", "Amani Sports"],
+    "Other Sports",
   ],
   Azmari: [
     ["Better Citizen Program", "BCP Azmari"],
@@ -71,6 +75,7 @@ export const CORP_ARCHETYPES = {
   RH: [
     ["Punitive Counterstrike", "Punitive RH"],
     ["Sisyphus Protocol", "Sisyphus RH"],
+    "Other RH",
   ],
   NEH: [
     ["End of the Line", "Kill NEH"],
@@ -116,6 +121,7 @@ export const RUNNER_ARCHETYPES = {
     ["Arruaceiras Crew", "Devil Charm", "Other Crew Hosh"],
     ["Buzzsaw", "Cleaver", "Echelon", "Reg Hosh"],
     ["Daeg, First Net-Cat", "Companion Hosh"],
+    ["Persephone", "Persephone", "Persephone Hosh"],
   ],
   Esâ: "Reg Esâ",
   Lat: [
@@ -175,7 +181,7 @@ export const RUNNER_ARCHETYPES = {
     ["Lobisomem", "Grug Akiko"],
     ["“Pretty” Mary da Silva", "Girls Akiko"],
   ],
-  Ayla: [["Rosetta 2.0", "Rosetta Ayla"]],
+  Ayla: [["Rosetta 2.0", "Rosetta Ayla"], "Other Ayla"],
   Reina: [["Aniccam", "Arruaceiras Crew", "Crew Charm Reina"]],
   Ken: [["Deep Dive", "Deep Dive Ken"], "Reg Ken"],
   Nova: [["K2CP Turbine", "Turbine Nova"]],
