@@ -5,8 +5,9 @@ import {
   NrdbDecklist,
   NrdbDecklistResponse,
 } from "@/lib/nrdb";
-import { NRDB_URL } from "@/lib/util";
+import { getArchetype, NRDB_URL } from "@/lib/util";
 import { createClient } from "@/utils/supabase/server";
+import { Decklist } from "../mlstuff/page";
 
 export type WinrateData = {
   runner_id: string;
@@ -536,4 +537,61 @@ export async function uploadCard({ cardId }: { cardId: number }) {
 
 export async function saveAllCards() {
   const supabase = await createClient();
+}
+
+export async function refreshAllArchetypes() {
+  const supabase = await createClient();
+
+  const { data: decklists, error } = await supabase.from("decklists").select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  const { data: cards, error: error2 } = await supabase.from("cards").select();
+
+  if (error2) {
+    throw new Error(error2.message);
+  }
+
+  const cardsById: {
+    [id: string]: {
+      id: number;
+      name: string;
+      type: string;
+    };
+  } = cards.reduce((acc, card) => {
+    acc[card.id] = card;
+    return acc;
+  }, {});
+
+  const dataToUpload = decklists.map(
+    (decklist: { id: number; cards: { [k: number]: number } }) => {
+      const data = Object.entries(decklist.cards).map(([cardId, count]) => {
+        const card = cardsById[Number(cardId)];
+        if (card === undefined) {
+          console.log(cardId);
+          throw new Error("Card not found");
+        }
+        return {
+          card_name: card.name,
+          card_type: card.type,
+          card_count: count,
+        };
+      });
+      const archetype = getArchetype(data);
+      return {
+        id: decklist.id,
+        archetype,
+      };
+    }
+  );
+
+  const { data, error: error3 } = await supabase
+    .from("decklists")
+    .upsert(dataToUpload);
+  if (error3) {
+    throw new Error(error3.message);
+  }
+  console.log(data);
+  return data;
 }

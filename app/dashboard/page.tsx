@@ -45,6 +45,7 @@ import { TournamentRow } from "@/lib/localtypes";
 import DecklistStats from "@/components/stats/DecklistStats";
 import {
   getDecklist,
+  refreshAllArchetypes,
   uploadAllCards,
   uploadAllDecklists,
   uploadDecklist,
@@ -241,6 +242,10 @@ export default function Dashboard() {
     await uploadAllCards();
   };
 
+  const refreshArchetypes = async () => {
+    await refreshAllArchetypes();
+  };
+
   if (!user) {
     return null;
   }
@@ -321,6 +326,9 @@ export default function Dashboard() {
             Refresh all decklists
           </Button>
           <Button onClick={() => loadAllCards()}>Load all cards</Button>
+          <Button onClick={() => refreshArchetypes()}>
+            Refresh archetypes
+          </Button>
         </Group>
 
         <Title order={3} mt="xl">
