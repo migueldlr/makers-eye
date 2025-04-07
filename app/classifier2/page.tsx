@@ -19,9 +19,9 @@ import {
   Title,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { getDecklistsBySide } from "../classifier/actions";
+import { getDecklistsBySide } from "../mlstuff/actions";
 import useAuth from "@/hooks/useAuth";
-import { Decklist, SimilarityData } from "../classifier/page";
+import { Decklist, SimilarityData } from "../mlstuff/page";
 import { sortDecklist } from "@/components/classifier/DecklistDisplay";
 import { IconCheck, IconUpload } from "@tabler/icons-react";
 import { getArchetypes, uploadArchetype } from "./actions";

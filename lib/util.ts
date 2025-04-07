@@ -1,4 +1,4 @@
-import { Decklist } from "@/app/classifier/page";
+import { Decklist } from "@/app/mlstuff/page";
 import { CORP_ARCHETYPES, RUNNER_ARCHETYPES } from "./archetypes";
 
 export const DEFAULT_UNKNOWN_ID = "<Missing ID>";

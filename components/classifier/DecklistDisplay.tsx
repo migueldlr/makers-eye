@@ -1,4 +1,4 @@
-import { Decklist } from "@/app/classifier/page";
+import { Decklist } from "@/app/mlstuff/page";
 import { List, ListItem } from "@mantine/core";
 
 export const CARD_TYPES = [
