@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { getDecklistsBySide } from "./actions";
 import DecklistDisplay from "@/components/classifier/DecklistDisplay";
 import { FeatureVector, OnlineLogisticRegression } from "./logreg";
-import { getNrdbLink } from "@/lib/util";
+import { getArchetype, getNrdbLink } from "@/lib/util";
 
 export type Decklist = {
   card_name: string;
@@ -217,6 +217,7 @@ export default function ClassifierPage() {
             <Title order={5}>Decklist 1</Title>
             {pair?.decklist1 && (
               <>
+                <Text>{getArchetype(idToCardsMap[pair?.decklist1], side)}</Text>
                 <Anchor href={getNrdbLink(pair.decklist1.toString())}>
                   {pair.decklist1}
                 </Anchor>
@@ -229,6 +230,7 @@ export default function ClassifierPage() {
             <Title order={5}>Decklist 2</Title>
             {pair?.decklist2 && (
               <>
+                <Text>{getArchetype(idToCardsMap[pair?.decklist2], side)}</Text>
                 <Anchor href={getNrdbLink(pair.decklist2.toString())}>
                   {pair.decklist2}
                 </Anchor>

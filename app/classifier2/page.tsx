@@ -26,129 +26,17 @@ import { sortDecklist } from "@/components/classifier/DecklistDisplay";
 import { IconCheck, IconUpload } from "@tabler/icons-react";
 import { getArchetypes, uploadArchetype } from "./actions";
 import { CORP_ARCHETYPES, RUNNER_ARCHETYPES } from "@/lib/archetypes";
-import { getNrdbLink, shortenId } from "@/lib/util";
+import {
+  getArchetype,
+  getNrdbLink,
+  groupDecklistsByIdentity,
+  shortenId,
+} from "@/lib/util";
 
 type ArchetypeData = {
   archetype: string | null;
   id: number;
 };
-
-function getIdentity(decklist: Decklist) {
-  const identity = decklist.find(
-    (card) => card.card_type === "identity"
-  )?.card_name;
-  if (!identity) {
-    return null;
-  }
-  return identity;
-}
-
-function getCardTypeDistribution(decklist: Decklist) {
-  return decklist.reduce((acc, card) => {
-    acc[card.card_type] = (acc[card.card_type] || 0) + card.card_count;
-    return acc;
-  }, {} as { [key: string]: number });
-}
-
-function evalRule(decklist: Decklist, rule: string) {
-  const ruleParts = rule.split(/[^A-Za-z0-9]/);
-  const left = ruleParts[0];
-  const right = Number(ruleParts[1]);
-  const operator = rule.match(/[^A-Za-z0-9]/)?.[0];
-
-  const distribution = getCardTypeDistribution(decklist);
-
-  if (left === "total") {
-    const total = decklist.reduce((acc, card) => acc + card.card_count, 0);
-
-    if (operator === "<") {
-      return total < right;
-    } else if (operator === ">") {
-      return total > right;
-    } else if (operator === "=") {
-      return total === right;
-    }
-  }
-
-  if (operator === "<") {
-    return distribution[left] < right;
-  } else if (operator === ">") {
-    return distribution[left] > right;
-  } else if (operator === "=") {
-    return distribution[left] === right;
-  }
-
-  return false;
-}
-
-function getArchetype(decklist: Decklist, side: string) {
-  const identity = getIdentity(decklist);
-  if (!identity) {
-    return "Unknown";
-  }
-
-  const archetypes =
-    side === "corp"
-      ? CORP_ARCHETYPES[shortenId(identity) as keyof typeof CORP_ARCHETYPES]
-      : RUNNER_ARCHETYPES[
-          shortenId(identity) as keyof typeof RUNNER_ARCHETYPES
-        ];
-
-  if (!archetypes) {
-    return "Unknown";
-  }
-
-  if (typeof archetypes === "string") {
-    return archetypes;
-  }
-
-  for (const archetype of archetypes) {
-    if (typeof archetype === "string") {
-      return archetype;
-    }
-    let found = true;
-    for (const archetypeCard of archetype.slice(0, archetype.length - 1)) {
-      if (archetypeCard.match(/[<>=]/)) {
-        if (!evalRule(decklist, archetypeCard)) {
-          found = false;
-          break;
-        }
-      } else if (!decklist.some((card) => card.card_name === archetypeCard)) {
-        found = false;
-        break;
-      }
-    }
-    if (found) {
-      return archetype[archetype.length - 1];
-    }
-  }
-
-  return "Unknown";
-}
-
-function groupDecklistsByIdentity(idToCardsMap: { [key: number]: Decklist }) {
-  const groupedDecklists: Record<string, { id: string; decklist: Decklist }[]> =
-    {};
-
-  for (const [decklistId, decklist] of Object.entries(idToCardsMap)) {
-    const identity = decklist.find(
-      (card) => card.card_type === "identity"
-    )?.card_name;
-
-    if (!identity) {
-      continue;
-    }
-    if (!groupedDecklists[identity]) {
-      groupedDecklists[identity] = [];
-    }
-    groupedDecklists[identity].push({
-      id: decklistId,
-      decklist,
-    });
-  }
-
-  return groupedDecklists;
-}
 
 function DecklistEntry({
   decklist,
