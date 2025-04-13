@@ -148,6 +148,7 @@ export default function Dashboard() {
   const [region, setRegion] = useState<string | null>(null);
   const [meta, setMeta] = useState(DEFAULT_META);
   const [location, setLocation] = useState<string | null>(null);
+  const [abrUrl, setAbrUrl] = useState<string>("");
 
   const [success, setSuccess] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -185,6 +186,7 @@ export default function Dashboard() {
     setData(undefined);
     setRegion(null);
     setLocation(null);
+    setAbrUrl("");
     setMeta(DEFAULT_META);
     const parsed = parseUrl(url);
     if (!parsed) {
@@ -210,7 +212,8 @@ export default function Dashboard() {
       normalizeUrl(url),
       meta,
       region,
-      location
+      location,
+      abrUrl
     );
 
     const standings = await uploadStandings(
@@ -270,6 +273,12 @@ export default function Dashboard() {
           options={REGION_OPTIONS}
           value={region}
           setValue={setRegion}
+        />
+        <TextInput
+          label="ABR URL"
+          placeholder="ABR URL"
+          value={abrUrl}
+          onChange={(e) => setAbrUrl(e.target.value)}
         />
         <TextInput value={meta} label="Meta" readOnly />
       </Group>
