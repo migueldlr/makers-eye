@@ -204,7 +204,9 @@ export default function CutSwissComparison({
   const [overallSwissWr, setOverallSwissWr] = useState(50);
   const [overallOppositeSideWr, setOverallOppositeSideWr] = useState(50);
   const [scaleDots, setScaleDots] = useState(true);
-  const [yAxis, setYAxis] = useState<"cutWr" | "oppositeSideWr">("cutWr");
+  const [yAxis, setYAxis] = useState<"cutWr" | "oppositeSideWr">(
+    "oppositeSideWr"
+  );
   useEffect(() => {
     (async () => {
       const cutData = await getIdentityWinrates({
