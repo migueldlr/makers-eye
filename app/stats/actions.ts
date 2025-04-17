@@ -227,6 +227,31 @@ export async function getIdentityWinrates({
   return data;
 }
 
+export async function getPartnerIdentityWinrates({
+  tournamentIds,
+  side,
+}: {
+  tournamentIds: number[];
+  side: "corp" | "runner";
+}): Promise<IdentityWinrateData[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc(
+    side === "corp"
+      ? "get_runner_id_corp_performance"
+      : "get_corp_id_runner_performance",
+    {
+      tournament_filter: tournamentIds,
+    }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 export async function getCutVsSwiss({
   tournamentIds,
   side,

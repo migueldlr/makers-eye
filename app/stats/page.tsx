@@ -138,8 +138,8 @@ export default async function StatsPage({
           includeSwiss={includeSwiss}
         />
 
-        <TitleWithAnchor id="corp-cut-vs-swiss">
-          Corp cut vs swiss
+        <TitleWithAnchor id="corp-swiss-comparison">
+          Corp swiss comparison
         </TitleWithAnchor>
         <CutSwissComparison tournamentIds={tournamentIds} side="corp" />
 
@@ -169,8 +169,8 @@ export default async function StatsPage({
           includeSwiss={includeSwiss}
         />
 
-        <TitleWithAnchor id="runner-cut-vs-swiss">
-          Runner cut vs swiss
+        <TitleWithAnchor id="runner-swiss-comparison">
+          Runner swiss comparison
         </TitleWithAnchor>
         <CutSwissComparison tournamentIds={tournamentIds} side="runner" />
 

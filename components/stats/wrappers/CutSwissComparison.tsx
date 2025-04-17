@@ -1,8 +1,20 @@
 "use client";
 
-import { getIdentityWinrates, IdentityWinrateData } from "@/app/stats/actions";
-import { Paper, Stack, Switch, Text, useMantineTheme } from "@mantine/core";
-import { useEffect, useState } from "react";
+import {
+  getIdentityWinrates,
+  getPartnerIdentityWinrates,
+  IdentityWinrateData,
+} from "@/app/stats/actions";
+import {
+  Group,
+  Paper,
+  Select,
+  Stack,
+  Switch,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
+import { useEffect, useMemo, useState } from "react";
 import {
   ValueType,
   NameType,
@@ -22,25 +34,44 @@ import {
 } from "recharts";
 import { convertRange, factionToColor, idToFaction } from "@/lib/util";
 
-function ChartTooltip(props: TooltipProps<ValueType, NameType>) {
-  if (!props.payload) return null;
+function ChartTooltip({
+  payload,
+  yAxis,
+}: TooltipProps<ValueType, NameType> & { yAxis: string }) {
+  if (!payload) return null;
 
-  if (!props.payload?.[0]?.payload) return null;
+  if (!payload?.[0]?.payload) return null;
 
-  const { totalGames, cutGames, cutWr, swissGames, swissWr, id } = props
-    .payload[0].payload as Payload;
+  const {
+    totalGames,
+    cutGames,
+    cutWr,
+    swissGames,
+    swissWr,
+    id,
+    oppositeSideWr,
+    oppositeSideGames,
+  } = payload[0].payload as Payload;
 
   return (
     <Paper px="md" py="sm" withBorder shadow="md" radius="md">
       <Text>{id}</Text>
       <Text>
-        Cut WR: {cutWr.toPrecision(3)}% ({cutGames} game
-        {cutGames !== 1 ? "s" : ""})
-      </Text>
-      <Text>
         Swiss WR: {swissWr.toPrecision(3)}% ({swissGames} game
         {swissGames !== 1 ? "s" : ""})
       </Text>
+      {yAxis === "oppositeSideWr" ? (
+        <Text>
+          Opposite Side WR: {oppositeSideWr.toPrecision(3)}% (
+          {oppositeSideGames} game
+          {oppositeSideGames !== 1 ? "s" : ""})
+        </Text>
+      ) : (
+        <Text>
+          Cut WR: {cutWr.toPrecision(3)}% ({cutGames} game
+          {cutGames !== 1 ? "s" : ""})
+        </Text>
+      )}
     </Paper>
   );
 }
@@ -50,28 +81,33 @@ function CustomDot({
   cy,
   totalGames,
   cutGames,
+  oppositeSideGames,
   color,
   gameRange,
   id,
   scaleDots,
+  yAxis,
   ...rest
 }: {
   cx: number;
   cy: number;
   totalGames: number;
   cutGames: number;
+  oppositeSideGames: number;
   color: string;
   id: string;
   scaleDots: boolean;
+  yAxis: string;
   gameRange: [number, number];
 }) {
+  const baseSize = yAxis === "oppositeSideWr" ? oppositeSideGames : cutGames;
   return (
     <Dot
       cx={cx}
       cy={cy}
       r={
         scaleDots
-          ? Math.sqrt(convertRange(cutGames, gameRange, DOT_SIZE_RANGE))
+          ? Math.sqrt(convertRange(baseSize, gameRange, DOT_SIZE_RANGE))
           : 5
       }
       fill={color}
@@ -81,10 +117,12 @@ function CustomDot({
 
 function processData(
   cutData: IdentityWinrateData[],
-  swissData: IdentityWinrateData[]
+  swissData: IdentityWinrateData[],
+  oppositeSideData: IdentityWinrateData[]
 ): CutSwissChartData[] {
   const cutDataMap: Record<string, IdentityWinrateData> = {};
   const swissDataMap: Record<string, IdentityWinrateData> = {};
+  const oppositeSideDataMap: Record<string, IdentityWinrateData> = {};
 
   swissData.forEach((value) => {
     swissDataMap[value.id] = value;
@@ -92,10 +130,18 @@ function processData(
   cutData.forEach((value) => {
     cutDataMap[value.id] = value;
   });
+  oppositeSideData.forEach((value) => {
+    oppositeSideDataMap[value.id] = value;
+  });
 
   return Object.keys(swissDataMap).map((id) => {
     const cut = cutDataMap[id];
     const swiss = swissDataMap[id];
+    const oppositeSide = oppositeSideDataMap[id];
+
+    if (!oppositeSide) {
+      console.error(`No opposite side data found for id: ${id}`);
+    }
 
     const swissWr =
       swiss.total_wins /
@@ -103,6 +149,7 @@ function processData(
     const cutWr = cut
       ? cut.total_wins / (cut.total_wins + cut.total_losses + cut.total_draws)
       : 0;
+    const oppositeSideWr = oppositeSide.win_rate;
 
     return {
       name: id,
@@ -111,9 +158,11 @@ function processData(
         {
           cutWr: cutWr * 100,
           swissWr: swissWr * 100,
+          oppositeSideWr: oppositeSideWr * 100,
           cutGames: cut ? cut.total_games : 0,
           swissGames: swiss.total_games,
           totalGames: swiss.total_games + (cut ? cut.total_games : 0),
+          oppositeSideGames: oppositeSide.total_games,
           id: id,
           color: factionToColor(idToFaction(id)),
         },
@@ -125,9 +174,11 @@ function processData(
 interface Payload {
   cutWr: number;
   swissWr: number;
+  oppositeSideWr: number;
   cutGames: number;
   swissGames: number;
   totalGames: number;
+  oppositeSideGames: number;
   id: string;
 }
 
@@ -148,10 +199,12 @@ export default function CutSwissComparison({
 }) {
   const theme = useMantineTheme();
   const [data, setData] = useState<CutSwissChartData[]>([]);
-  const [range, setRange] = useState<[number, number]>([0, 1]);
+  // const [range, setRange] = useState<[number, number]>([0, 1]);
   const [overallCutWr, setOverallCutWr] = useState(50);
   const [overallSwissWr, setOverallSwissWr] = useState(50);
+  const [overallOppositeSideWr, setOverallOppositeSideWr] = useState(50);
   const [scaleDots, setScaleDots] = useState(true);
+  const [yAxis, setYAxis] = useState<"cutWr" | "oppositeSideWr">("cutWr");
   useEffect(() => {
     (async () => {
       const cutData = await getIdentityWinrates({
@@ -168,21 +221,13 @@ export default function CutSwissComparison({
         includeSwiss: true,
       });
 
-      const processedData = processData(cutData, swissData);
-      setData(processedData);
+      const oppositeSideData = await getPartnerIdentityWinrates({
+        tournamentIds: tournamentIds,
+        side: side === "corp" ? "runner" : "corp",
+      });
 
-      setRange([
-        Math.min(
-          ...processedData.map((series) =>
-            Math.min(...series.data.map((d) => d.cutGames))
-          )
-        ),
-        Math.max(
-          ...processedData.map((series) =>
-            Math.max(...series.data.map((d) => d.cutGames))
-          )
-        ),
-      ]);
+      const processedData = processData(cutData, swissData, oppositeSideData);
+      setData(processedData);
 
       setOverallCutWr(
         (cutData.reduce((acc, cur) => acc + cur.total_wins, 0) /
@@ -194,8 +239,26 @@ export default function CutSwissComparison({
           (swissData.reduce((acc, cur) => acc + cur.total_games, 0) || 1)) *
           100
       );
+      setOverallOppositeSideWr(
+        (oppositeSideData.reduce((acc, cur) => acc + cur.total_wins, 0) /
+          (oppositeSideData.reduce((acc, cur) => acc + cur.total_games, 0) ||
+            1)) *
+          100
+      );
     })();
   }, [tournamentIds, side]);
+
+  const range: [number, number] = useMemo(() => {
+    const index = yAxis === "cutWr" ? "cutGames" : "oppositeSideGames";
+    return [
+      Math.min(
+        ...data.map((series) => Math.min(...series.data.map((d) => d[index])))
+      ),
+      Math.max(
+        ...data.map((series) => Math.max(...series.data.map((d) => d[index])))
+      ),
+    ];
+  }, [data, yAxis]);
 
   return (
     <Stack>
@@ -219,13 +282,13 @@ export default function CutSwissComparison({
             />
           </XAxis>
           <YAxis
-            dataKey="cutWr"
+            dataKey={yAxis}
             type="number"
             fill={theme.colors.dark[2]}
             domain={[0, 100]}
           >
             <Label
-              value={"Cut WR (%)"}
+              value={yAxis === "cutWr" ? "Cut WR (%)" : "Opposite Side WR (%)"}
               angle={-90}
               position="insideLeft"
               fill={theme.colors.dark[2]}
@@ -244,15 +307,19 @@ export default function CutSwissComparison({
               {`${overallSwissWr.toPrecision(3)}%`}
             </Label>
           </ReferenceLine>
-          <ReferenceLine y={overallCutWr} stroke={theme.colors.dark[4]}>
-            <Label position="insideBottomLeft">{`${overallCutWr.toPrecision(
-              3
-            )}%`}</Label>
+          <ReferenceLine
+            y={yAxis === "cutWr" ? overallCutWr : overallOppositeSideWr}
+            stroke={theme.colors.dark[4]}
+          >
+            <Label position="insideBottomLeft">{`${(yAxis === "cutWr"
+              ? overallCutWr
+              : overallOppositeSideWr
+            ).toPrecision(3)}%`}</Label>
           </ReferenceLine>
           <Tooltip
             isAnimationActive={false}
             cursor={{ strokeDasharray: "5 5", stroke: theme.colors.dark[2] }}
-            content={ChartTooltip}
+            content={<ChartTooltip yAxis={yAxis} />}
           />
           {data.map((series) => (
             <Scatter
@@ -260,17 +327,34 @@ export default function CutSwissComparison({
               name={series.name}
               data={series.data}
               fill={series.color}
-              // @ts-ignore
-              shape={<CustomDot gameRange={range} scaleDots={scaleDots} />}
+              shape={
+                // @ts-ignore
+                <CustomDot
+                  gameRange={range}
+                  scaleDots={scaleDots}
+                  yAxis={yAxis}
+                />
+              }
             ></Scatter>
           ))}
         </ScatterChart>
       </ResponsiveContainer>
-      <Switch
-        checked={scaleDots}
-        onChange={(e) => setScaleDots(e.currentTarget.checked)}
-        label="Scale dots"
-      />
+      <Group>
+        <Switch
+          checked={scaleDots}
+          onChange={(e) => setScaleDots(e.currentTarget.checked)}
+          label="Scale dots"
+        />
+        <Select
+          value={yAxis}
+          onChange={(value) => setYAxis(value as "cutWr" | "oppositeSideWr")}
+          label="Y-axis"
+          data={[
+            { value: "cutWr", label: "Cut WR" },
+            { value: "oppositeSideWr", label: "Opposite side WR" },
+          ]}
+        />
+      </Group>
     </Stack>
   );
 }

@@ -36,7 +36,7 @@ export default function TitleWithAnchor({
     }, 1000);
 
     const { location } = window;
-    const url = `${location.protocol}//${location.host}${location.pathname}#${id}`;
+    const url = `${location.protocol}//${location.host}${location.pathname}${location.search}#${id}`;
 
     copy(url);
   };
