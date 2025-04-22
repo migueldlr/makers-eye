@@ -75,6 +75,26 @@ const ID_MAPPING = {
   "Weyland Consortium: Building a Better World": "BABW",
   "Weyland Consortium: Built to Last": "BtL",
   "Zahya Sadeghi: Versatile Smuggler": "Zahya",
+
+  "Ryō “Phoenix” Ōno: Out of the Ashes": "Phoenix",
+  "Ryo “Phoenix” Ono: Out of the Ashes": "Phoenix",
+  'Ryō "Phoenix" Ōno: Out of the Ashes': "Phoenix",
+  'Ryo "Phoenix" Ono: Out of the Ashes': "Phoenix",
+  "Topan: Ormas Leader": "Topan",
+  'Barry "Baz" Wong: Tri-Maf Veteran': "Baz",
+  "Barry “Baz” Wong: Tri-Maf Veteran": "Baz",
+  "MuslihaT: Multifarious Marketeer": "MuslihaT",
+  "Dewi Subrotoputri: Pedagogical Dhalang": "Dewi",
+  "Magdalene Keino-Chemutai: Cryptarchitect": "Mag",
+  "LEO Construction: Labor Solutions": "LEO",
+  "Poétrï Luxury Brands: All the Rage": "Poétrï",
+  "Poetri Luxury Brands: All the Rage": "Poétrï",
+  "AU Co.: The Gold Standard in Clones": "AU Co.",
+  "PT Untaian: Life's Building Blocks": "Untaian",
+  "Nebula Talent Management: Making Stars": "Nebula",
+  "Synapse Global: Faster than Thought": "Synapse",
+  "BANGUN: When Disaster Strikes": "BANGUN",
+  "The Zwicky Group: Invisible Hands": "Zwicky",
 };
 
 const FACTION_MAPPING = {
@@ -137,6 +157,21 @@ const FACTION_MAPPING = {
   BtL: "Weyland",
   Zahya: "Criminal",
   [DEFAULT_UNKNOWN_ID]: "_Neutral",
+
+  Phoenix: "Anarch",
+  Topan: "Anarch",
+  Baz: "Criminal",
+  MuslihaT: "Criminal",
+  Dewi: "Shaper",
+  Mag: "Shaper",
+  LEO: "HB",
+  Poétrï: "HB",
+  "AU Co": "Jinteki",
+  Untaian: "Jinteki",
+  Nebula: "NBN",
+  Synapse: "NBN",
+  BANGUN: "Weyland",
+  Zwicky: "Weyland",
 };
 
 export const FACTION_NAMES = [
