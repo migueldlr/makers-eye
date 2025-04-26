@@ -89,7 +89,7 @@ const ID_MAPPING = {
   "LEO Construction: Labor Solutions": "LEO",
   "Poétrï Luxury Brands: All the Rage": "Poétrï",
   "Poetri Luxury Brands: All the Rage": "Poétrï",
-  "AU Co.: The Gold Standard in Clones": "AU Co.",
+  "AU Co.: The Gold Standard in Clones": "AU Co",
   "PT Untaian: Life's Building Blocks": "Untaian",
   "Nebula Talent Management: Making Stars": "Nebula",
   "Synapse Global: Faster than Thought": "Synapse",
