@@ -81,8 +81,6 @@ export function WinrateChart({
   roundsAugmented: AugmentedRound[];
   side: "runner" | "corp";
 }) {
-  const [showWr, setShowWr] = useState(true);
-  const [showCut, setShowCut] = useState(true);
   const gamesById =
     side === "corp"
       ? groupGamesByCorp(roundsAugmented.flat())
@@ -104,6 +102,11 @@ export function WinrateChart({
     })
     .sort((a, b) => b.players - a.players);
   const data = mergeData(wrData, cutData);
+
+  console.log(eliminationPlayers);
+
+  const [showWr, setShowWr] = useState(true);
+  const [showCut, setShowCut] = useState((eliminationPlayers?.length ?? 0) > 0);
 
   const wrDomain = [0, 100];
   const cutDomain = ([, dataMax]: [number, number]): [number, number] => [
