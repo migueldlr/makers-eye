@@ -90,7 +90,7 @@ const ID_MAPPING = {
   "Poétrï Luxury Brands: All the Rage": "Poétrï",
   "Poetri Luxury Brands: All the Rage": "Poétrï",
   "AU Co.: The Gold Standard in Clones": "AU Co",
-  "PT Untaian: Life's Building Blocks": "Untaian",
+  "PT Untaian: Life's Building Blocks": "PTU",
   "Nebula Talent Management: Making Stars": "Nebula",
   "Synapse Global: Faster than Thought": "Synapse",
   "BANGUN: When Disaster Strikes": "BANGUN",
