@@ -167,7 +167,7 @@ const FACTION_MAPPING = {
   LEO: "HB",
   Poétrï: "HB",
   "AU Co": "Jinteki",
-  Untaian: "Jinteki",
+  PTU: "Jinteki",
   Nebula: "NBN",
   Synapse: "NBN",
   BANGUN: "Weyland",
