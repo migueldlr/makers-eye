@@ -103,8 +103,6 @@ export function WinrateChart({
     .sort((a, b) => b.players - a.players);
   const data = mergeData(wrData, cutData);
 
-  console.log(eliminationPlayers);
-
   const [showWr, setShowWr] = useState(true);
   const [showCut, setShowCut] = useState((eliminationPlayers?.length ?? 0) > 0);
 
