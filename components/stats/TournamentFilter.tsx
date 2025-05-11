@@ -2,8 +2,10 @@
 
 import { TournamentRow } from "@/lib/localtypes";
 import {
+  DEFAULT_META,
   DEFAULT_NONE,
   END_DATE_FILTER_KEY,
+  META_FILTER_KEY,
   ONLINE_FILTER_KEY,
   PHASE_FILTER_KEY,
   REGION_FILTER_KEY,
@@ -30,10 +32,12 @@ import DateFilter from "./filters/DateFilter";
 import RegionFilter from "./filters/RegionFilter";
 import OnlineFilter from "./filters/OnlineFilter";
 import PhaseFilter from "./filters/PhaseFilter";
+import MetaFilter from "./filters/MetaFilter";
 
 export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
 export const ONLINE_OPTIONS = ["Online", "Paper"];
 export const PHASE_OPTIONS = ["Swiss", "Cut"];
+export const META_OPTIONS = ["25.04", "24.12"];
 
 export default function TournamentFilter({
   tournaments,
@@ -182,12 +186,18 @@ function AccordionPanelContent_raw({
     initialPhase.length > 0 ? initialPhase : PHASE_OPTIONS
   );
 
+  const initialMeta_raw = searchParams.get(META_FILTER_KEY);
+  const [metaSelected, setMetaSelected] = useState(
+    initialMeta_raw ?? DEFAULT_META
+  );
+
   const hasFilters =
     searchParams.has(START_DATE_FILTER_KEY) ||
     searchParams.has(END_DATE_FILTER_KEY) ||
     searchParams.has(REGION_FILTER_KEY) ||
     searchParams.has(ONLINE_FILTER_KEY) ||
-    searchParams.has(PHASE_FILTER_KEY);
+    searchParams.has(PHASE_FILTER_KEY) ||
+    searchParams.has(META_FILTER_KEY);
 
   const href = useMemo(
     () =>
@@ -207,6 +217,9 @@ function AccordionPanelContent_raw({
         ...(phaseSelected.length !== PHASE_OPTIONS.length && {
           [PHASE_FILTER_KEY]: phaseSelected.join(","),
         }),
+        ...(metaSelected !== DEFAULT_META && {
+          [META_FILTER_KEY]: metaSelected,
+        }),
       }).toString(),
     [
       startDateSelected,
@@ -214,6 +227,7 @@ function AccordionPanelContent_raw({
       regionsSelected,
       onlineSelected,
       phaseSelected,
+      metaSelected,
     ]
   );
 
@@ -229,13 +243,15 @@ function AccordionPanelContent_raw({
           (t) =>
             onlineSelected.length === 0 ||
             onlineSelected.includes(t.location ?? "Paper")
-        ),
-    [regionsSelected, onlineSelected]
+        )
+        .filter((t) => t.meta === metaSelected),
+    [regionsSelected, onlineSelected, metaSelected]
   );
   return (
     <>
       <Group gap="xl" align="flex-start">
         <Stack>
+          <MetaFilter meta={metaSelected} setMeta={setMetaSelected} />
           <RegionFilter
             regions={regionsSelected}
             setRegions={setRegionsSelected}

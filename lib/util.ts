@@ -93,7 +93,7 @@ const ID_MAPPING = {
   "PT Untaian: Life's Building Blocks": "PTU",
   "Nebula Talent Management: Making Stars": "Nebula",
   "Synapse Global: Faster than Thought": "Synapse",
-  "BANGUN: When Disaster Strikes": "BANGUN",
+  "BANGUN: When Disaster Strikes": "Bangun",
   "The Zwicky Group: Invisible Hands": "Zwicky",
 };
 
@@ -170,7 +170,7 @@ const FACTION_MAPPING = {
   PTU: "Jinteki",
   Nebula: "NBN",
   Synapse: "NBN",
-  BANGUN: "Weyland",
+  Bangun: "Weyland",
   Zwicky: "Weyland",
 };
 
@@ -260,7 +260,7 @@ export const REGION_OPTIONS = ["Americas", "EMEA", "APAC"];
 
 export const LOCATION_OPTIONS = ["Online", "Paper"];
 
-export const DEFAULT_META = "24.12";
+export const DEFAULT_META = "25.04";
 
 export const SITE_TITLE = "The Maker's Eye - Netrunner tournament analysis";
 
@@ -270,6 +270,7 @@ export const END_DATE_FILTER_KEY = "endDate";
 export const REGION_FILTER_KEY = "region";
 export const ONLINE_FILTER_KEY = "online";
 export const PHASE_FILTER_KEY = "phase";
+export const META_FILTER_KEY = "meta";
 
 export function isWithinDateRange(
   startDate: string,

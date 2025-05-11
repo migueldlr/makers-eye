@@ -1,5 +1,5 @@
 import { TournamentRow } from "@/lib/localtypes";
-import { parseUrl } from "@/lib/util";
+import { DEFAULT_META, parseUrl } from "@/lib/util";
 import {
   Anchor,
   Table,
@@ -15,10 +15,12 @@ export default function TournamentTable({
   tournaments,
   isAdmin = false,
   tournamentIds,
+  meta = DEFAULT_META,
 }: {
   tournaments: TournamentRow[];
   isAdmin?: boolean;
   tournamentIds?: number[];
+  meta?: string;
 }) {
   if (tournaments.length === 0) {
     return <Text>No tournaments found</Text>;
@@ -29,8 +31,11 @@ export default function TournamentTable({
     });
 
   const filteredTournaments = tournaments.filter((tournament) => {
-    if (tournamentIds) {
-      return tournamentIds.includes(tournament.id);
+    if (tournamentIds && !tournamentIds.includes(tournament.id)) {
+      return false;
+    }
+    if (tournament.meta !== meta) {
+      return false;
     }
     return true;
   });

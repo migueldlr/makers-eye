@@ -5,7 +5,7 @@ import {
   NrdbDecklist,
   NrdbDecklistResponse,
 } from "@/lib/nrdb";
-import { getArchetype, NRDB_URL } from "@/lib/util";
+import { DEFAULT_META, getArchetype, NRDB_URL } from "@/lib/util";
 import { createClient } from "@/utils/supabase/server";
 import { Decklist } from "../mlstuff/page";
 
@@ -143,7 +143,9 @@ export async function getSummaryStats(tournamentFilter?: number[]) {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .rpc("get_summary_stats", { tournament_filter: tournamentFilter ?? null })
+    .rpc("get_summary_stats", {
+      tournament_filter: tournamentFilter ?? null,
+    })
     .select();
 
   if (error) {

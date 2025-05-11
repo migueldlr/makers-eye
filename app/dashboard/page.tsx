@@ -146,7 +146,7 @@ export default function Dashboard() {
     onDropdownClose: () => combobox.resetSelectedOption(),
   });
   const [region, setRegion] = useState<string | null>(null);
-  const [meta, setMeta] = useState(DEFAULT_META);
+  const [meta, setMeta] = useState<string>(DEFAULT_META);
   const [location, setLocation] = useState<string | null>(null);
   const [abrUrl, setAbrUrl] = useState<string>("");
 
@@ -280,7 +280,11 @@ export default function Dashboard() {
           value={abrUrl}
           onChange={(e) => setAbrUrl(e.target.value)}
         />
-        <TextInput value={meta} label="Meta" readOnly />
+        <TextInput
+          value={meta}
+          onChange={(e) => setMeta(e.target.value)}
+          label="Meta"
+        />
       </Group>
     </>
   );

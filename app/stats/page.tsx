@@ -15,18 +15,18 @@ import {
 import MatchupTable from "../../components/stats/charts/MatchupTable";
 import TournamentTable from "../../components/stats/TournamentTable";
 import { createClient } from "@/utils/supabase/server";
-import { Metadata } from "next";
 import {
+  DEFAULT_META,
   DEFAULT_NONE,
   END_DATE_FILTER_KEY,
   isWithinDateRange,
+  META_FILTER_KEY,
   ONLINE_FILTER_KEY,
   PHASE_FILTER_KEY,
   REGION_FILTER_KEY,
   SITE_TITLE,
   START_DATE_FILTER_KEY,
 } from "@/lib/util";
-import { IconInfoCircle } from "@tabler/icons-react";
 import SummaryStats from "../../components/stats/SummaryStats";
 import MatchupSummary from "../../components/stats/wrappers/MatchupSummary";
 import RepresentationChart from "../../components/stats/wrappers/RepresentationChart";
@@ -38,9 +38,17 @@ import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
 import CutSwissComparison from "@/components/stats/wrappers/CutSwissComparison";
 import TitleWithAnchor from "@/components/common/TitleWithAnchor";
 
-export const metadata: Metadata = {
-  title: `24.12 Meta Analysis | ${SITE_TITLE}`,
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const meta = (params[META_FILTER_KEY] ?? DEFAULT_META) as string;
+  return {
+    title: `${meta} Meta Analysis | ${SITE_TITLE}`,
+  };
+}
 
 export default async function StatsPage({
   searchParams,
@@ -56,6 +64,7 @@ export default async function StatsPage({
   const endDate = (params[END_DATE_FILTER_KEY] ?? "") as string;
   const region = (params[REGION_FILTER_KEY] ?? "") as string;
   const online = (params[ONLINE_FILTER_KEY] ?? "") as string;
+  const meta = (params[META_FILTER_KEY] ?? DEFAULT_META) as string;
   const tournamentIds = tournaments
     ?.filter((t) => isWithinDateRange(startDate, endDate, t.date))
     .filter((t) =>
@@ -66,6 +75,7 @@ export default async function StatsPage({
     .filter((t) =>
       online === "" ? true : online.split(",").includes(t.location ?? "Paper")
     )
+    .filter((t) => meta === t.meta)
     .map((t) => t.id);
 
   const phase = (params[PHASE_FILTER_KEY] ?? "") as string;
@@ -76,11 +86,11 @@ export default async function StatsPage({
     <Container fluid px="lg" py="lg">
       <Stack display="block" pos="relative">
         <Title order={2} mb="sm">
-          24.12 Meta Analysis
+          {meta} Meta Analysis
         </Title>
-        <Alert variant="light" color="orange" icon={<IconInfoCircle />}>
+        {/* <Alert variant="light" color="orange" icon={<IconInfoCircle />}>
           This page is under construction. Expect frequent updates.
-        </Alert>
+        </Alert> */}
         <Space h="sm" />
 
         <TournamentFilter tournaments={tournaments ?? []} />
@@ -102,6 +112,7 @@ export default async function StatsPage({
                   <div>Loading...</div>
                 ) : (
                   <TournamentTable
+                    meta={meta}
                     tournaments={tournaments}
                     tournamentIds={tournamentIds}
                   />
