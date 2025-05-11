@@ -34,7 +34,7 @@ export default function TournamentTable({
     if (tournamentIds && !tournamentIds.includes(tournament.id)) {
       return false;
     }
-    if (tournament.meta !== meta) {
+    if (tournament.meta !== meta && !isAdmin) {
       return false;
     }
     return true;
