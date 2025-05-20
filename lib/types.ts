@@ -134,28 +134,21 @@ export interface CobraGame {
   [k: string]: unknown;
 }
 
-export type AesopsGame = AesopsSwissGame | AesopsEliminationGame;
+export interface AesopsPlayer {
+  id?: number;
+  role?: "runner" | "corp";
+  corpScore?: number;
+  runnerScore?: number;
+}
 
-export interface AesopsSwissGame {
+export interface AesopsGame {
   tableNumber?: number;
-  corpPlayer?: number;
-  runnerPlayer?: number;
-  corpIdentity?: string;
-  runnerIdentity?: string;
-  corpScore?: string;
-  runnerScore?: string;
+  player1?: AesopsPlayer;
+  player2?: AesopsPlayer;
   intentionalDraw?: boolean;
   eliminationGame: false;
 }
 
-export interface AesopsEliminationGame {
-  tableNumber?: number;
-  corpPlayer?: number;
-  runnerPlayer?: number;
-  winner_id?: number;
-  loser_id?: number;
-  eliminationGame: true;
-}
 /**
  * a swiss game's result for one player
  */
@@ -163,7 +156,7 @@ export interface SwissGameResult {
   /**
    * refers to player.id
    */
-  id: number;
+  id?: number;
   /**
    * this player's runner score
    */
@@ -182,7 +175,7 @@ export interface EliminationGameResult {
   /**
    * refers to player.id
    */
-  id: number;
+  id?: number;
   /**
    * this player's role (corp/runner)
    */

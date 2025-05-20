@@ -85,10 +85,13 @@ export function WinrateChart({
     side === "corp"
       ? groupGamesByCorp(roundsAugmented.flat())
       : groupGamesByRunner(roundsAugmented.flat());
+  console.log("WinrateChart");
+  console.log(gamesById);
   const playersById =
     side === "corp"
       ? groupPlayersByCorp(groupRoundsByCorp(roundsAugmented))
       : groupPlayersByRunner(groupRoundsByRunner(roundsAugmented));
+  console.log(playersById);
   const wrData = winrateById(gamesById, playersById, side);
   const { players, eliminationPlayers } = tournament;
   const cutData = cutConversionById(

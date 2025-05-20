@@ -210,6 +210,7 @@ export function Players({
   roundsAugmented: AugmentedRound[];
   playerMap: Record<number, Player>;
 }) {
+  console.log(playerMap);
   const [playerFilter, setPlayerFilter] = useState("");
 
   const roundsPerPlayer = useMemo(() => {

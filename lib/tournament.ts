@@ -147,13 +147,13 @@ export function aesopsGameToCobraGame(game: AesopsGame): CobraGame {
       table: game.tableNumber,
       player1: {
         role: "corp",
-        id: game.corpPlayer ?? 0,
-        winner: game.winner_id === game.corpPlayer,
+        id: game.player1?.id,
+        winner: game.player1?.corpScore === 3,
       },
       player2: {
         role: "runner",
-        id: game.runnerPlayer ?? 0,
-        winner: game.winner_id === game.runnerPlayer,
+        id: game.player2?.id,
+        winner: game.player2?.runnerScore === 3,
       },
       eliminationGame: true,
     };
@@ -161,18 +161,18 @@ export function aesopsGameToCobraGame(game: AesopsGame): CobraGame {
   return {
     table: game.tableNumber,
     player1: {
-      id: game.corpPlayer ?? 0,
+      id: game.player1?.id,
       role: "corp",
       runnerScore: null,
-      corpScore: +(game.corpScore ?? 0),
-      combinedScore: +(game.corpScore ?? 0),
+      corpScore: +(game.player1?.corpScore ?? 0),
+      combinedScore: +(game.player1?.corpScore ?? 0),
     },
     player2: {
-      id: game.runnerPlayer ?? 0,
+      id: game.player2?.id,
       role: "runner",
-      runnerScore: +(game.runnerScore ?? 0),
+      runnerScore: +(game.player2?.runnerScore ?? 0),
       corpScore: null,
-      combinedScore: +(game.runnerScore ?? 0),
+      combinedScore: +(game.player2?.runnerScore ?? 0),
     },
     eliminationGame: false,
   };
@@ -246,8 +246,9 @@ export function augmentRounds(
     tournament.rounds?.map((round, roundNumber) =>
       round.flatMap((rawGame) => {
         const game = isAesops
-          ? aesopsGameToCobraGame(rawGame)
+          ? aesopsGameToCobraGame(rawGame as AesopsGame)
           : (rawGame as CobraGame);
+
         if (isDss(game)) {
           const parsed = parseDss(game, playerMap, roundNumber);
           return parsed;
@@ -257,6 +258,10 @@ export function augmentRounds(
         const player1 = playerMap[game.player1?.id ?? 0];
         const player2 = playerMap[game.player2?.id ?? 0];
 
+        if (player1 == null || player2 == null) {
+          console.log({ roundNumber, game });
+        }
+
         const out: AugmentedGame = {
           ...game,
           result,
@@ -264,6 +269,8 @@ export function augmentRounds(
           corp: game.player1?.role === "corp" ? player1 : player2,
           round: roundNumber + 1,
         };
+
+        console.log({ out });
 
         return out;
       })
