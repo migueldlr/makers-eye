@@ -3,7 +3,6 @@ import {
   AccordionControl,
   AccordionItem,
   AccordionPanel,
-  Alert,
   Center,
   Container,
   ScrollArea,
@@ -14,29 +13,17 @@ import {
 } from "@mantine/core";
 import MatchupTable from "../../components/stats/charts/MatchupTable";
 import TournamentTable from "../../components/stats/TournamentTable";
-import { createClient } from "@/utils/supabase/server";
-import {
-  DEFAULT_META,
-  DEFAULT_NONE,
-  END_DATE_FILTER_KEY,
-  isWithinDateRange,
-  META_FILTER_KEY,
-  ONLINE_FILTER_KEY,
-  PHASE_FILTER_KEY,
-  REGION_FILTER_KEY,
-  SITE_TITLE,
-  START_DATE_FILTER_KEY,
-} from "@/lib/util";
+import { DEFAULT_META, META_FILTER_KEY, SITE_TITLE } from "@/lib/util";
 import SummaryStats from "../../components/stats/SummaryStats";
 import MatchupSummary from "../../components/stats/wrappers/MatchupSummary";
 import RepresentationChart from "../../components/stats/wrappers/RepresentationChart";
 import { BackButton } from "@/components/common/BackButton";
 import TournamentFilter from "@/components/stats/TournamentFilter";
-import { TournamentRow } from "@/lib/localtypes";
 import GameResultsSummary from "../../components/stats/charts/GameResultsSummary";
 import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
 import CutSwissComparison from "@/components/stats/wrappers/CutSwissComparison";
 import TitleWithAnchor from "@/components/common/TitleWithAnchor";
+import { useTournamentFilter } from "@/hooks/useTournamentFilter";
 
 export async function generateMetadata({
   searchParams,
@@ -55,32 +42,10 @@ export default async function StatsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const supabase = await createClient();
   const params = await searchParams;
 
-  const res = await supabase.from("tournaments_with_player_count").select("*");
-  const tournaments = res.data as TournamentRow[];
-  const startDate = (params[START_DATE_FILTER_KEY] ?? "") as string;
-  const endDate = (params[END_DATE_FILTER_KEY] ?? "") as string;
-  const region = (params[REGION_FILTER_KEY] ?? "") as string;
-  const online = (params[ONLINE_FILTER_KEY] ?? "") as string;
-  const meta = (params[META_FILTER_KEY] ?? DEFAULT_META) as string;
-  const tournamentIds = tournaments
-    ?.filter((t) => isWithinDateRange(startDate, endDate, t.date))
-    .filter((t) =>
-      region === ""
-        ? true
-        : region.split(",").includes(t.region ?? DEFAULT_NONE)
-    )
-    .filter((t) =>
-      online === "" ? true : online.split(",").includes(t.location ?? "Paper")
-    )
-    .filter((t) => meta === t.meta)
-    .map((t) => t.id);
-
-  const phase = (params[PHASE_FILTER_KEY] ?? "") as string;
-  const includeSwiss = phase.length === 0 || phase.split(",").includes("Swiss");
-  const includeCut = phase.length === 0 || phase.split(",").includes("Cut");
+  const { tournaments, tournamentIds, includeSwiss, includeCut, meta } =
+    await useTournamentFilter(params);
 
   return (
     <Container fluid px="lg" py="lg">
