@@ -9,6 +9,7 @@ import {
   isWithinDateRange,
   DEFAULT_NONE,
   PHASE_FILTER_KEY,
+  ONLY_FILTER_KEY,
 } from "@/lib/util";
 import { createClient } from "@/utils/supabase/server";
 
@@ -24,6 +25,21 @@ export async function useTournamentFilter(params: {
   const region = (params[REGION_FILTER_KEY] ?? "") as string;
   const online = (params[ONLINE_FILTER_KEY] ?? "") as string;
   const meta = (params[META_FILTER_KEY] ?? DEFAULT_META) as string;
+  const specificIds = (params[ONLY_FILTER_KEY] ?? "") as string;
+
+  const phase = (params[PHASE_FILTER_KEY] ?? "") as string;
+  const includeSwiss = phase.length === 0 || phase.split(",").includes("Swiss");
+  const includeCut = phase.length === 0 || phase.split(",").includes("Cut");
+
+  if (specificIds.length > 0) {
+    return {
+      tournaments,
+      tournamentIds: specificIds.split(",").map((id) => parseInt(id)),
+      includeSwiss,
+      includeCut,
+      meta,
+    };
+  }
   const tournamentIds = tournaments
     ?.filter((t) => isWithinDateRange(startDate, endDate, t.date))
     .filter((t) =>
@@ -36,10 +52,6 @@ export async function useTournamentFilter(params: {
     )
     .filter((t) => meta === t.meta)
     .map((t) => t.id);
-
-  const phase = (params[PHASE_FILTER_KEY] ?? "") as string;
-  const includeSwiss = phase.length === 0 || phase.split(",").includes("Swiss");
-  const includeCut = phase.length === 0 || phase.split(",").includes("Cut");
 
   return {
     tournaments,

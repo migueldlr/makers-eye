@@ -271,6 +271,7 @@ export const REGION_FILTER_KEY = "region";
 export const ONLINE_FILTER_KEY = "online";
 export const PHASE_FILTER_KEY = "phase";
 export const META_FILTER_KEY = "meta";
+export const ONLY_FILTER_KEY = "only";
 
 export function isWithinDateRange(
   startDate: string,
