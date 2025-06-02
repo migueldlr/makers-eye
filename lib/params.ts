@@ -12,7 +12,7 @@ import {
   ONLY_FILTER_KEY,
 } from "@/lib/util";
 
-export function useTournamentFilter({
+export function parseTournamentParams({
   params,
   tournaments,
 }: {

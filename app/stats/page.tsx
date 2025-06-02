@@ -23,7 +23,7 @@ import GameResultsSummary from "../../components/stats/charts/GameResultsSummary
 import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
 import CutSwissComparison from "@/components/stats/wrappers/CutSwissComparison";
 import TitleWithAnchor from "@/components/common/TitleWithAnchor";
-import { useTournamentFilter } from "@/hooks/useTournamentFilter";
+import { parseTournamentParams } from "@/lib/params";
 import { createClient } from "@/utils/supabase/server";
 import { TournamentRow } from "@/lib/localtypes";
 
@@ -51,9 +51,8 @@ export default async function StatsPage({
   const res = await supabase.from("tournaments_with_player_count").select("*");
   const tournaments = res.data as TournamentRow[];
 
-  const { tournamentIds, includeSwiss, includeCut, meta } = useTournamentFilter(
-    { params, tournaments }
-  );
+  const { tournamentIds, includeSwiss, includeCut, meta } =
+    parseTournamentParams({ params, tournaments });
 
   return (
     <Container fluid px="lg" py="lg">
