@@ -2,7 +2,15 @@
 
 import { DonutChart } from "@mantine/charts";
 import { GameResults, getGameResults } from "../../../app/stats/actions";
-import { Card, luminance, Paper, Stack, Text, Title } from "@mantine/core";
+import {
+  Card,
+  luminance,
+  Paper,
+  Stack,
+  Switch,
+  Text,
+  Title,
+} from "@mantine/core";
 import { useEffect, useState } from "react";
 import { RADIAN } from "@/lib/util";
 
@@ -55,6 +63,7 @@ export default function GameResultsSummary({
   includeSwiss: boolean;
 }) {
   const [data, setData] = useState<GameResults>();
+  const [onlyWins, setOnlyWins] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -71,7 +80,14 @@ export default function GameResultsSummary({
     return null;
   }
 
-  const { runner_wins, corp_wins, draws, byes, unknowns, total_games } = data;
+  let { runner_wins, corp_wins, draws, byes, unknowns, total_games } = data;
+
+  if (onlyWins) {
+    draws = 0;
+    byes = 0;
+    unknowns = 0;
+    total_games = corp_wins + runner_wins + draws + byes + unknowns;
+  }
 
   const chartData = [
     {
@@ -145,6 +161,12 @@ export default function GameResultsSummary({
             );
           },
         }}
+      />
+
+      <Switch
+        checked={onlyWins}
+        onChange={(e) => setOnlyWins(e.currentTarget.checked)}
+        label="Hide indeterminate results"
       />
     </Stack>
   );
