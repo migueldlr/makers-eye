@@ -11,15 +11,16 @@ import {
   PHASE_FILTER_KEY,
   ONLY_FILTER_KEY,
 } from "@/lib/util";
-import { createClient } from "@/utils/supabase/server";
 
-export async function useTournamentFilter(params: {
-  [key: string]: string | string[] | undefined;
+export function useTournamentFilter({
+  params,
+  tournaments,
+}: {
+  params: {
+    [key: string]: string | string[] | undefined;
+  };
+  tournaments: TournamentRow[];
 }) {
-  const supabase = await createClient();
-
-  const res = await supabase.from("tournaments_with_player_count").select("*");
-  const tournaments = res.data as TournamentRow[];
   const startDate = (params[START_DATE_FILTER_KEY] ?? "") as string;
   const endDate = (params[END_DATE_FILTER_KEY] ?? "") as string;
   const region = (params[REGION_FILTER_KEY] ?? "") as string;
@@ -33,7 +34,6 @@ export async function useTournamentFilter(params: {
 
   if (specificIds.length > 0) {
     return {
-      tournaments,
       tournamentIds: specificIds.split(",").map((id) => parseInt(id)),
       includeSwiss,
       includeCut,
@@ -54,7 +54,6 @@ export async function useTournamentFilter(params: {
     .map((t) => t.id);
 
   return {
-    tournaments,
     tournamentIds,
     includeSwiss,
     includeCut,

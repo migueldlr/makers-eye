@@ -24,6 +24,8 @@ import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
 import CutSwissComparison from "@/components/stats/wrappers/CutSwissComparison";
 import TitleWithAnchor from "@/components/common/TitleWithAnchor";
 import { useTournamentFilter } from "@/hooks/useTournamentFilter";
+import { createClient } from "@/utils/supabase/server";
+import { TournamentRow } from "@/lib/localtypes";
 
 export async function generateMetadata({
   searchParams,
@@ -44,8 +46,14 @@ export default async function StatsPage({
 }) {
   const params = await searchParams;
 
-  const { tournaments, tournamentIds, includeSwiss, includeCut, meta } =
-    await useTournamentFilter(params);
+  const supabase = await createClient();
+
+  const res = await supabase.from("tournaments_with_player_count").select("*");
+  const tournaments = res.data as TournamentRow[];
+
+  const { tournamentIds, includeSwiss, includeCut, meta } = useTournamentFilter(
+    { params, tournaments }
+  );
 
   return (
     <Container fluid px="lg" py="lg">
