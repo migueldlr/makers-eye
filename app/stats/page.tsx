@@ -63,6 +63,8 @@ export default async function StatsPage({
         {/* <Alert variant="light" color="orange" icon={<IconInfoCircle />}>
           This page is under construction. Expect frequent updates.
         </Alert> */}
+
+        <BackButton />
         <Space h="sm" />
 
         <TournamentFilter tournaments={tournaments ?? []} />
