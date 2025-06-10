@@ -66,6 +66,12 @@ export default function CreditsPage() {
           </ListItem>
         </List>
 
+        <br />
+        <Text>
+          If you feel so inclined, you can support me on Ko-fi{" "}
+          <Anchor href="https://ko-fi.com/spiderbro">here</Anchor>.
+        </Text>
+
         <Text size="sm" mt="lg">
           Game symbols by Null Signal Games CC BY-ND 4.0. <br />
           <br />
