@@ -3,8 +3,10 @@
 import { Button, Group } from "@mantine/core";
 import { IconArrowLeft } from "@tabler/icons-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export function BackButton() {
+  const [hovering, setHovering] = useState(false);
   return (
     <Group justify="start" w="fit-content">
       <Button
@@ -14,8 +16,10 @@ export function BackButton() {
         variant="outline"
         color="orange"
         size="sm"
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
       >
-        Back to home
+        {hovering ? "Back to home" : "Jack out"}
       </Button>
     </Group>
   );

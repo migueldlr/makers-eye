@@ -68,6 +68,7 @@ export default async function Page({
     <Container pt="md">
       <Stack>
         <Title order={2}>{tournament.name}</Title>
+        <BackButton />
         <Anchor href={`${URLS[site]}${id[1]}`}>
           {`${URLS[site]}${id[1]}`}
         </Anchor>
