@@ -232,6 +232,8 @@ function Cell_unmemoized({
 
   const gradient = (Math.sin(Math.PI * (rawWr - 0.5)) + 1) / 2;
 
+  const headToHead = `${sideOneWins}-${sideTwoWins}`;
+
   return (
     <Popover withArrow>
       <PopoverTarget>
@@ -274,9 +276,13 @@ function Cell_unmemoized({
             <Overlay backgroundOpacity={0} />
           ) : (
             <Text size="sm">
-              {showPercentages && !hovered
+              {showPercentages
+                ? hovered
+                  ? headToHead
+                  : percentageDisplay
+                : hovered
                 ? percentageDisplay
-                : `${sideOneWins}-${sideTwoWins}`}
+                : headToHead}
             </Text>
           )}
         </TableTd>
