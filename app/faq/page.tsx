@@ -44,13 +44,9 @@ export default async function FaqPage() {
           Why are some tournaments missing in the meta analysis?
         </Title>
         <Text>
-          Only competitive tournaments at the District Championship level or
-          higher are included - see{" "}
-          <Anchor href="https://nullsignal.games/blog/making-changes-to-the-organized-play-season-for-2025/">
-            the NSG article
-          </Anchor>{" "}
-          for an explanation of the OP season. Additionally, uploading results
-          is a manual process. Eventually I&#39;ll try to automate it.
+          There may be several factors, but a tournament may not be competitive
+          or have enough participants. Additionally, uploading results is a
+          manual process.
         </Text>
       </Stack>
       <Box mt="xl">
