@@ -8,7 +8,12 @@ function checkIfConcluded(tournament: Tournament) {
   if (eliminationPlayers == null) return false;
 
   const maxSeed = Math.max(...eliminationPlayers.map((p) => p.seed ?? 0));
-  return maxSeed > eliminationPlayers.length;
+
+  const anyMissingEliminationPlayers = eliminationPlayers.some(
+    (p) => p.id == null
+  );
+
+  return maxSeed > eliminationPlayers.length || anyMissingEliminationPlayers;
 }
 
 export default function TournamentNotConcludedAlert({
