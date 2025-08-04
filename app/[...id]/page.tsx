@@ -9,6 +9,7 @@ import { BackButton } from "../../components/common/BackButton";
 import { RepresentationChart } from "@/components/v1/RepresentationChart";
 import { SITE_TITLE, URLS } from "@/lib/util";
 import SideComparison from "../../components/v1/SideComparison";
+import TournamentNotConcludedAlert from "@/components/v1/TournamentNotConcludedAlert";
 
 export async function generateMetadata({
   params,
@@ -72,6 +73,7 @@ export default async function Page({
         <Anchor href={`${URLS[site]}${id[1]}`}>
           {`${URLS[site]}${id[1]}`}
         </Anchor>
+        <TournamentNotConcludedAlert tournament={tournament} />
         <SideComparison roundsAugmented={roundsAugmented} />
         <RepresentationChart tournament={tournament} side="runner" />
         <WinrateChart
