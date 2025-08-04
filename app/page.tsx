@@ -1,6 +1,7 @@
 "use client";
 
 import LinkToDashboard from "@/components/common/LinkToDashboard";
+import FeaturedTournaments from "@/components/homepage/FeaturedTournaments";
 import { parseUrl } from "@/lib/util";
 import { netrunnerFont } from "@/styles/fonts";
 import {
@@ -137,8 +138,6 @@ export default function HomePage() {
     </form>
   );
 
-  const width = 250;
-
   return (
     <Container>
       <Center h="100vh">
@@ -147,6 +146,7 @@ export default function HomePage() {
           <Stack gap="xs">
             <Stack align="center">
               {form}
+              <FeaturedTournaments />
               <LinkToDashboard />
             </Stack>
             <Divider label="or" mx="xl" />
