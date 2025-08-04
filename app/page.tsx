@@ -1,6 +1,8 @@
 "use client";
 
 import LinkToDashboard from "@/components/common/LinkToDashboard";
+import FancyLink from "@/components/homepage/FancyLink";
+import FancyTitle from "@/components/homepage/FancyTitle";
 import FeaturedTournaments from "@/components/homepage/FeaturedTournaments";
 import { parseUrl } from "@/lib/util";
 import { netrunnerFont } from "@/styles/fonts";
@@ -8,7 +10,6 @@ import {
   ActionIcon,
   Affix,
   Box,
-  Button,
   Center,
   Container,
   Divider,
@@ -16,54 +17,10 @@ import {
   Stack,
   Text,
   TextInput,
-  Title,
 } from "@mantine/core";
 import { IconEye } from "@tabler/icons-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PropsWithChildren, useEffect, useRef, useState } from "react";
-
-const FancyTitle = () => (
-  <Stack align="center" gap={0}>
-    <Title order={1}>
-      <Text
-        inherit
-        fw={900}
-        variant="gradient"
-        gradient={{ from: "orange", to: "yellow", deg: 30 }}
-      >
-        The Maker&#39;s Eye
-      </Text>
-    </Title>
-    <Title order={4}>Netrunner tournament and meta analysis</Title>
-  </Stack>
-);
-
-const FancyLink = ({
-  href,
-  hoverText,
-  children,
-}: PropsWithChildren<{ href: string; hoverText: string }>) => {
-  const [isHovered, setHovered] = useState(false);
-  return (
-    <Box
-      w={210}
-      onFocus={() => setHovered(true)}
-      onMouseEnter={() => setHovered(true)}
-      onBlur={() => setHovered(false)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <Center>
-        <Button component={Link} href={href} variant="outline" color="orange">
-          <Text className={netrunnerFont.className} size="14">
-            
-          </Text>
-          : {isHovered ? hoverText : children}
-        </Button>
-      </Center>
-    </Box>
-  );
-};
+import { useEffect, useRef, useState } from "react";
 
 export default function HomePage() {
   const router = useRouter();
@@ -151,18 +108,9 @@ export default function HomePage() {
             </Stack>
             <Divider label="or" mx="xl" />
             <Stack align="center" gap="xs">
-              <FancyLink href="/stats" hoverText="Meta analysis">
-                Run
-              </FancyLink>
-              <FancyLink href="/faq" hoverText="FAQ">
-                Draw 1 card
-              </FancyLink>
-              <FancyLink href="/credits" hoverText="Credits">
-                Gain 1
-                <Text className={netrunnerFont.className} size="14">
-                  
-                </Text>
-              </FancyLink>
+              <FancyLink href="/stats">Meta analysis</FancyLink>
+              <FancyLink href="/faq">FAQ</FancyLink>
+              <FancyLink href="/credits">Credits</FancyLink>
             </Stack>
           </Stack>
         </Stack>
