@@ -33,8 +33,7 @@ export default function TournamentNotConcludedAlert({
 
   return (
     <Alert color="yellow" icon={<IconAlertCircle />} variant="light">
-      This tournament might not have full results. If you know the TO, maybe
-      give them a nudge 🙂
+      This tournament might not have full results.
     </Alert>
   );
 }
