@@ -24,6 +24,7 @@ import { User } from "@supabase/supabase-js";
 import {
   DEFAULT_FORMAT,
   DEFAULT_META,
+  DEFAULT_STARTUP_META,
   LOCATION_OPTIONS,
   normalizeUrl,
   parseUrl,
@@ -295,7 +296,12 @@ export default function Dashboard() {
           placeholder="Select a cardpool"
           options={Object.keys(META_OPTIONS)}
           value={cardpool}
-          setValue={(value) => setCardpool(value ?? DEFAULT_FORMAT)}
+          setValue={(value) => {
+            setCardpool(value ?? DEFAULT_FORMAT);
+            if (value === "Startup") {
+              setMeta(DEFAULT_STARTUP_META);
+            }
+          }}
         />
       </Group>
     </>

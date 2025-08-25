@@ -98,6 +98,7 @@ export default async function StatsPage({
                     meta={meta}
                     tournaments={tournaments}
                     tournamentIds={tournamentIds}
+                    cardpool={format}
                   />
                 )}
               </ScrollArea>

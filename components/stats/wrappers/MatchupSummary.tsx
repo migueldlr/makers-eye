@@ -58,7 +58,7 @@ export default function MatchupSummary({
       setAllOffSideIds(offSideIds);
       setOffSideIds(offSideIds.slice(0, 7));
     })();
-  }, []);
+  }, [tournamentIds, side, includeCut, includeSwiss]);
 
   useEffect(() => {
     (async () => {
