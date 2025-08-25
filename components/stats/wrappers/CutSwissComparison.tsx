@@ -137,11 +137,6 @@ function processData(
   return Object.keys(swissDataMap).map((id) => {
     const cut = cutDataMap[id];
     const swiss = swissDataMap[id];
-    const oppositeSide = oppositeSideDataMap[id];
-
-    if (!oppositeSide) {
-      console.error(`No opposite side data found for id: ${id}`);
-    }
 
     const swissWr =
       swiss.total_wins /
@@ -149,24 +144,33 @@ function processData(
     const cutWr = cut
       ? cut.total_wins / (cut.total_wins + cut.total_losses + cut.total_draws)
       : 0;
-    const oppositeSideWr = oppositeSide.win_rate;
+
+    let data = {
+      cutWr: cutWr * 100,
+      swissWr: swissWr * 100,
+      cutGames: cut ? cut.total_games : 0,
+      swissGames: swiss.total_games,
+      totalGames: swiss.total_games + (cut ? cut.total_games : 0),
+      oppositeSideWr: 0,
+      oppositeSideGames: 0,
+      id: id,
+      color: factionToColor(idToFaction(id)),
+    };
+
+    const oppositeSide = oppositeSideDataMap[id];
+
+    if (!oppositeSide) {
+      data.oppositeSideWr = 0;
+      data.oppositeSideGames = 0;
+    } else {
+      data.oppositeSideWr = oppositeSide.win_rate * 100;
+      data.oppositeSideGames = oppositeSide.total_games;
+    }
 
     return {
       name: id,
       color: factionToColor(idToFaction(id)),
-      data: [
-        {
-          cutWr: cutWr * 100,
-          swissWr: swissWr * 100,
-          oppositeSideWr: oppositeSideWr * 100,
-          cutGames: cut ? cut.total_games : 0,
-          swissGames: swiss.total_games,
-          totalGames: swiss.total_games + (cut ? cut.total_games : 0),
-          oppositeSideGames: oppositeSide.total_games,
-          id: id,
-          color: factionToColor(idToFaction(id)),
-        },
-      ],
+      data: [data],
     };
   });
 }
