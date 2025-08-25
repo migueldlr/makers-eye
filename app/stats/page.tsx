@@ -41,9 +41,10 @@ export async function generateMetadata({
   const params = await searchParams;
   const meta = (params[META_FILTER_KEY] ?? DEFAULT_META) as string;
   const format = (params[FORMAT_FILTER_KEY] ?? DEFAULT_FORMAT) as string;
+
   return {
-    title: `${meta} ${
-      format !== DEFAULT_FORMAT && format
+    title: `${meta}${
+      format !== DEFAULT_FORMAT ? ` ${format}` : ""
     } Meta Analysis | ${SITE_TITLE}`,
   };
 }
@@ -72,9 +73,6 @@ export default async function StatsPage({
   const tournamentIds = unexcludedTournamentIds.filter(
     (id) => !excludeIds?.includes(id)
   );
-
-  console.log(unexcludedTournamentIds);
-  console.log(tournamentIds);
 
   return (
     <Container fluid px="lg" py="lg">
