@@ -2,9 +2,11 @@
 
 import { TournamentRow } from "@/lib/localtypes";
 import {
+  DEFAULT_FORMAT,
   DEFAULT_META,
   DEFAULT_NONE,
   END_DATE_FILTER_KEY,
+  FORMAT_FILTER_KEY,
   META_FILTER_KEY,
   ONLINE_FILTER_KEY,
   PHASE_FILTER_KEY,
@@ -37,7 +39,10 @@ import MetaFilter from "./filters/MetaFilter";
 export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
 export const ONLINE_OPTIONS = ["Online", "Paper"];
 export const PHASE_OPTIONS = ["Swiss", "Cut"];
-export const META_OPTIONS = ["25.08", "25.04", "24.12"];
+export const META_OPTIONS = {
+  Standard: ["25.08", "25.04", "24.12"],
+  Startup: ["25.04"],
+};
 
 export default function TournamentFilter({
   tournaments,
@@ -186,6 +191,11 @@ function AccordionPanelContent_raw({
     initialPhase.length > 0 ? initialPhase : PHASE_OPTIONS
   );
 
+  const intitalFormat_raw = searchParams.get(FORMAT_FILTER_KEY);
+  const [cardpoolSelected, setCardpoolSelected] = useState<
+    keyof typeof META_OPTIONS
+  >((intitalFormat_raw as keyof typeof META_OPTIONS) ?? DEFAULT_FORMAT);
+
   const initialMeta_raw = searchParams.get(META_FILTER_KEY);
   const [metaSelected, setMetaSelected] = useState(
     initialMeta_raw ?? DEFAULT_META
@@ -220,6 +230,9 @@ function AccordionPanelContent_raw({
         ...(metaSelected !== DEFAULT_META && {
           [META_FILTER_KEY]: metaSelected,
         }),
+        ...(cardpoolSelected !== DEFAULT_FORMAT && {
+          [FORMAT_FILTER_KEY]: cardpoolSelected,
+        }),
       }).toString(),
     [
       startDateSelected,
@@ -228,6 +241,7 @@ function AccordionPanelContent_raw({
       onlineSelected,
       phaseSelected,
       metaSelected,
+      cardpoolSelected,
     ]
   );
 
@@ -239,6 +253,7 @@ function AccordionPanelContent_raw({
             regionsSelected.length === 0 ||
             regionsSelected.includes(t.region ?? DEFAULT_NONE)
         )
+        .filter((t) => t.cardpool === cardpoolSelected)
         .filter(
           (t) =>
             onlineSelected.length === 0 ||
@@ -251,7 +266,12 @@ function AccordionPanelContent_raw({
     <>
       <Group gap="xl" align="flex-start">
         <Stack>
-          <MetaFilter meta={metaSelected} setMeta={setMetaSelected} />
+          <MetaFilter
+            meta={metaSelected}
+            setMeta={setMetaSelected}
+            cardpool={cardpoolSelected}
+            setCardpool={setCardpoolSelected}
+          />
           <RegionFilter
             regions={regionsSelected}
             setRegions={setRegionsSelected}

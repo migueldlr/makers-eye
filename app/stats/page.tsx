@@ -13,7 +13,13 @@ import {
 } from "@mantine/core";
 import MatchupTable from "../../components/stats/charts/MatchupTable";
 import TournamentTable from "../../components/stats/TournamentTable";
-import { DEFAULT_META, META_FILTER_KEY, SITE_TITLE } from "@/lib/util";
+import {
+  DEFAULT_FORMAT,
+  DEFAULT_META,
+  FORMAT_FILTER_KEY,
+  META_FILTER_KEY,
+  SITE_TITLE,
+} from "@/lib/util";
 import SummaryStats from "../../components/stats/SummaryStats";
 import MatchupSummary from "../../components/stats/wrappers/MatchupSummary";
 import RepresentationChart from "../../components/stats/wrappers/RepresentationChart";
@@ -34,8 +40,11 @@ export async function generateMetadata({
 }) {
   const params = await searchParams;
   const meta = (params[META_FILTER_KEY] ?? DEFAULT_META) as string;
+  const format = (params[FORMAT_FILTER_KEY] ?? DEFAULT_FORMAT) as string;
   return {
-    title: `${meta} Meta Analysis | ${SITE_TITLE}`,
+    title: `${meta} ${
+      format !== DEFAULT_FORMAT && format
+    } Meta Analysis | ${SITE_TITLE}`,
   };
 }
 
@@ -51,14 +60,14 @@ export default async function StatsPage({
   const res = await supabase.from("tournaments_with_player_count").select("*");
   const tournaments = res.data as TournamentRow[];
 
-  const { tournamentIds, includeSwiss, includeCut, meta } =
+  const { tournamentIds, includeSwiss, includeCut, meta, format } =
     parseTournamentParams({ params, tournaments });
 
   return (
     <Container fluid px="lg" py="lg">
       <Stack display="block" pos="relative">
         <Title order={2} mb="sm">
-          {meta} Meta Analysis
+          {meta} {format !== DEFAULT_FORMAT && format} Meta Analysis
         </Title>
         {/* <Alert variant="light" color="orange" icon={<IconInfoCircle />}>
           This page is under construction. Expect frequent updates.

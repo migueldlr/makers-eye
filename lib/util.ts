@@ -261,6 +261,7 @@ export const REGION_OPTIONS = ["Americas", "EMEA", "APAC"];
 export const LOCATION_OPTIONS = ["Online", "Paper"];
 
 export const DEFAULT_META = "25.08";
+export const DEFAULT_FORMAT = "Standard";
 
 export const SITE_TITLE = "The Maker's Eye - Netrunner tournament analysis";
 
@@ -271,6 +272,7 @@ export const REGION_FILTER_KEY = "region";
 export const ONLINE_FILTER_KEY = "online";
 export const PHASE_FILTER_KEY = "phase";
 export const META_FILTER_KEY = "meta";
+export const FORMAT_FILTER_KEY = "format";
 export const ONLY_FILTER_KEY = "only";
 
 export function isWithinDateRange(

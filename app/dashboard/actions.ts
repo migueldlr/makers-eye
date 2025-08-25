@@ -11,7 +11,8 @@ export async function uploadTournament(
   meta: string,
   region: string | null,
   location: string | null,
-  abrUrl: string
+  abrUrl: string,
+  cardpool: string
 ) {
   const supabase = await createClient();
 
@@ -26,6 +27,7 @@ export async function uploadTournament(
       region,
       location,
       abr_url: abrUrl,
+      cardpool,
     })
     .select();
   if (error) {

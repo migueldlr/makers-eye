@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -17,10 +22,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
+          extensions?: Json
           operationName?: string
           query?: string
           variables?: Json
-          extensions?: Json
         }
         Returns: Json
       }
@@ -34,6 +39,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      cards: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      decklists: {
+        Row: {
+          archetype: string | null
+          cards: Json | null
+          created_at: string
+          id: number
+        }
+        Insert: {
+          archetype?: string | null
+          cards?: Json | null
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          archetype?: string | null
+          cards?: Json | null
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       identity_names: {
         Row: {
           long_id: string
@@ -130,7 +177,7 @@ export type Database = {
       }
       standings: {
         Row: {
-          corp_deck_url: string | null
+          corp_deck_id: number | null
           corp_draws: number
           corp_identity: string
           corp_losses: number
@@ -140,7 +187,7 @@ export type Database = {
           id: number
           match_points: number
           name: string
-          runner_deck_url: string | null
+          runner_deck_id: number | null
           runner_draws: number
           runner_identity: string
           runner_losses: number
@@ -151,7 +198,7 @@ export type Database = {
           tournament_id: number
         }
         Insert: {
-          corp_deck_url?: string | null
+          corp_deck_id?: number | null
           corp_draws?: number
           corp_identity?: string
           corp_losses?: number
@@ -161,7 +208,7 @@ export type Database = {
           id?: number
           match_points: number
           name?: string
-          runner_deck_url?: string | null
+          runner_deck_id?: number | null
           runner_draws?: number
           runner_identity?: string
           runner_losses?: number
@@ -172,7 +219,7 @@ export type Database = {
           tournament_id: number
         }
         Update: {
-          corp_deck_url?: string | null
+          corp_deck_id?: number | null
           corp_draws?: number
           corp_identity?: string
           corp_losses?: number
@@ -182,7 +229,7 @@ export type Database = {
           id?: number
           match_points?: number
           name?: string
-          runner_deck_url?: string | null
+          runner_deck_id?: number | null
           runner_draws?: number
           runner_identity?: string
           runner_losses?: number
@@ -212,6 +259,7 @@ export type Database = {
       tournaments: {
         Row: {
           abr_url: string | null
+          cardpool: string | null
           created_at: string
           date: string | null
           format: string | null
@@ -225,6 +273,7 @@ export type Database = {
         }
         Insert: {
           abr_url?: string | null
+          cardpool?: string | null
           created_at?: string
           date?: string | null
           format?: string | null
@@ -238,6 +287,7 @@ export type Database = {
         }
         Update: {
           abr_url?: string | null
+          cardpool?: string | null
           created_at?: string
           date?: string | null
           format?: string | null
@@ -312,6 +362,7 @@ export type Database = {
       }
       standings_mapped: {
         Row: {
+          corp_deck_id: number | null
           corp_draws: number | null
           corp_identity: string | null
           corp_losses: number | null
@@ -322,6 +373,7 @@ export type Database = {
           id: number | null
           match_points: number | null
           name: string | null
+          runner_deck_id: number | null
           runner_draws: number | null
           runner_identity: string | null
           runner_losses: number | null
@@ -371,40 +423,59 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
-      get_corp_identity_winrates:
-        | {
-            Args: {
-              tournament_filter?: number[]
-            }
-            Returns: {
-              id: string
-              total_games: number
-              total_wins: number
-              total_losses: number
-              total_draws: number
-              win_rate: number
-            }[]
-          }
-        | {
-            Args: {
-              tournament_filter?: number[]
-              include_swiss?: boolean
+      get_all_decklist_ids: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          deck_id: number
+        }[]
+      }
+      get_corp_id_runner_performance: {
+        Args: {
+          include_cut?: boolean
+          include_swiss?: boolean
+          meta_filter?: string
+          tournament_filter?: number[]
+        }
+        Returns: {
+          distinct_players: number
+          id: string
+          total_games: number
+          total_losses: number
+          total_wins: number
+          win_rate: number
+        }[]
+      }
+      get_corp_identity_cut_conversion: {
+        Args: { tournament_filter?: number[] }
+        Returns: {
+          cut_conversion: number
+          id: string
+          players_in_cut: number
+          players_with_id: number
+        }[]
+      }
+      get_corp_identity_winrates: {
+        Args:
+          | {
               include_cut?: boolean
+              include_swiss?: boolean
+              tournament_filter?: number[]
             }
-            Returns: {
-              id: string
-              total_games: number
-              total_wins: number
-              total_losses: number
-              total_draws: number
-              win_rate: number
-            }[]
-          }
+          | { tournament_filter?: number[] }
+        Returns: {
+          id: string
+          total_draws: number
+          total_games: number
+          total_losses: number
+          total_wins: number
+          win_rate: number
+        }[]
+      }
       get_corp_popularity: {
         Args: {
-          tournament_filter?: number[]
-          include_swiss?: boolean
           include_cut?: boolean
+          include_swiss?: boolean
+          tournament_filter?: number[]
         }
         Returns: {
           identity: string
@@ -412,319 +483,264 @@ export type Database = {
         }[]
       }
       get_corp_vs_runner_winrates: {
-        Args: {
-          corp_filter?: string[]
-        }
+        Args: { corp_filter?: string[] }
         Returns: {
           corp_identity: string
-          runner_identity: string
-          total_games: number
-          corp_wins: number
-          runner_wins: number
-          draws: number
           corp_win_rate: number
+          corp_wins: number
+          draws: number
+          runner_identity: string
+          runner_wins: number
+          total_games: number
         }[]
       }
-      get_corp_winrates:
-        | {
-            Args: {
+      get_corp_winrates: {
+        Args:
+          | { corp_filter?: string[] }
+          | {
               corp_filter?: string[]
-            }
-            Returns: {
-              corp_id: string
-              runner_id: string
-              total_games: number
-              corp_wins: number
-              runner_wins: number
-              draws: number
-              corp_win_rate: number
-            }[]
-          }
-        | {
-            Args: {
-              corp_filter?: string[]
-              tournament_filter?: number[]
-            }
-            Returns: {
-              corp_id: string
-              runner_id: string
-              total_games: number
-              corp_wins: number
-              runner_wins: number
-              draws: number
-              corp_win_rate: number
-            }[]
-          }
-        | {
-            Args: {
-              corp_filter?: string[]
-              tournament_filter?: number[]
-              include_swiss?: boolean
               include_cut?: boolean
+              include_swiss?: boolean
+              tournament_filter?: number[]
             }
-            Returns: {
-              corp_id: string
-              runner_id: string
-              total_games: number
-              corp_wins: number
-              runner_wins: number
-              draws: number
-              corp_win_rate: number
-            }[]
-          }
-      get_cut_conversion: {
-        Args: {
-          tournament_filter?: number[]
-        }
+          | { corp_filter?: string[]; tournament_filter?: number[] }
         Returns: {
-          identity: string
-          total_entries: number
-          total_cut_appearances: number
+          corp_id: string
+          corp_win_rate: number
+          corp_wins: number
+          draws: number
+          runner_id: string
+          runner_wins: number
+          total_games: number
+        }[]
+      }
+      get_cut_conversion: {
+        Args: { tournament_filter?: number[] }
+        Returns: {
           cut_conversion_percentage: number
+          identity: string
+          total_cut_appearances: number
+          total_entries: number
         }[]
       }
       get_cut_conversion_rate: {
-        Args: {
-          tournament_filter?: number[]
-        }
+        Args: { tournament_filter?: number[] }
         Returns: {
-          identity: string
-          total_entries: number
-          total_cut_appearances: number
-          cut_conversion_percentage: number
           baseline_cut_percentage: number
+          cut_conversion_percentage: number
           cut_conversion_rate: number
+          identity: string
+          total_cut_appearances: number
+          total_entries: number
+        }[]
+      }
+      get_decklist_cards: {
+        Args: { decklist_id: number }
+        Returns: {
+          card_count: number
+          card_id: number
+          card_name: string
+          card_type: string
         }[]
       }
       get_head_to_head_winrates: {
         Args: {
-          tournament_filter?: number[]
-          min_matches?: number
-          include_swiss?: boolean
           include_cut?: boolean
+          include_swiss?: boolean
+          min_matches?: number
+          tournament_filter?: number[]
         }
         Returns: {
-          runner_id: string
           corp_id: string
-          runner_wins: number
           corp_wins: number
           draws: number
-          total_games: number
+          runner_id: string
           runner_winrate: number
+          runner_wins: number
+          total_games: number
         }[]
       }
       get_identity_winrates: {
-        Args: {
-          tournament_filter?: number[]
-        }
+        Args: { tournament_filter?: number[] }
         Returns: {
           identity: string
-          total_games: number
-          total_wins: number
-          total_losses: number
           total_draws: number
+          total_games: number
+          total_losses: number
+          total_wins: number
           win_rate: number
         }[]
       }
-      get_matches_by_id:
-        | {
-            Args: {
-              runner_filter: string
+      get_matches_by_id: {
+        Args:
+          | {
               corp_filter: string
-              tournament_filter?: number[]
-            }
-            Returns: {
-              tournament_id: number
-              tournament_name: string
-              tournament_url: string
-              tournament_date: string
-              round: number
-              round_table: number
-              phase: string
-              corp_player_name: string
-              runner_player_name: string
-              corp_id: string
-              runner_id: string
-              result: string
-            }[]
-          }
-        | {
-            Args: {
-              runner_filter: string
-              corp_filter: string
-              tournament_filter?: number[]
               phase_filter?: string
+              runner_filter: string
+              tournament_filter?: number[]
             }
-            Returns: {
-              tournament_id: number
-              tournament_name: string
-              tournament_url: string
-              tournament_date: string
-              round: number
-              round_table: number
-              phase: string
-              corp_player_name: string
-              runner_player_name: string
-              corp_id: string
-              runner_id: string
-              result: string
-            }[]
-          }
-      get_matches_by_identity: {
-        Args: {
-          runner_filter: string
-          corp_filter: string
-        }
+          | {
+              corp_filter: string
+              runner_filter: string
+              tournament_filter?: number[]
+            }
         Returns: {
+          corp_id: string
+          corp_player_name: string
+          phase: string
+          result: string
+          round: number
+          round_table: number
+          runner_id: string
+          runner_player_name: string
+          tournament_date: string
           tournament_id: number
           tournament_name: string
-          round: number
-          phase: string
-          corp_player_name: string
-          runner_player_name: string
+          tournament_url: string
+        }[]
+      }
+      get_matches_by_identity: {
+        Args: { corp_filter: string; runner_filter: string }
+        Returns: {
           corp_id: string
-          runner_id: string
+          corp_player_name: string
+          phase: string
           result: string
+          round: number
+          runner_id: string
+          runner_player_name: string
+          tournament_id: number
+          tournament_name: string
+        }[]
+      }
+      get_normalized_side_bias_by_table: {
+        Args: { meta_filter: string }
+        Returns: {
+          corp_winrate: number
+          corp_wins: number
+          percentile: number
+          runner_winrate: number
+          runner_wins: number
+          total_matches: number
+        }[]
+      }
+      get_opponent_bye_info: {
+        Args: { target_tournament_id: number }
+        Returns: {
+          got_bye: boolean
+          opponent_bye_history: string[]
+          player_id: number
+          player_name: string
+        }[]
+      }
+      get_players_with_round1_bye: {
+        Args: { target_tournament_id: number }
+        Returns: {
+          got_round1_bye: boolean
+          player_id: number
+          player_name: string
         }[]
       }
       get_runner_cut_conversion_rate: {
+        Args: { tournament_filter?: number[] }
+        Returns: {
+          baseline_cut_percentage: number
+          cut_conversion_percentage: number
+          cut_conversion_rate: number
+          identity: string
+          total_cut_appearances: number
+          total_entries: number
+        }[]
+      }
+      get_runner_id_corp_performance: {
         Args: {
+          include_cut?: boolean
+          include_swiss?: boolean
           tournament_filter?: number[]
         }
         Returns: {
-          identity: string
-          total_entries: number
-          total_cut_appearances: number
-          cut_conversion_percentage: number
-          baseline_cut_percentage: number
-          cut_conversion_rate: number
+          distinct_players: number
+          id: string
+          total_games: number
+          total_losses: number
+          total_wins: number
+          win_rate: number
         }[]
       }
-      get_runner_identity_winrates:
-        | {
-            Args: {
-              tournament_filter?: number[]
-            }
-            Returns: {
-              id: string
-              total_games: number
-              total_wins: number
-              total_losses: number
-              total_draws: number
-              win_rate: number
-            }[]
-          }
-        | {
-            Args: {
-              tournament_filter?: number[]
-              include_swiss?: boolean
+      get_runner_identity_winrates: {
+        Args:
+          | {
               include_cut?: boolean
+              include_swiss?: boolean
+              tournament_filter?: number[]
             }
-            Returns: {
-              id: string
-              total_games: number
-              total_wins: number
-              total_losses: number
-              total_draws: number
-              win_rate: number
-            }[]
-          }
+          | { tournament_filter?: number[] }
+        Returns: {
+          id: string
+          total_draws: number
+          total_games: number
+          total_losses: number
+          total_wins: number
+          win_rate: number
+        }[]
+      }
       get_runner_popularity: {
         Args: {
-          tournament_filter?: number[]
-          include_swiss?: boolean
           include_cut?: boolean
+          include_swiss?: boolean
+          tournament_filter?: number[]
         }
         Returns: {
           identity: string
           player_count: number
         }[]
       }
-      get_runner_winrates:
-        | {
-            Args: {
+      get_runner_winrates: {
+        Args:
+          | {
+              include_cut?: boolean
+              include_swiss?: boolean
               runner_filter?: string[]
               tournament_filter?: number[]
             }
-            Returns: {
-              runner_id: string
-              corp_id: string
-              total_games: number
-              runner_wins: number
-              corp_wins: number
-              draws: number
-              runner_win_rate: number
-            }[]
-          }
-        | {
-            Args: {
-              runner_filter?: string[]
-              tournament_filter?: number[]
-              include_swiss?: boolean
+          | { runner_filter?: string[]; tournament_filter?: number[] }
+        Returns: {
+          corp_id: string
+          corp_wins: number
+          draws: number
+          runner_id: string
+          runner_win_rate: number
+          runner_wins: number
+          total_games: number
+        }[]
+      }
+      get_summary_stats: {
+        Args: { tournament_filter?: number[] }
+        Returns: {
+          earliest_tournament: string
+          latest_tournament: string
+          total_matches: number
+          total_players: number
+          total_tournaments: number
+        }[]
+      }
+      get_tournament_game_outcomes: {
+        Args:
+          | {
               include_cut?: boolean
-            }
-            Returns: {
-              runner_id: string
-              corp_id: string
-              total_games: number
-              runner_wins: number
-              corp_wins: number
-              draws: number
-              runner_win_rate: number
-            }[]
-          }
-      get_summary_stats:
-        | {
-            Args: Record<PropertyKey, never>
-            Returns: {
-              total_matches: number
-              total_players: number
-              total_tournaments: number
-              earliest_tournament: string
-              latest_tournament: string
-            }[]
-          }
-        | {
-            Args: {
-              tournament_filter?: number[]
-            }
-            Returns: {
-              total_matches: number
-              total_players: number
-              total_tournaments: number
-              earliest_tournament: string
-              latest_tournament: string
-            }[]
-          }
-      get_tournament_game_outcomes:
-        | {
-            Args: {
-              tournament_filter?: number[]
-            }
-            Returns: {
-              total_games: number
-              corp_wins: number
-              runner_wins: number
-              draws: number
-              byes: number
-              unknowns: number
-            }[]
-          }
-        | {
-            Args: {
-              tournament_filter?: number[]
               include_swiss?: boolean
-              include_cut?: boolean
+              tournament_filter?: number[]
             }
-            Returns: {
-              total_games: number
-              corp_wins: number
-              runner_wins: number
-              draws: number
-              byes: number
-              unknowns: number
-            }[]
-          }
+          | { tournament_filter?: number[] }
+        Returns: {
+          byes: number
+          corp_wins: number
+          draws: number
+          runner_wins: number
+          total_games: number
+          unknowns: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
@@ -735,27 +751,33 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -763,20 +785,24 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -784,20 +810,24 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -805,29 +835,44 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const

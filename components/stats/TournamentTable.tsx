@@ -1,5 +1,5 @@
 import { TournamentRow } from "@/lib/localtypes";
-import { DEFAULT_META, parseUrl } from "@/lib/util";
+import { DEFAULT_FORMAT, DEFAULT_META, parseUrl } from "@/lib/util";
 import {
   Anchor,
   Table,
@@ -16,11 +16,13 @@ export default function TournamentTable({
   isAdmin = false,
   tournamentIds,
   meta = DEFAULT_META,
+  cardpool = DEFAULT_FORMAT,
 }: {
   tournaments: TournamentRow[];
   isAdmin?: boolean;
   tournamentIds?: number[];
   meta?: string;
+  cardpool?: string;
 }) {
   if (tournaments.length === 0) {
     return <Text>No tournaments found</Text>;
@@ -35,6 +37,9 @@ export default function TournamentTable({
       return false;
     }
     if (tournament.meta !== meta && !isAdmin) {
+      return false;
+    }
+    if (tournament.cardpool !== cardpool && !isAdmin) {
       return false;
     }
     return true;

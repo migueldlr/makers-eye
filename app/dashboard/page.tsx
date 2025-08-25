@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { Tournament } from "@/lib/types";
 import { User } from "@supabase/supabase-js";
 import {
+  DEFAULT_FORMAT,
   DEFAULT_META,
   LOCATION_OPTIONS,
   normalizeUrl,
@@ -50,6 +51,7 @@ import {
   uploadAllDecklists,
   uploadDecklist,
 } from "../stats/actions";
+import { META_OPTIONS } from "@/components/stats/TournamentFilter";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {
   const [verified, setVerified] = useState(false);
@@ -149,6 +151,7 @@ export default function Dashboard() {
   const [meta, setMeta] = useState<string>(DEFAULT_META);
   const [location, setLocation] = useState<string | null>(null);
   const [abrUrl, setAbrUrl] = useState<string>("");
+  const [cardpool, setCardpool] = useState<string>(DEFAULT_FORMAT);
 
   const [success, setSuccess] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -188,6 +191,7 @@ export default function Dashboard() {
     setLocation(null);
     setAbrUrl("");
     setMeta(DEFAULT_META);
+    setCardpool(DEFAULT_FORMAT);
     const parsed = parseUrl(url);
     if (!parsed) {
       return;
@@ -213,7 +217,8 @@ export default function Dashboard() {
       meta,
       region,
       location,
-      abrUrl
+      abrUrl,
+      cardpool
     );
 
     const standings = await uploadStandings(
@@ -284,6 +289,13 @@ export default function Dashboard() {
           value={meta}
           onChange={(e) => setMeta(e.target.value)}
           label="Meta"
+        />
+        <SearchableSelect
+          label="Cardpool"
+          placeholder="Select a cardpool"
+          options={Object.keys(META_OPTIONS)}
+          value={cardpool}
+          setValue={(value) => setCardpool(value ?? DEFAULT_FORMAT)}
         />
       </Group>
     </>

@@ -10,6 +10,8 @@ import {
   DEFAULT_NONE,
   PHASE_FILTER_KEY,
   ONLY_FILTER_KEY,
+  FORMAT_FILTER_KEY,
+  DEFAULT_FORMAT,
 } from "@/lib/util";
 
 export function parseTournamentParams({
@@ -27,6 +29,7 @@ export function parseTournamentParams({
   const online = (params[ONLINE_FILTER_KEY] ?? "") as string;
   const meta = (params[META_FILTER_KEY] ?? DEFAULT_META) as string;
   const specificIds = (params[ONLY_FILTER_KEY] ?? "") as string;
+  const format = (params[FORMAT_FILTER_KEY] ?? DEFAULT_FORMAT) as string;
 
   const phase = (params[PHASE_FILTER_KEY] ?? "") as string;
   const includeSwiss = phase.length === 0 || phase.split(",").includes("Swiss");
@@ -50,6 +53,7 @@ export function parseTournamentParams({
     .filter((t) =>
       online === "" ? true : online.split(",").includes(t.location ?? "Paper")
     )
+    .filter((t) => t.cardpool === format)
     .filter((t) => meta === t.meta)
     .map((t) => t.id);
 
@@ -58,5 +62,6 @@ export function parseTournamentParams({
     includeSwiss,
     includeCut,
     meta,
+    format,
   };
 }
