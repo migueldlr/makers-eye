@@ -1,9 +1,5 @@
 import { Decklist } from "@/app/mlstuff/page";
-import {
-  ALL_ARCHETYPES,
-  CORP_ARCHETYPES,
-  RUNNER_ARCHETYPES,
-} from "./archetypes";
+import { ALL_ARCHETYPES } from "./archetypes";
 
 export const DEFAULT_UNKNOWN_ID = "<Missing ID>";
 
@@ -275,6 +271,7 @@ export const PHASE_FILTER_KEY = "phase";
 export const META_FILTER_KEY = "meta";
 export const FORMAT_FILTER_KEY = "format";
 export const ONLY_FILTER_KEY = "only";
+export const EXCLUDE_FILTER_KEY = "exclude";
 
 export function isWithinDateRange(
   startDate: string,

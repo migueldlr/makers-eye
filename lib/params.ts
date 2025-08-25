@@ -12,6 +12,7 @@ import {
   ONLY_FILTER_KEY,
   FORMAT_FILTER_KEY,
   DEFAULT_FORMAT,
+  EXCLUDE_FILTER_KEY,
 } from "@/lib/util";
 
 export function parseTournamentParams({
@@ -30,6 +31,10 @@ export function parseTournamentParams({
   const meta = (params[META_FILTER_KEY] ?? DEFAULT_META) as string;
   const specificIds = (params[ONLY_FILTER_KEY] ?? "") as string;
   const format = (params[FORMAT_FILTER_KEY] ?? DEFAULT_FORMAT) as string;
+  const excludeIds = ((params[EXCLUDE_FILTER_KEY] ?? "") as string)
+    .split(",")
+    .filter((id) => id !== "")
+    .map((id) => parseInt(id));
 
   const phase = (params[PHASE_FILTER_KEY] ?? "") as string;
   const includeSwiss = phase.length === 0 || phase.split(",").includes("Swiss");
@@ -41,6 +46,7 @@ export function parseTournamentParams({
       includeSwiss,
       includeCut,
       meta,
+      excludeIds,
     };
   }
   const tournamentIds = tournaments
@@ -63,5 +69,6 @@ export function parseTournamentParams({
     includeCut,
     meta,
     format,
+    excludeIds,
   };
 }

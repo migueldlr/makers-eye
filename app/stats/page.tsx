@@ -60,8 +60,21 @@ export default async function StatsPage({
   const res = await supabase.from("tournaments_with_player_count").select("*");
   const tournaments = res.data as TournamentRow[];
 
-  const { tournamentIds, includeSwiss, includeCut, meta, format } =
-    parseTournamentParams({ params, tournaments });
+  const {
+    tournamentIds: unexcludedTournamentIds,
+    includeSwiss,
+    includeCut,
+    meta,
+    format,
+    excludeIds,
+  } = parseTournamentParams({ params, tournaments });
+
+  const tournamentIds = unexcludedTournamentIds.filter(
+    (id) => !excludeIds?.includes(id)
+  );
+
+  console.log(unexcludedTournamentIds);
+  console.log(tournamentIds);
 
   return (
     <Container fluid px="lg" py="lg">
@@ -97,8 +110,9 @@ export default async function StatsPage({
                   <TournamentTable
                     meta={meta}
                     tournaments={tournaments}
-                    tournamentIds={tournamentIds}
+                    tournamentIds={unexcludedTournamentIds}
                     cardpool={format}
+                    excludeIds={excludeIds}
                   />
                 )}
               </ScrollArea>
