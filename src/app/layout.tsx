@@ -6,7 +6,7 @@ import {
   ColorSchemeScript,
   mantineHtmlProps,
 } from "@mantine/core";
-import { theme } from "../theme";
+import { theme } from "@/theme";
 import { Analytics } from "@vercel/analytics/react";
 import { SITE_TITLE } from "@/lib/util";
 
