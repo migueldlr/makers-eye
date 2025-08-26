@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import { getAllCards } from "./actions";
 import DecklistDisplay from "@/components/classifier/DecklistDisplay";
-import { Decklist } from "../mlstuff/page";
+import { Decklist } from "@/app/mlstuff/page";
 import { getArchetype, getIdentity } from "@/lib/util";
 
 export default function Page() {

@@ -14,9 +14,8 @@ import {
   Switch,
   Radio,
   Code,
-  Box,
 } from "@mantine/core";
-import { signOut } from "../login/actions";
+import { signOut } from "@/app/login/actions";
 import { BackButton } from "@/components/common/BackButton";
 import { useEffect, useState } from "react";
 import { Tournament } from "@/lib/types";
@@ -41,8 +40,7 @@ import {
 } from "./actions";
 import { tournamentToMatches, tournamentToStandings } from "@/lib/tournament";
 import { SearchableSelect } from "@/components/common/SearchableSelect";
-import { Database } from "@/lib/supabase";
-import TournamentTable from "../../components/stats/TournamentTable";
+import TournamentTable from "@/components/stats/TournamentTable";
 import { TournamentRow } from "@/lib/localtypes";
 import DecklistStats from "@/components/stats/DecklistStats";
 import {
@@ -51,7 +49,7 @@ import {
   uploadAllCards,
   uploadAllDecklists,
   uploadDecklist,
-} from "../stats/actions";
+} from "@/app/stats/actions";
 import { META_OPTIONS } from "@/components/stats/TournamentFilter";
 
 function VerificationChip({ tournament }: { tournament: Tournament }) {

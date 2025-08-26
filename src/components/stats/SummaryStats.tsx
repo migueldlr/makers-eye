@@ -1,7 +1,6 @@
 import { Box, Code, Text } from "@mantine/core";
-import { getSummaryStats } from "../../app/stats/actions";
+import { getSummaryStats } from "@/app/stats/actions";
 import { format, parse } from "date-fns";
-import { DEFAULT_META } from "@/lib/util";
 
 function transformDate(date: string) {
   return format(parse(date, "yyyy-MM-dd", new Date()), "d MMMM yyyy");

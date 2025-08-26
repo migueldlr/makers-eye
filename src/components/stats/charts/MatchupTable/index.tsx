@@ -3,7 +3,6 @@
 import { idToFaction, shortenId } from "@/lib/util";
 import {
   Stack,
-  Title,
   Table,
   TableThead,
   TableTr,
@@ -20,7 +19,7 @@ import {
   RangeSlider,
 } from "@mantine/core";
 import { IconTransfer } from "@tabler/icons-react";
-import { getMatchesMetadata, getWinrates } from "../../../../app/stats/actions";
+import { getMatchesMetadata, getWinrates } from "@/app/stats/actions";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Row from "./Row";
 import FirstRow from "./FirstRow";

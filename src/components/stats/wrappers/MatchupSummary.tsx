@@ -12,7 +12,7 @@ import {
   getMatchesMetadata,
   getSideWinrates,
   WinrateData,
-} from "../../../app/stats/actions";
+} from "@/app/stats/actions";
 import { useEffect, useState } from "react";
 import MatchupChart from "@/components/stats/charts/MatchupChart";
 

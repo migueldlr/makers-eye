@@ -1,14 +1,14 @@
-import { Tournament } from "../../lib/types";
+import { Tournament } from "@/lib/types";
 import { Alert, Anchor, Container, Stack, Title } from "@mantine/core";
 import { Players } from "@/components/v1/Players";
-import { MatchupTable } from "../../components/v1/MatchupTable";
-import { createPlayerMap, augmentRounds } from "../../lib/tournament";
-import { WinrateChart } from "../../components/v1/WinrateChart";
+import { MatchupTable } from "@/components/v1/MatchupTable";
+import { createPlayerMap, augmentRounds } from "@/lib/tournament";
+import { WinrateChart } from "@/components/v1/WinrateChart";
 import { IconAlertHexagon } from "@tabler/icons-react";
-import { BackButton } from "../../components/common/BackButton";
+import { BackButton } from "@/components/common/BackButton";
 import { RepresentationChart } from "@/components/v1/RepresentationChart";
 import { SITE_TITLE, URLS } from "@/lib/util";
-import SideComparison from "../../components/v1/SideComparison";
+import SideComparison from "@/components/v1/SideComparison";
 import TournamentNotConcludedAlert from "@/components/v1/TournamentNotConcludedAlert";
 
 export async function generateMetadata({

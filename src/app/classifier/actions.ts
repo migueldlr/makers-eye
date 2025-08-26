@@ -1,8 +1,8 @@
 "use server";
 
 import { NRDB_URL } from "@/lib/util";
-import { getDecklist } from "../stats/actions";
-import { Decklist } from "../mlstuff/page";
+import { getDecklist } from "@/app/stats/actions";
+import { Decklist } from "@/app/mlstuff/page";
 import { NrdbCard } from "@/lib/nrdb";
 
 export async function getAllCards({

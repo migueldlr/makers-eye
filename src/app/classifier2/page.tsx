@@ -1,11 +1,9 @@
 "use client";
 
 import {
-  ActionIcon,
   Anchor,
   Badge,
   Box,
-  Button,
   Container,
   Group,
   List,
@@ -15,17 +13,14 @@ import {
   Space,
   Stack,
   Text,
-  TextInput,
   Title,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { getDecklistsBySide } from "../mlstuff/actions";
+import { getDecklistsBySide } from "@/app/mlstuff/actions";
 import useAuth from "@/hooks/useAuth";
-import { Decklist, SimilarityData } from "../mlstuff/page";
+import { Decklist, SimilarityData } from "@/app/mlstuff/page";
 import { sortDecklist } from "@/components/classifier/DecklistDisplay";
-import { IconCheck, IconUpload } from "@tabler/icons-react";
-import { getArchetypes, uploadArchetype } from "./actions";
-import { CORP_ARCHETYPES, RUNNER_ARCHETYPES } from "@/lib/archetypes";
+import { getArchetypes } from "./actions";
 import {
   getArchetype,
   getNrdbLink,

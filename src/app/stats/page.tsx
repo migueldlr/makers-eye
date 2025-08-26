@@ -11,8 +11,8 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import MatchupTable from "../../components/stats/charts/MatchupTable";
-import TournamentTable from "../../components/stats/TournamentTable";
+import MatchupTable from "@/components/stats/charts/MatchupTable";
+import TournamentTable from "@/components/stats/TournamentTable";
 import {
   DEFAULT_FORMAT,
   DEFAULT_META,
@@ -20,12 +20,12 @@ import {
   META_FILTER_KEY,
   SITE_TITLE,
 } from "@/lib/util";
-import SummaryStats from "../../components/stats/SummaryStats";
-import MatchupSummary from "../../components/stats/wrappers/MatchupSummary";
-import RepresentationChart from "../../components/stats/wrappers/RepresentationChart";
+import SummaryStats from "@/components/stats/SummaryStats";
+import MatchupSummary from "@/components/stats/wrappers/MatchupSummary";
+import RepresentationChart from "@/components/stats/wrappers/RepresentationChart";
 import { BackButton } from "@/components/common/BackButton";
 import TournamentFilter from "@/components/stats/TournamentFilter";
-import GameResultsSummary from "../../components/stats/charts/GameResultsSummary";
+import GameResultsSummary from "@/components/stats/charts/GameResultsSummary";
 import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
 import CutSwissComparison from "@/components/stats/wrappers/CutSwissComparison";
 import TitleWithAnchor from "@/components/common/TitleWithAnchor";

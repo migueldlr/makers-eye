@@ -2,7 +2,7 @@
 
 import { Group, Radio, RadioGroup, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { getPopularity, PopularityData } from "../../../app/stats/actions";
+import { getPopularity, PopularityData } from "@/app/stats/actions";
 import PopularityChart from "@/components/stats/charts/PopularityChart";
 
 export default function RepresentationChart({

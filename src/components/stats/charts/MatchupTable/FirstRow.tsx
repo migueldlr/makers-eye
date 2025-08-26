@@ -1,6 +1,5 @@
 import { TableTr, TableTd } from "@mantine/core";
 import { WinrateData } from "@/app/stats/actions";
-import { FillerTd } from "../MatchupTable";
 
 export default function FirstRow({
   allSideTwoIds,
@@ -13,7 +12,6 @@ export default function FirstRow({
   mainSide: "runner" | "corp";
   showPercentages: boolean;
 }) {
-
   const runnerWins = winrates.reduce((acc, winrate) => {
     return acc + winrate.runner_wins;
   }, 0);
@@ -22,9 +20,7 @@ export default function FirstRow({
   }, 0);
 
   const [sideOneWins, sideTwoWins] =
-    mainSide === "runner"
-      ? [runnerWins, corpWins]
-      : [corpWins, runnerWins];
+    mainSide === "runner" ? [runnerWins, corpWins] : [corpWins, runnerWins];
   const hasResults = sideOneWins + sideTwoWins > 0;
   const percentageDisplay = `${Math.round(
     (sideOneWins / (sideOneWins + sideTwoWins)) * 100
