@@ -16,16 +16,14 @@ export const decklists = pgTable(
   "decklists",
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: "number" })
-      .primaryKey()
-      .generatedByDefaultAsIdentity({
-        name: "decklists_id_seq",
-        startWith: 1,
-        increment: 1,
-        minValue: 1,
-        maxValue: 9223372036854775807,
-        cache: 1,
-      }),
+    id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({
+      name: "decklists_id_seq",
+      startWith: 1,
+      increment: 1,
+      minValue: 1,
+      maxValue: 9223372036854775807,
+      cache: 1,
+    }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
@@ -56,16 +54,14 @@ export const tournaments = pgTable(
   "tournaments",
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: "number" })
-      .primaryKey()
-      .generatedByDefaultAsIdentity({
-        name: "tournaments_id_seq",
-        startWith: 1,
-        increment: 1,
-        minValue: 1,
-        maxValue: 9223372036854775807,
-        cache: 1,
-      }),
+    id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({
+      name: "tournaments_id_seq",
+      startWith: 1,
+      increment: 1,
+      minValue: 1,
+      maxValue: 9223372036854775807,
+      cache: 1,
+    }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
@@ -99,16 +95,14 @@ export const cards = pgTable(
   "cards",
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: "number" })
-      .primaryKey()
-      .generatedByDefaultAsIdentity({
-        name: "cards_id_seq",
-        startWith: 1,
-        increment: 1,
-        minValue: 1,
-        maxValue: 9223372036854775807,
-        cache: 1,
-      }),
+    id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({
+      name: "cards_id_seq",
+      startWith: 1,
+      increment: 1,
+      minValue: 1,
+      maxValue: 9223372036854775807,
+      cache: 1,
+    }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
@@ -139,16 +133,14 @@ export const standings = pgTable(
   "standings",
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: "number" })
-      .primaryKey()
-      .generatedByDefaultAsIdentity({
-        name: "standings_id_seq",
-        startWith: 1,
-        increment: 1,
-        minValue: 1,
-        maxValue: 9223372036854775807,
-        cache: 1,
-      }),
+    id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({
+      name: "standings_id_seq",
+      startWith: 1,
+      increment: 1,
+      minValue: 1,
+      maxValue: 9223372036854775807,
+      cache: 1,
+    }),
     name: text().default("").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
@@ -225,16 +217,14 @@ export const matches = pgTable(
   "matches",
   {
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    id: bigint({ mode: "number" })
-      .primaryKey()
-      .generatedByDefaultAsIdentity({
-        name: "matches_id_seq",
-        startWith: 1,
-        increment: 1,
-        minValue: 1,
-        maxValue: 9223372036854775807,
-        cache: 1,
-      }),
+    id: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({
+      name: "matches_id_seq",
+      startWith: 1,
+      increment: 1,
+      minValue: 1,
+      maxValue: 9223372036854775807,
+      cache: 1,
+    }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
@@ -332,7 +322,7 @@ export const standingsMapped = pgView("standings_mapped", {
   // You can use { mode: "bigint" } if numbers are exceeding js number limitations
   runnerDeckId: bigint("runner_deck_id", { mode: "number" }),
 })
-  .with({ securityInvoker: "on" })
+  .with({ securityInvoker: true })
   .as(
     sql`SELECT standings.id, standings.name, standings.created_at, standings.tournament_id, standings.corp_wins, standings.corp_losses, standings.corp_draws, standings.corp_identity, standings.runner_wins, standings.runner_losses, standings.runner_draws, standings.runner_identity, standings.sos, standings.e_sos, standings.swiss_rank, standings.top_cut_rank, standings.match_points, corp_short_ids.short_id AS corp_short_id, runner_short_ids.short_id AS runner_short_id, standings.corp_deck_id, standings.runner_deck_id FROM standings LEFT JOIN identity_names corp_short_ids ON corp_short_ids.long_id = standings.corp_identity LEFT JOIN identity_names runner_short_ids ON runner_short_ids.long_id = standings.runner_identity`
   );
@@ -353,7 +343,7 @@ export const matchesMapped = pgView("matches_mapped", {
   // You can use { mode: "bigint" } if numbers are exceeding js number limitations
   corpId: bigint("corp_id", { mode: "number" }),
 })
-  .with({ securityInvoker: "on" })
+  .with({ securityInvoker: true })
   .as(
     sql`WITH mapped_standings AS ( SELECT standings.id, standings.name, standings.created_at, standings.tournament_id, standings.corp_wins, standings.corp_losses, standings.corp_draws, standings.corp_identity, standings.runner_wins, standings.runner_losses, standings.runner_draws, standings.runner_identity, standings.sos, standings.e_sos, standings.swiss_rank, standings.top_cut_rank, standings.match_points, corp_short_ids.short_id AS corp_short_id, runner_short_ids.short_id AS runner_short_id FROM standings LEFT JOIN identity_names corp_short_ids ON corp_short_ids.long_id = standings.corp_identity LEFT JOIN identity_names runner_short_ids ON runner_short_ids.long_id = standings.runner_identity ) SELECT matches.tournament_id, matches.phase, matches.round, matches."table", corp_standings.corp_short_id, runner_standings.runner_short_id, matches.result, matches.runner_id, matches.corp_id FROM matches LEFT JOIN mapped_standings corp_standings ON matches.corp_id = corp_standings.id LEFT JOIN mapped_standings runner_standings ON matches.runner_id = runner_standings.id`
   );
@@ -378,7 +368,7 @@ export const tournamentsWithPlayerCount = pgView(
     playerCount: bigint("player_count", { mode: "number" }),
   }
 )
-  .with({ securityInvoker: "on" })
+  .with({ securityInvoker: true })
   .as(
     sql`SELECT t.id, t.created_at, t.last_modified_at, t.name, t.url, t.meta, t.date, t.location, t.region, t.format, t.abr_url, t.cardpool, COALESCE(player_counts.player_count, 0::bigint) AS player_count FROM tournaments t LEFT JOIN ( SELECT standings_mapped.tournament_id, count(DISTINCT standings_mapped.name) AS player_count FROM standings_mapped GROUP BY standings_mapped.tournament_id) player_counts ON t.id = player_counts.tournament_id`
   );
