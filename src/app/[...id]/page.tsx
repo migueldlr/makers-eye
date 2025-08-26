@@ -61,8 +61,6 @@ export default async function Page({
 
   const playerMap = createPlayerMap(tournament);
 
-  console.log(playerMap);
-
   const roundsAugmented = augmentRounds(tournament, isAesops, playerMap);
 
   return (
