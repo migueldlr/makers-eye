@@ -68,7 +68,7 @@ export default function HomePage() {
         <TextInput
           color="orange"
           placeholder="Cobra / Aesop's URL"
-          labelProps={{ align: "right" }}
+          labelProps={{ style: { textAlign: "right" } }}
           value={value}
           onChange={(e) => {
             setHasError(false);
