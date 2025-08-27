@@ -1,13 +1,11 @@
 "use server";
 
-import {
-  NrdbCardResponse,
-  NrdbDecklist,
-  NrdbDecklistResponse,
-} from "@/lib/nrdb";
-import { DEFAULT_META, getArchetype, NRDB_URL } from "@/lib/util";
+import { NrdbCardResponse, NrdbDecklistResponse } from "@/lib/nrdb";
+import { getArchetype, NRDB_URL } from "@/lib/util";
 import { createClient } from "@/utils/supabase/server";
-import { Decklist } from "../mlstuff/page";
+import { db } from "@/src/utils/drizzle/client";
+import { matches, standingsMapped, tournaments } from "@/src/db/schema";
+import { count, countDistinct, inArray, max, min } from "drizzle-orm";
 
 export type WinrateData = {
   runner_id: string;
@@ -139,19 +137,33 @@ export async function getMatchesMetadata({
   };
 }
 
-export async function getSummaryStats(tournamentFilter?: number[]) {
-  const supabase = await createClient();
+export async function getSummaryStatsDrizzle(tournamentIds: number[]) {
+  const matchesAgg = await db
+    .select({ count: count() })
+    .from(matches)
+    .where(inArray(matches.tournamentId, tournamentIds));
 
-  const { data, error } = await supabase
-    .rpc("get_summary_stats", {
-      tournament_filter: tournamentFilter ?? null,
+  const playersAgg = await db
+    .select({ count: countDistinct(standingsMapped.name) })
+    .from(standingsMapped)
+    .where(inArray(standingsMapped.tournamentId, tournamentIds));
+
+  const tournamentsAgg = await db
+    .select({
+      count: count(),
+      earliest: min(tournaments.date),
+      latest: max(tournaments.date),
     })
-    .select();
+    .from(tournaments)
+    .where(inArray(tournaments.id, tournamentIds));
 
-  if (error) {
-    throw new Error(error.message);
-  }
-  return data[0];
+  return {
+    total_matches: matchesAgg[0].count,
+    total_players: playersAgg[0].count,
+    total_tournaments: tournamentsAgg[0].count,
+    earliest_tournament: tournamentsAgg[0].earliest ?? "",
+    latest_tournament: tournamentsAgg[0].latest ?? "",
+  };
 }
 
 export async function getTournaments() {

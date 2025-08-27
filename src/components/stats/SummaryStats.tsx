@@ -1,5 +1,5 @@
 import { Box, Code, Text } from "@mantine/core";
-import { getSummaryStats } from "@/app/stats/actions";
+import { getSummaryStatsDrizzle } from "@/app/stats/actions";
 import { format, parse } from "date-fns";
 
 function transformDate(date: string) {
@@ -9,9 +9,9 @@ function transformDate(date: string) {
 export default async function SummaryStats({
   tournamentIds,
 }: {
-  tournamentIds?: number[];
+  tournamentIds: number[];
 }) {
-  const data = await getSummaryStats(tournamentIds);
+  const data = await getSummaryStatsDrizzle(tournamentIds);
   const {
     total_matches,
     total_players,
