@@ -137,7 +137,7 @@ export async function getMatchesMetadata({
   };
 }
 
-export async function getSummaryStatsDrizzle(tournamentIds: number[]) {
+export async function getSummaryStats(tournamentIds: number[]) {
   const matchesAgg = await db
     .select({ count: count() })
     .from(matches)
