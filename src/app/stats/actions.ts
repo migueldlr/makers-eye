@@ -137,15 +137,37 @@ export async function getWinrates({
   }));
 }
 
-export async function getStandings(): Promise<{}[]> {
-  const supabase = await createClient();
+export async function getStandings(tournamentFilter: number[]) {
+  const result = await db
+    .select({
+      id: standingsMapped.id,
+      name: standingsMapped.name,
+      createdAt: standingsMapped.createdAt,
+      tournamentId: standingsMapped.tournamentId,
+      corpWins: standingsMapped.corpWins,
+      corpLosses: standingsMapped.corpLosses,
+      corpDraws: standingsMapped.corpDraws,
+      corpIdentity: standingsMapped.corpIdentity,
+      runnerWins: standingsMapped.runnerWins,
+      runnerLosses: standingsMapped.runnerLosses,
+      runnerDraws: standingsMapped.runnerDraws,
+      runnerIdentity: standingsMapped.runnerIdentity,
+      sos: standingsMapped.sos,
+      eSos: standingsMapped.eSos,
+      swissRank: standingsMapped.swissRank,
+      topCutRank: standingsMapped.topCutRank,
+      matchPoints: standingsMapped.matchPoints,
+      corpShortId: standingsMapped.corpShortId,
+      runnerShortId: standingsMapped.runnerShortId,
+      corpDeckId: standingsMapped.corpDeckId,
+      runnerDeckId: standingsMapped.runnerDeckId,
+      tournamentName: tournaments.name,
+    })
+    .from(standingsMapped)
+    .leftJoin(tournaments, eq(standingsMapped.tournamentId, tournaments.id))
+    .where(inArray(standingsMapped.tournamentId, tournamentFilter));
 
-  const { data, error } = await supabase.from("standings").select();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-  return data;
+  return result;
 }
 
 export async function getMatchesMetadata({
