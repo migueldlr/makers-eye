@@ -22,6 +22,7 @@ import {
   eq,
   desc,
   ne,
+  isNotNull,
 } from "drizzle-orm";
 
 export type WinrateData = {
@@ -251,26 +252,82 @@ export async function getSideWinrates({
   includeCut: boolean;
   includeSwiss: boolean;
 }): Promise<WinrateData[]> {
-  const supabase = await createClient();
+  const whereConditions = [];
 
-  const rpcMethod =
-    side === "corp" ? "get_corp_winrates" : "get_runner_winrates";
-  const idFilter = side === "corp" ? "corp_filter" : "runner_filter";
+  // Null checks for both identity columns
+  whereConditions.push(isNotNull(matchesMapped.corpShortId));
+  whereConditions.push(isNotNull(matchesMapped.runnerShortId));
 
-  const { data, error } = await supabase
-    .rpc(rpcMethod, {
-      [idFilter]: ids,
-      tournament_filter: tournamentFilter ?? null,
-      include_swiss: includeSwiss,
-      include_cut: includeCut,
-    })
-    .select();
-
-  if (error) {
-    throw new Error(error.message);
+  // Filter by specific identities
+  if (ids.length > 0) {
+    if (side === "corp") {
+      whereConditions.push(inArray(matchesMapped.corpShortId, ids));
+    } else {
+      whereConditions.push(inArray(matchesMapped.runnerShortId, ids));
+    }
   }
 
-  return data;
+  // Tournament filter
+  if (tournamentFilter && tournamentFilter.length > 0) {
+    whereConditions.push(inArray(matchesMapped.tournamentId, tournamentFilter));
+  }
+
+  // Phase filter
+  const phaseConditions = [];
+  if (includeSwiss) {
+    phaseConditions.push(eq(matchesMapped.phase, "swiss"));
+  }
+  if (includeCut) {
+    phaseConditions.push(eq(matchesMapped.phase, "cut"));
+  }
+
+  if (phaseConditions.length > 0) {
+    whereConditions.push(or(...phaseConditions));
+  }
+
+  // Query without win rate calculation
+  const result = await db
+    .select({
+      runner_id: matchesMapped.runnerShortId,
+      corp_id: matchesMapped.corpShortId,
+      runner_wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`,
+      corp_wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`,
+      draws: sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`,
+      total_games: count(),
+    })
+    .from(matchesMapped)
+    .where(and(...whereConditions))
+    .groupBy(matchesMapped.corpShortId, matchesMapped.runnerShortId);
+
+  // Map results and calculate win rate in JavaScript
+  const mappedResults = result.map((row) => {
+    const runnerWins = Number(row.runner_wins || 0);
+    const corpWins = Number(row.corp_wins || 0);
+    const totalGames = row.total_games;
+
+    // Calculate win rate as percentage with 2 decimal places
+    const winRate =
+      side === "corp"
+        ? totalGames > 0
+          ? Number(((corpWins / totalGames) * 100).toFixed(2))
+          : 0
+        : totalGames > 0
+        ? Number(((runnerWins / totalGames) * 100).toFixed(2))
+        : 0;
+
+    return {
+      runner_id: row.runner_id || "",
+      corp_id: row.corp_id || "",
+      runner_wins: runnerWins,
+      corp_wins: corpWins,
+      draws: Number(row.draws || 0),
+      total_games: totalGames,
+      win_rate: winRate,
+    };
+  });
+
+  // Sort by win rate in descending order
+  return mappedResults.sort((a, b) => b.win_rate - a.win_rate);
 }
 
 export async function getIdentityWinrates({
