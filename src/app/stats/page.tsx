@@ -32,6 +32,7 @@ import TitleWithAnchor from "@/components/common/TitleWithAnchor";
 import { parseTournamentParams } from "@/lib/params";
 import { createClient } from "@/utils/supabase/server";
 import { TournamentRow } from "@/lib/localtypes";
+import WinrateDistributionChart from "@/src/components/stats/wrappers/WinrateDistributionChart";
 
 export async function generateMetadata({
   searchParams,
@@ -149,6 +150,15 @@ export default async function StatsPage({
           Corp swiss comparison
         </TitleWithAnchor>
         <CutSwissComparison tournamentIds={tournamentIds} side="corp" />
+        <TitleWithAnchor id="corp-winrate-distribution">
+          Corp winrate distribution
+        </TitleWithAnchor>
+        <WinrateDistributionChart
+          tournamentIds={tournamentIds}
+          side="corp"
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
 
         <TitleWithAnchor id="corp-matchups">Corp matchups</TitleWithAnchor>
         <MatchupSummary
@@ -180,6 +190,15 @@ export default async function StatsPage({
           Runner swiss comparison
         </TitleWithAnchor>
         <CutSwissComparison tournamentIds={tournamentIds} side="runner" />
+        <TitleWithAnchor id="runner-winrate-distribution">
+          Runner winrate distribution
+        </TitleWithAnchor>
+        <WinrateDistributionChart
+          tournamentIds={tournamentIds}
+          side="runner"
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
 
         <TitleWithAnchor id="runner-matchups">Runner matchups</TitleWithAnchor>
         <MatchupSummary

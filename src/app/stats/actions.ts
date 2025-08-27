@@ -170,6 +170,112 @@ export async function getStandings(tournamentFilter: number[]) {
   return result;
 }
 
+export async function getSwissOnlyStandings(tournamentFilter: number[]) {
+  // Query matches - try both lowercase and uppercase Swiss
+  const swissMatches = await db
+    .select({
+      tournamentId: matchesMapped.tournamentId,
+      corpId: matchesMapped.corpId,
+      runnerId: matchesMapped.runnerId,
+      result: matchesMapped.result,
+      corpShortId: matchesMapped.corpShortId,
+      runnerShortId: matchesMapped.runnerShortId,
+    })
+    .from(matchesMapped)
+    .where(
+      and(
+        inArray(matchesMapped.tournamentId, tournamentFilter),
+        or(eq(matchesMapped.phase, "swiss"), eq(matchesMapped.phase, "Swiss"))
+      )
+    );
+
+  // Get player and deck information from standings - match exact structure from getStandings
+  const standingsData = await db
+    .select({
+      id: standingsMapped.id,
+      name: standingsMapped.name,
+      createdAt: standingsMapped.createdAt,
+      tournamentId: standingsMapped.tournamentId,
+      corpIdentity: standingsMapped.corpIdentity,
+      runnerIdentity: standingsMapped.runnerIdentity,
+      sos: standingsMapped.sos,
+      eSos: standingsMapped.eSos,
+      swissRank: standingsMapped.swissRank,
+      topCutRank: standingsMapped.topCutRank,
+      matchPoints: standingsMapped.matchPoints,
+      corpShortId: standingsMapped.corpShortId,
+      runnerShortId: standingsMapped.runnerShortId,
+      corpDeckId: standingsMapped.corpDeckId,
+      runnerDeckId: standingsMapped.runnerDeckId,
+      tournamentName: tournaments.name,
+    })
+    .from(standingsMapped)
+    .leftJoin(tournaments, eq(standingsMapped.tournamentId, tournaments.id))
+    .where(inArray(standingsMapped.tournamentId, tournamentFilter));
+
+  // Calculate Swiss-only wins/losses for each player
+  const playerStatsMap = new Map<string, any>();
+
+  // Initialize all players from standings
+  for (const standing of standingsData) {
+    const key = `${standing.tournamentId}-${standing.id}`;
+    playerStatsMap.set(key, {
+      ...standing,
+      corpWins: 0,
+      corpLosses: 0,
+      corpDraws: 0,
+      runnerWins: 0,
+      runnerLosses: 0,
+      runnerDraws: 0,
+      matchPoints: 0, // Will be recalculated
+    });
+  }
+
+  // Calculate wins/losses from Swiss matches only
+
+  for (const match of swissMatches) {
+    const corpKey = `${match.tournamentId}-${match.corpId}`;
+    const runnerKey = `${match.tournamentId}-${match.runnerId}`;
+
+    const corpPlayer = playerStatsMap.get(corpKey);
+    const runnerPlayer = playerStatsMap.get(runnerKey);
+
+    if (!corpPlayer || !runnerPlayer) continue;
+
+    // Handle both formats: 'corpWin' and 'Corp Win'
+    const normalizedResult = match.result?.toLowerCase().replace(/\s+/g, "");
+
+    if (normalizedResult === "corpwin") {
+      corpPlayer.corpWins++;
+      runnerPlayer.runnerLosses++;
+      corpPlayer.matchPoints += 3;
+    } else if (normalizedResult === "runnerwin") {
+      runnerPlayer.runnerWins++;
+      corpPlayer.corpLosses++;
+      runnerPlayer.matchPoints += 3;
+    } else if (normalizedResult === "draw") {
+      corpPlayer.corpDraws++;
+      runnerPlayer.runnerDraws++;
+      corpPlayer.matchPoints += 1;
+      runnerPlayer.matchPoints += 1;
+    }
+  }
+
+  // Convert map to array and ensure proper typing
+  const result = Array.from(playerStatsMap.values()).map((player) => ({
+    ...player,
+    // Ensure numeric fields are numbers, not null
+    corpWins: player.corpWins || 0,
+    corpLosses: player.corpLosses || 0,
+    corpDraws: player.corpDraws || 0,
+    runnerWins: player.runnerWins || 0,
+    runnerLosses: player.runnerLosses || 0,
+    runnerDraws: player.runnerDraws || 0,
+  }));
+
+  return result;
+}
+
 export async function getMatchesMetadata({
   includeSwiss,
   includeCut,
