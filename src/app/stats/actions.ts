@@ -20,7 +20,7 @@ import {
   and,
   or,
   eq,
-  gte,
+  desc,
 } from "drizzle-orm";
 
 export type WinrateData = {
@@ -103,24 +103,24 @@ export async function getWinrates({
     .select({
       runner_id: matchesMapped.runnerShortId,
       corp_id: matchesMapped.corpShortId,
-      runner_wins: sql<number>`count(case when ${matchesMapped.result} = 'runnerWin' then 1 end)`,
-      corp_wins: sql<number>`count(case when ${matchesMapped.result} = 'corpWin' then 1 end)`,
-      draws: sql<number>`count(case when ${matchesMapped.result} = 'draw' then 1 end)`,
-      total_games: sql<number>`count(*)`,
+      runner_wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`,
+      corp_wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`,
+      draws: sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`,
+      total_games: count(),
     })
     .from(matchesMapped)
     .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
     .groupBy(matchesMapped.runnerShortId, matchesMapped.corpShortId)
-    .having(gte(sql`count(*)`, minMatches))
-    .orderBy(sql`count(*) desc`);
+    .having(sql`count(*) >= ${minMatches}`)
+    .orderBy(desc(count()));
 
   return result.map((row) => ({
     runner_id: row.runner_id || "",
     corp_id: row.corp_id || "",
-    runner_wins: Number(row.runner_wins),
-    corp_wins: Number(row.corp_wins),
-    draws: Number(row.draws),
-    total_games: Number(row.total_games),
+    runner_wins: Number(row.runner_wins || 0),
+    corp_wins: Number(row.corp_wins || 0),
+    draws: Number(row.draws || 0),
+    total_games: row.total_games,
   }));
 }
 
