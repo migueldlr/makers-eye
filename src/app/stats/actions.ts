@@ -105,9 +105,18 @@ export async function getWinrates({
     .select({
       runner_id: matchesMapped.runnerShortId,
       corp_id: matchesMapped.corpShortId,
-      runner_wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`,
-      corp_wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`,
-      draws: sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`,
+      runner_wins:
+        sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`.mapWith(
+          Number
+        ),
+      corp_wins:
+        sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`.mapWith(
+          Number
+        ),
+      draws:
+        sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`.mapWith(
+          Number
+        ),
       total_games: count(),
     })
     .from(matchesMapped)
@@ -290,9 +299,18 @@ export async function getSideWinrates({
     .select({
       runner_id: matchesMapped.runnerShortId,
       corp_id: matchesMapped.corpShortId,
-      runner_wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`,
-      corp_wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`,
-      draws: sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`,
+      runner_wins:
+        sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`.mapWith(
+          Number
+        ),
+      corp_wins:
+        sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`.mapWith(
+          Number
+        ),
+      draws:
+        sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`.mapWith(
+          Number
+        ),
       total_games: count(),
     })
     .from(matchesMapped)
@@ -378,13 +396,24 @@ export async function getIdentityWinrates({
       total_games: count(),
       total_wins:
         side === "corp"
-          ? sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`
-          : sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`,
+          ? sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`.mapWith(
+              Number
+            )
+          : sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`.mapWith(
+              Number
+            ),
       total_losses:
         side === "corp"
-          ? sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`
-          : sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`,
-      total_draws: sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`,
+          ? sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`.mapWith(
+              Number
+            )
+          : sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`.mapWith(
+              Number
+            ),
+      total_draws:
+        sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`.mapWith(
+          Number
+        ),
     })
     .from(matchesMapped)
     .where(and(...whereConditions))
@@ -422,22 +451,85 @@ export async function getPartnerIdentityWinrates({
   tournamentIds: number[];
   side: "corp" | "runner";
 }): Promise<IdentityWinrateData[]> {
-  const supabase = await createClient();
+  const whereConditions = [];
 
-  const { data, error } = await supabase.rpc(
-    side === "corp"
-      ? "get_runner_id_corp_performance"
-      : "get_corp_id_runner_performance",
-    {
-      tournament_filter: tournamentIds,
-    }
-  );
+  // Ensure both identity columns are not null
+  whereConditions.push(isNotNull(standingsMapped.corpShortId));
+  whereConditions.push(isNotNull(standingsMapped.runnerShortId));
 
-  if (error) {
-    throw new Error(error.message);
+  // Filter out players with no games
+  if (side === "corp") {
+    // For runner_id_corp_performance: ensure corp games exist
+    whereConditions.push(
+      sql`${standingsMapped.corpWins} + ${standingsMapped.corpLosses} > 0`
+    );
+  } else {
+    // For corp_id_runner_performance: ensure runner games exist
+    whereConditions.push(
+      sql`${standingsMapped.runnerWins} + ${standingsMapped.runnerLosses} > 0`
+    );
   }
 
-  return data;
+  // Tournament filter
+  if (tournamentIds.length > 0) {
+    whereConditions.push(inArray(standingsMapped.tournamentId, tournamentIds));
+  }
+
+  // Determine which identity to group by and which wins/losses to sum
+  const groupByColumn =
+    side === "corp"
+      ? standingsMapped.runnerShortId // When looking at corp performance, group by runner
+      : standingsMapped.corpShortId; // When looking at runner performance, group by corp
+
+  const result = await db
+    .select({
+      id: groupByColumn,
+      total_wins:
+        side === "corp"
+          ? sql<number>`sum(${standingsMapped.corpWins})`.mapWith(Number)
+          : sql<number>`sum(${standingsMapped.runnerWins})`.mapWith(Number),
+      total_losses:
+        side === "corp"
+          ? sql<number>`sum(${standingsMapped.corpLosses})`.mapWith(Number)
+          : sql<number>`sum(${standingsMapped.runnerLosses})`.mapWith(Number),
+      total_games:
+        side === "corp"
+          ? sql<number>`sum(${standingsMapped.corpWins} + ${standingsMapped.corpLosses})`.mapWith(
+              Number
+            )
+          : sql<number>`sum(${standingsMapped.runnerWins} + ${standingsMapped.runnerLosses})`.mapWith(
+              Number
+            ),
+      distinct_players: count(),
+    })
+    .from(standingsMapped)
+    .innerJoin(tournaments, eq(standingsMapped.tournamentId, tournaments.id))
+    .where(and(...whereConditions))
+    .groupBy(groupByColumn);
+
+  // Map results and calculate win rate in JavaScript
+  const mappedResults = result.map((row) => {
+    const totalGames = row.total_games;
+    const totalWins = row.total_wins;
+    const totalLosses = row.total_losses;
+
+    const winRate =
+      totalGames > 0 ? Number((totalWins / totalGames).toFixed(3)) : 0;
+
+    return {
+      id: row.id ?? "",
+      total_games: totalGames,
+      total_wins: totalWins,
+      total_losses: totalLosses,
+      total_draws: 0, // No draws in standings data
+      win_rate: winRate,
+    };
+  });
+
+  // Sort by win rate (desc for runner performance, asc for corp performance per SQL)
+  return side === "corp"
+    ? mappedResults.sort((a, b) => a.win_rate - b.win_rate) // Ascending for corp
+    : mappedResults.sort((a, b) => b.win_rate - a.win_rate); // Descending for runner
 }
 
 export async function getCutVsSwiss({
