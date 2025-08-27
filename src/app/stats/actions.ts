@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import { db } from "@/src/utils/drizzle/client";
 import {
   matches,
+  standings,
   standingsMapped,
   tournaments,
   matchesMapped,
@@ -24,6 +25,7 @@ import {
   ne,
   isNotNull,
 } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 export type WinrateData = {
   runner_id: string;
@@ -68,7 +70,7 @@ export type GameResults = {
 };
 
 export type PopularityData = {
-  identity: string;
+  identity: string | null;
   player_count: number;
 };
 
@@ -584,7 +586,7 @@ export async function getPopularity({
     .orderBy(desc(count()));
 
   return result.map((row) => ({
-    identity: row.identity ?? "",
+    identity: row.identity,
     player_count: row.player_count,
   }));
 }
@@ -598,21 +600,63 @@ export async function getGameResults({
   includeCut: boolean;
   includeSwiss: boolean;
 }): Promise<GameResults> {
-  const supabase = await createClient();
+  const whereConditions = [];
 
-  const { data, error } = await supabase
-    .rpc("get_tournament_game_outcomes", {
-      tournament_filter: tournamentFilter ?? null,
-      include_swiss: includeSwiss,
-      include_cut: includeCut,
-    })
-    .select();
-
-  if (error) {
-    throw new Error(error.message);
+  // Tournament filter
+  if (tournamentFilter && tournamentFilter.length > 0) {
+    whereConditions.push(inArray(matchesMapped.tournamentId, tournamentFilter));
   }
 
-  return data[0];
+  // Phase filter
+  const phaseConditions = [];
+  if (includeSwiss) {
+    phaseConditions.push(eq(matchesMapped.phase, "swiss"));
+  }
+  if (includeCut) {
+    phaseConditions.push(eq(matchesMapped.phase, "cut"));
+  }
+
+  if (phaseConditions.length > 0) {
+    whereConditions.push(or(...phaseConditions));
+  }
+
+  const result = await db
+    .select({
+      total_games: count(),
+      corp_wins:
+        sql<number>`sum(case when ${matchesMapped.result} = 'corpWin' then 1 else 0 end)`.mapWith(
+          Number
+        ),
+      runner_wins:
+        sql<number>`sum(case when ${matchesMapped.result} = 'runnerWin' then 1 else 0 end)`.mapWith(
+          Number
+        ),
+      draws:
+        sql<number>`sum(case when ${matchesMapped.result} = 'draw' then 1 else 0 end)`.mapWith(
+          Number
+        ),
+      byes: sql<number>`sum(case when ${matchesMapped.result} = 'bye' then 1 else 0 end)`.mapWith(
+        Number
+      ),
+      unknowns:
+        sql<number>`sum(case when ${matchesMapped.result} not in ('corpWin', 'runnerWin', 'draw', 'bye') or ${matchesMapped.result} is null then 1 else 0 end)`.mapWith(
+          Number
+        ),
+    })
+    .from(matchesMapped)
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
+
+  // The query always returns exactly one row with aggregated results
+  const row = result[0];
+
+  return {
+    total_games: row.total_games,
+    corp_wins: row.corp_wins,
+    runner_wins: row.runner_wins,
+    draws: row.draws,
+    byes: row.byes,
+    unknowns: row.unknowns,
+  };
 }
 
 export async function getMatchesByIdentity(
@@ -622,26 +666,73 @@ export async function getMatchesByIdentity(
   include_cut: boolean = true,
   include_swiss: boolean = true
 ): Promise<MatchesByIdentity[]> {
-  const supabase = await createClient();
+  const whereConditions = [];
+
+  // Required filters for specific identities
+  whereConditions.push(eq(matchesMapped.runnerShortId, runner_id));
+  whereConditions.push(eq(matchesMapped.corpShortId, corp_id));
+
+  // Tournament filter
+  if (tournamentFilter && tournamentFilter.length > 0) {
+    whereConditions.push(inArray(matchesMapped.tournamentId, tournamentFilter));
+  }
+
+  // Phase filter
   const phase_filter =
     include_cut && !include_swiss
       ? "cut"
       : !include_cut && include_swiss
       ? "swiss"
       : null;
-  const { data, error } = await supabase
-    .rpc("get_matches_by_id", {
-      corp_filter: corp_id,
-      runner_filter: runner_id,
-      tournament_filter: tournamentFilter ?? null,
-      phase_filter,
-    })
-    .select();
 
-  if (error) {
-    throw new Error(error.message);
+  if (phase_filter) {
+    whereConditions.push(eq(matchesMapped.phase, phase_filter));
   }
-  return data;
+
+  // Create aliases for the standings table to avoid conflicts
+  const runnerStandings = alias(standings, "runner_standings");
+  const corpStandings = alias(standings, "corp_standings");
+
+  const result = await db
+    .select({
+      tournament_id: matchesMapped.tournamentId,
+      tournament_name: tournaments.name,
+      tournament_url: tournaments.url,
+      tournament_date: tournaments.date,
+      round: matchesMapped.round,
+      round_table: matchesMapped.table,
+      phase: matchesMapped.phase,
+      corp_player_name: corpStandings.name,
+      runner_player_name: runnerStandings.name,
+      corp_id: matchesMapped.corpShortId,
+      runner_id: matchesMapped.runnerShortId,
+      result: matchesMapped.result,
+    })
+    .from(matchesMapped)
+    .leftJoin(tournaments, eq(matchesMapped.tournamentId, tournaments.id))
+    .leftJoin(runnerStandings, eq(matchesMapped.runnerId, runnerStandings.id))
+    .leftJoin(corpStandings, eq(matchesMapped.corpId, corpStandings.id))
+    .where(and(...whereConditions))
+    .orderBy(
+      desc(tournaments.date),
+      matchesMapped.tournamentId,
+      matchesMapped.round
+    );
+
+  return result.map((row) => ({
+    tournament_id: row.tournament_id || 0,
+    tournament_name: row.tournament_name || "",
+    tournament_url: row.tournament_url || "",
+    tournament_date: row.tournament_date || "",
+    round: row.round || 0,
+    round_table: row.round_table || 0,
+    phase: row.phase || "",
+    corp_player_name: row.corp_player_name || "",
+    runner_player_name: row.runner_player_name || "",
+    corp_id: row.corp_id || "",
+    runner_id: row.runner_id || "",
+    result: row.result || "",
+  }));
 }
 
 export async function updateAbrUrls({
@@ -728,6 +819,94 @@ export async function uploadDecklist({ decklistId }: { decklistId: number }) {
   }
 
   return data;
+}
+
+export async function getPlayerIdPerformance({
+  targetId,
+  tournamentFilter = [],
+}: {
+  targetId: string;
+  tournamentFilter?: number[];
+}) {
+  // Build the where conditions
+  const whereConditions = [
+    or(
+      eq(standingsMapped.corpShortId, targetId),
+      eq(standingsMapped.runnerShortId, targetId)
+    ),
+  ];
+
+  if (tournamentFilter.length > 0) {
+    whereConditions.push(
+      inArray(standingsMapped.tournamentId, tournamentFilter)
+    );
+  }
+
+  // Query the database
+  const results = await db
+    .select({
+      playerId: standingsMapped.id,
+      playerName: standingsMapped.name,
+      tournamentId: standingsMapped.tournamentId,
+      tournamentName: tournaments.name,
+      corpShortId: standingsMapped.corpShortId,
+      runnerShortId: standingsMapped.runnerShortId,
+      corpWins: standingsMapped.corpWins,
+      corpLosses: standingsMapped.corpLosses,
+      runnerWins: standingsMapped.runnerWins,
+      runnerLosses: standingsMapped.runnerLosses,
+    })
+    .from(standingsMapped)
+    .leftJoin(tournaments, eq(standingsMapped.tournamentId, tournaments.id))
+    .where(and(...whereConditions))
+    .orderBy(standingsMapped.tournamentId, standingsMapped.name);
+
+  // Transform the results to match the expected output format
+  const transformedResults = results.map((row) => {
+    const isCorpSide = row.corpShortId === targetId;
+    const side = isCorpSide ? "corp" : "runner";
+
+    // Calculate wins/losses for the side that played the target ID
+    const swissWins = isCorpSide ? row.corpWins || 0 : row.runnerWins || 0;
+    const swissLosses = isCorpSide
+      ? row.corpLosses || 0
+      : row.runnerLosses || 0;
+    const swissTotal = swissWins + swissLosses;
+    const swissWinrate =
+      swissTotal > 0
+        ? Math.round((swissWins / swissTotal) * 1000) / 1000
+        : null;
+
+    // Calculate wins/losses for the opposite side
+    const oppositeWins = isCorpSide ? row.runnerWins || 0 : row.corpWins || 0;
+    const oppositeLosses = isCorpSide
+      ? row.runnerLosses || 0
+      : row.corpLosses || 0;
+    const oppositeTotal = oppositeWins + oppositeLosses;
+    const oppositeWinrate =
+      oppositeTotal > 0
+        ? Math.round((oppositeWins / oppositeTotal) * 1000) / 1000
+        : null;
+
+    return {
+      playerId: row.playerId!,
+      playerName: row.playerName!,
+      tournamentId: row.tournamentId!,
+      tournamentName: row.tournamentName,
+      side,
+      idPlayed: targetId,
+      swissWins,
+      swissLosses,
+      swissTotal,
+      swissWinrate,
+      oppositeWins,
+      oppositeLosses,
+      oppositeTotal,
+      oppositeWinrate,
+    };
+  });
+
+  return transformedResults;
 }
 
 export async function uploadAllDecklists() {

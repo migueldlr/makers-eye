@@ -197,7 +197,7 @@ export const shortenId = (id?: string) => {
   return ID_MAPPING[id as keyof typeof ID_MAPPING] ?? id;
 };
 
-export const idToFaction = (id?: string) => {
+export const idToFaction = (id?: string | null) => {
   if (id == null) return "_Neutral";
   return FACTION_MAPPING[id as keyof typeof FACTION_MAPPING] ?? id;
 };
