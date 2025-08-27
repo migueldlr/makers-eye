@@ -4,8 +4,24 @@ import { NrdbCardResponse, NrdbDecklistResponse } from "@/lib/nrdb";
 import { getArchetype, NRDB_URL } from "@/lib/util";
 import { createClient } from "@/utils/supabase/server";
 import { db } from "@/src/utils/drizzle/client";
-import { matches, standingsMapped, tournaments } from "@/src/db/schema";
-import { count, countDistinct, inArray, max, min } from "drizzle-orm";
+import {
+  matches,
+  standingsMapped,
+  tournaments,
+  matchesMapped,
+} from "@/src/db/schema";
+import {
+  count,
+  countDistinct,
+  inArray,
+  max,
+  min,
+  sql,
+  and,
+  or,
+  eq,
+  gte,
+} from "drizzle-orm";
 
 export type WinrateData = {
   runner_id: string;
@@ -63,23 +79,49 @@ export async function getWinrates({
   minMatches: number;
   includeSwiss: boolean;
   includeCut: boolean;
-  tournamentFilter?: number[];
+  tournamentFilter: number[];
 }): Promise<WinrateData[]> {
-  const supabase = await createClient();
+  const whereConditions = [];
 
-  const { data, error } = await supabase
-    .rpc("get_head_to_head_winrates", {
-      min_matches: minMatches,
-      include_swiss: includeSwiss,
-      include_cut: includeCut,
-      tournament_filter: tournamentFilter,
-    })
-    .select();
-
-  if (error) {
-    throw new Error(error.message);
+  if (tournamentFilter.length > 0) {
+    whereConditions.push(inArray(matchesMapped.tournamentId, tournamentFilter));
   }
-  return data;
+
+  const phaseConditions = [];
+  if (includeSwiss) {
+    phaseConditions.push(eq(matchesMapped.phase, "swiss"));
+  }
+  if (includeCut) {
+    phaseConditions.push(eq(matchesMapped.phase, "cut"));
+  }
+
+  if (phaseConditions.length > 0) {
+    whereConditions.push(or(...phaseConditions));
+  }
+
+  const result = await db
+    .select({
+      runner_id: matchesMapped.runnerShortId,
+      corp_id: matchesMapped.corpShortId,
+      runner_wins: sql<number>`count(case when ${matchesMapped.result} = 'runnerWin' then 1 end)`,
+      corp_wins: sql<number>`count(case when ${matchesMapped.result} = 'corpWin' then 1 end)`,
+      draws: sql<number>`count(case when ${matchesMapped.result} = 'draw' then 1 end)`,
+      total_games: sql<number>`count(*)`,
+    })
+    .from(matchesMapped)
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+    .groupBy(matchesMapped.runnerShortId, matchesMapped.corpShortId)
+    .having(gte(sql`count(*)`, minMatches))
+    .orderBy(sql`count(*) desc`);
+
+  return result.map((row) => ({
+    runner_id: row.runner_id || "",
+    corp_id: row.corp_id || "",
+    runner_wins: Number(row.runner_wins),
+    corp_wins: Number(row.corp_wins),
+    draws: Number(row.draws),
+    total_games: Number(row.total_games),
+  }));
 }
 
 export async function getStandings(): Promise<{}[]> {
