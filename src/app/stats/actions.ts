@@ -21,6 +21,7 @@ import {
   or,
   eq,
   desc,
+  ne,
 } from "drizzle-orm";
 
 export type WinrateData = {
@@ -147,35 +148,55 @@ export async function getMatchesMetadata({
   runnerData: { identity: string; player_count: number }[];
   corpData: { identity: string; player_count: number }[];
 }> {
-  const supabase = await createClient();
+  const whereConditions = [];
 
-  const { data: runnerData, error: runnerError } = await supabase
-    .rpc("get_runner_popularity", {
-      tournament_filter: tournamentFilter,
-      include_swiss: includeSwiss,
-      include_cut: includeCut,
-    })
-    .select();
-
-  if (runnerError) {
-    throw new Error("Error fetching runner info", runnerError);
+  if (tournamentFilter && tournamentFilter.length > 0) {
+    whereConditions.push(
+      inArray(standingsMapped.tournamentId, tournamentFilter)
+    );
   }
 
-  const { data: corpData, error: corpError } = await supabase
-    .rpc("get_corp_popularity", {
-      tournament_filter: tournamentFilter,
-      include_swiss: includeSwiss,
-      include_cut: includeCut,
-    })
-    .select();
-
-  if (corpError) {
-    throw new Error("Error fetching corp info", corpError);
+  const phaseConditions = [];
+  if (includeSwiss) {
+    phaseConditions.push(sql`true`);
   }
+  if (includeCut) {
+    phaseConditions.push(ne(standingsMapped.topCutRank, 0));
+  }
+
+  if (phaseConditions.length > 0) {
+    whereConditions.push(or(...phaseConditions));
+  }
+
+  const runnerData = await db
+    .select({
+      identity: standingsMapped.runnerShortId,
+      player_count: count(),
+    })
+    .from(standingsMapped)
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+    .groupBy(standingsMapped.runnerShortId)
+    .orderBy(desc(count()));
+
+  const corpData = await db
+    .select({
+      identity: standingsMapped.corpShortId,
+      player_count: count(),
+    })
+    .from(standingsMapped)
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+    .groupBy(standingsMapped.corpShortId)
+    .orderBy(desc(count()));
 
   return {
-    runnerData,
-    corpData,
+    runnerData: runnerData.map((row) => ({
+      identity: row.identity || "",
+      player_count: row.player_count,
+    })),
+    corpData: corpData.map((row) => ({
+      identity: row.identity || "",
+      player_count: row.player_count,
+    })),
   };
 }
 
