@@ -117,11 +117,11 @@ export async function getWinrates({
     .orderBy(desc(count()));
 
   return result.map((row) => ({
-    runner_id: row.runner_id || "",
-    corp_id: row.corp_id || "",
-    runner_wins: Number(row.runner_wins || 0),
-    corp_wins: Number(row.corp_wins || 0),
-    draws: Number(row.draws || 0),
+    runner_id: row.runner_id ?? "",
+    corp_id: row.corp_id ?? "",
+    runner_wins: row.runner_wins,
+    corp_wins: row.corp_wins,
+    draws: row.draws,
     total_games: row.total_games,
   }));
 }
@@ -191,11 +191,11 @@ export async function getMatchesMetadata({
 
   return {
     runnerData: runnerData.map((row) => ({
-      identity: row.identity || "",
+      identity: row.identity ?? "",
       player_count: row.player_count,
     })),
     corpData: corpData.map((row) => ({
-      identity: row.identity || "",
+      identity: row.identity ?? "",
       player_count: row.player_count,
     })),
   };
@@ -301,8 +301,8 @@ export async function getSideWinrates({
 
   // Map results and calculate win rate in JavaScript
   const mappedResults = result.map((row) => {
-    const runnerWins = Number(row.runner_wins || 0);
-    const corpWins = Number(row.corp_wins || 0);
+    const runnerWins = row.runner_wins;
+    const corpWins = row.corp_wins;
     const totalGames = row.total_games;
 
     // Calculate win rate as percentage with 2 decimal places
@@ -316,11 +316,11 @@ export async function getSideWinrates({
         : 0;
 
     return {
-      runner_id: row.runner_id || "",
-      corp_id: row.corp_id || "",
+      runner_id: row.runner_id ?? "",
+      corp_id: row.corp_id ?? "",
       runner_wins: runnerWins,
       corp_wins: corpWins,
-      draws: Number(row.draws || 0),
+      draws: row.draws,
       total_games: totalGames,
       win_rate: winRate,
     };
@@ -341,24 +341,78 @@ export async function getIdentityWinrates({
   includeCut?: boolean;
   includeSwiss?: boolean;
 }): Promise<IdentityWinrateData[]> {
-  const supabase = await createClient();
+  const whereConditions = [];
 
-  const { data, error } = await supabase.rpc(
-    side === "corp"
-      ? "get_corp_identity_winrates"
-      : "get_runner_identity_winrates",
-    {
-      tournament_filter: tournamentIds,
-      include_swiss: includeSwiss,
-      include_cut: includeCut,
-    }
-  );
-
-  if (error) {
-    throw new Error(error.message);
+  // Null check for the identity column
+  if (side === "corp") {
+    whereConditions.push(isNotNull(matchesMapped.corpShortId));
+  } else {
+    whereConditions.push(isNotNull(matchesMapped.runnerShortId));
   }
 
-  return data;
+  // Tournament filter
+  if (tournamentIds.length > 0) {
+    whereConditions.push(inArray(matchesMapped.tournamentId, tournamentIds));
+  }
+
+  // Phase filter
+  const phaseConditions = [];
+  if (includeSwiss) {
+    phaseConditions.push(eq(matchesMapped.phase, "swiss"));
+  }
+  if (includeCut) {
+    phaseConditions.push(eq(matchesMapped.phase, "cut"));
+  }
+
+  if (phaseConditions.length > 0) {
+    whereConditions.push(or(...phaseConditions));
+  }
+
+  // Query with dynamic selection and grouping based on side
+  const identityColumn =
+    side === "corp" ? matchesMapped.corpShortId : matchesMapped.runnerShortId;
+
+  const result = await db
+    .select({
+      id: identityColumn,
+      total_games: count(),
+      total_wins:
+        side === "corp"
+          ? sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`
+          : sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`,
+      total_losses:
+        side === "corp"
+          ? sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`
+          : sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`,
+      total_draws: sql<number>`count(*) filter (where ${matchesMapped.result} = 'draw')`,
+    })
+    .from(matchesMapped)
+    .where(and(...whereConditions))
+    .groupBy(identityColumn);
+
+  // Map results and calculate win rate in JavaScript
+  const mappedResults = result.map((row) => {
+    const totalGames = row.total_games;
+    const totalWins = row.total_wins;
+    const totalLosses = row.total_losses;
+    const totalDraws = row.total_draws;
+
+    // Calculate win rate as percentage with 2 decimal places
+    const winRate =
+      totalGames > 0 ? Number(((totalWins / totalGames) * 100).toFixed(2)) : 0;
+
+    return {
+      id: row.id ?? "",
+      total_games: totalGames,
+      total_wins: totalWins,
+      total_losses: totalLosses,
+      total_draws: totalDraws,
+      win_rate: winRate,
+    };
+  });
+
+  // Sort by win rate in descending order
+  return mappedResults.sort((a, b) => b.win_rate - a.win_rate);
 }
 
 export async function getPartnerIdentityWinrates({
