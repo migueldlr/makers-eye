@@ -532,36 +532,6 @@ export async function getPartnerIdentityWinrates({
     : mappedResults.sort((a, b) => b.win_rate - a.win_rate); // Descending for runner
 }
 
-export async function getCutVsSwiss({
-  tournamentIds,
-  side,
-}: {
-  tournamentIds: number[];
-  side: "corp" | "runner";
-}) {
-  const supabase = await createClient();
-}
-
-export async function getCorpPopularity(
-  tournamentFilter?: number[]
-): Promise<PopularityData[]> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .rpc("get_corp_popularity", {
-      tournament_filter: tournamentFilter ?? null,
-      include_swiss: true,
-      include_cut: true,
-    })
-    .select();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
 export async function getPopularity({
   tournamentFilter = [],
   side,
@@ -573,20 +543,50 @@ export async function getPopularity({
   includeSwiss?: boolean;
   includeCut?: boolean;
 }): Promise<PopularityData[]> {
-  const supabase = await createClient();
+  const whereConditions = [];
 
-  const { data, error } = await supabase
-    .rpc(side === "runner" ? "get_runner_popularity" : "get_corp_popularity", {
-      tournament_filter: tournamentFilter ?? null,
-      include_swiss: includeSwiss,
-      include_cut: includeCut,
-    })
-    .select();
-
-  if (error) {
-    throw new Error(error.message);
+  // Tournament filter
+  if (tournamentFilter.length > 0) {
+    whereConditions.push(
+      inArray(standingsMapped.tournamentId, tournamentFilter)
+    );
   }
-  return data;
+
+  // Phase filter based on SQL function logic:
+  // (include_swiss) or (include_cut and top_cut_rank != 0)
+  const phaseConditions = [];
+  if (includeSwiss) {
+    phaseConditions.push(sql`true`); // Include all players
+  }
+  if (includeCut && !includeSwiss) {
+    // Only add cut condition if swiss is not included (to avoid redundancy)
+    phaseConditions.push(ne(standingsMapped.topCutRank, 0));
+  }
+
+  if (phaseConditions.length > 0) {
+    whereConditions.push(or(...phaseConditions));
+  }
+
+  // Select the appropriate identity column based on side
+  const identityColumn =
+    side === "runner"
+      ? standingsMapped.runnerShortId
+      : standingsMapped.corpShortId;
+
+  const result = await db
+    .select({
+      identity: identityColumn,
+      player_count: count(),
+    })
+    .from(standingsMapped)
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+    .groupBy(identityColumn)
+    .orderBy(desc(count()));
+
+  return result.map((row) => ({
+    identity: row.identity ?? "",
+    player_count: row.player_count,
+  }));
 }
 
 export async function getGameResults({
