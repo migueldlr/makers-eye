@@ -55,6 +55,40 @@ function groupWinrateByOffSide(
   return grouped;
 }
 
+function sumWinrateBySide(
+  winrateData: WinrateData[],
+  mainSideIds: string[],
+  offSideIds: string[],
+  side: "corp" | "runner"
+) {
+  if (!winrateData || winrateData.length === 0)
+    return { corpWins: 0, runnerWins: 0, draws: 0, total: 0 };
+
+  let corpWins = 0;
+  let runnerWins = 0;
+  let draws = 0;
+  let total = 0;
+
+  // Filter and aggregate only the matchups between mainSideIds and offSideIds
+  winrateData.forEach((data) => {
+    const isRelevantMatchup =
+      side === "corp"
+        ? mainSideIds.includes(data.corp_id) &&
+          offSideIds.includes(data.runner_id)
+        : mainSideIds.includes(data.runner_id) &&
+          offSideIds.includes(data.corp_id);
+
+    if (isRelevantMatchup) {
+      corpWins += data.corp_wins;
+      runnerWins += data.runner_wins;
+      draws += data.draws;
+      total += data.total_games;
+    }
+  });
+
+  return { corpWins, runnerWins, draws, total };
+}
+
 function ChartTooltip({
   label,
   payload,
@@ -140,6 +174,7 @@ export default function MatchupChart({
         : []),
     ];
   });
+  const summary = sumWinrateBySide(data_raw, mainSideIds, offSideIds, side);
 
   return (
     <Box>
@@ -161,6 +196,11 @@ export default function MatchupChart({
           domain: [0, 100],
         }}
       />
+      <Text>
+        Overall: {side === "corp" ? summary.corpWins : summary.runnerWins}-
+        {side === "corp" ? summary.runnerWins : summary.corpWins}
+        {summary.draws > 0 ? `-${summary.draws}` : ""}
+      </Text>
     </Box>
   );
 }
