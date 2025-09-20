@@ -14,6 +14,7 @@ export default function FeaturedTournaments() {
   const activeTournaments = featuredTournaments.filter((tournament) => {
     return isAfter(parseISO(tournament.date), subDays(new Date(), 7));
   });
+  if (activeTournaments.length === 0) return null;
   return (
     <Stack align="center">
       <Flex gap="xs">
