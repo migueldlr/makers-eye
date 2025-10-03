@@ -80,7 +80,7 @@ export default function CreditsPage() {
           Null Signal Games. <br />
           <br />
           This website is not produced, endorsed, supported, or affiliated with
-          Fantasy Flight Games or Null Signal Games.
+          Fantasy Flight Games.
         </Text>
         <BackButton />
       </Stack>
