@@ -121,32 +121,36 @@ export default function HomePage() {
           <Text c="gray.7">created by spiderbro</Text>
         </Center>
       </Affix>
-      <Affix position={{ right: 20, top: -5 }}>
+      <Affix position={{ right: 10, top: 0 }}>
         <Image
-          // visibleFrom="sm"
           src="/decal-bottomleft.svg"
           style={{
             maxWidth: "40vw",
-            opacity: 0.2,
             pointerEvents: "none",
             userSelect: "none",
             MozUserSelect: "none",
             WebkitUserSelect: "none",
             transform: "rotate(180deg)",
+            maskImage:
+              "linear-gradient(30deg, rgba(0,0,0,0.9), rgba(0,0,0,0.0))",
+            WebkitMaskImage:
+              "linear-gradient(30deg, rgba(0,0,0,0.9), rgba(0,0,0,0.0))",
           }}
         />
       </Affix>
-      <Affix position={{ left: 20, bottom: -5 }}>
+      <Affix position={{ left: 10, bottom: 0 }}>
         <Image
-          // visibleFrom="sm"
           src="/decal-bottomleft.svg"
           style={{
             maxWidth: "40vw",
-            opacity: 0.2,
             pointerEvents: "none",
             userSelect: "none",
             MozUserSelect: "none",
             WebkitUserSelect: "none",
+            maskImage:
+              "linear-gradient(30deg, rgba(0,0,0,0.9), rgba(0,0,0,0.0))",
+            WebkitMaskImage:
+              "linear-gradient(30deg, rgba(0,0,0,0.9), rgba(0,0,0,0.0))",
           }}
         />
       </Affix>
