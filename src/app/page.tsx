@@ -5,7 +5,7 @@ import FancyLink from "@/components/homepage/FancyLink";
 import FancyTitle from "@/components/homepage/FancyTitle";
 import FeaturedTournaments from "@/components/homepage/FeaturedTournaments";
 import { parseUrl } from "@/lib/util";
-import { netrunnerFont } from "@/styles/fonts";
+
 import {
   ActionIcon,
   Affix,
@@ -13,6 +13,7 @@ import {
   Center,
   Container,
   Divider,
+  Image,
   LoadingOverlay,
   Stack,
   Text,
@@ -119,6 +120,35 @@ export default function HomePage() {
         <Center>
           <Text c="gray.7">created by spiderbro</Text>
         </Center>
+      </Affix>
+      <Affix position={{ right: 20, top: -5 }}>
+        <Image
+          // visibleFrom="sm"
+          src="/decal-bottomleft.svg"
+          style={{
+            maxWidth: "40vw",
+            opacity: 0.2,
+            pointerEvents: "none",
+            userSelect: "none",
+            MozUserSelect: "none",
+            WebkitUserSelect: "none",
+            transform: "rotate(180deg)",
+          }}
+        />
+      </Affix>
+      <Affix position={{ left: 20, bottom: -5 }}>
+        <Image
+          // visibleFrom="sm"
+          src="/decal-bottomleft.svg"
+          style={{
+            maxWidth: "40vw",
+            opacity: 0.2,
+            pointerEvents: "none",
+            userSelect: "none",
+            MozUserSelect: "none",
+            WebkitUserSelect: "none",
+          }}
+        />
       </Affix>
     </Container>
   );

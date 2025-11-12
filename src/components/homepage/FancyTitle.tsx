@@ -13,7 +13,9 @@ export default function FancyTitle() {
           The Maker&#39;s Eye
         </Text>
       </Title>
-      <Title order={4}>Netrunner tournament and meta analysis</Title>
+      <Title order={4} ta="center">
+        Netrunner tournament and meta analysis
+      </Title>
     </Stack>
   );
 }
