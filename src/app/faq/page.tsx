@@ -1,6 +1,15 @@
 import { BackButton } from "@/components/common/BackButton";
 import { SITE_TITLE } from "@/lib/util";
-import { Container, Stack, Title, Text, Box, Anchor } from "@mantine/core";
+import HexGrid from "@/src/components/svg/HexGrid";
+import {
+  Container,
+  Stack,
+  Title,
+  Text,
+  Box,
+  Anchor,
+  Center,
+} from "@mantine/core";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -49,9 +58,11 @@ export default async function FaqPage() {
           manual process.
         </Text>
       </Stack>
-      <Box mt="xl">
-        <BackButton />
-      </Box>
+      <Center>
+        <HexGrid rows={1} cols={6} hexSize={35} gap={1} />
+      </Center>
+
+      <BackButton />
     </Container>
   );
 }
