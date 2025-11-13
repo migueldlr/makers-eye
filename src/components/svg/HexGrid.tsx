@@ -118,7 +118,7 @@ export default function HexGrid({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      style={{ overflow: "visible", ...style }}
+      style={{ overflow: "visible", touchAction: "none", ...style }}
     >
       {hexagons.map((hex) => {
         const isHovered = hoveredIndex === hex.index;
@@ -135,8 +135,10 @@ export default function HexGrid({
               transition: isHovered
                 ? "fill 0.1s ease-out" // Fast in
                 : "fill 2s ease-out", // Slow out
+              touchAction: "none",
             }}
             onPointerEnter={() => setHoveredIndex(hex.index)}
+            onPointerMove={() => setHoveredIndex(hex.index)}
             onPointerLeave={() => setHoveredIndex(null)}
             onMouseEnter={() => setHoveredIndex(hex.index)}
             onMouseLeave={() => setHoveredIndex(null)}
