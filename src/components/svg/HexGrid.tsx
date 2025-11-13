@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface HexGridProps {
   rows?: number;
@@ -28,6 +28,62 @@ export default function HexGrid({
   style,
 }: HexGridProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isPointerDown, setIsPointerDown] = useState(false);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  // Find which hexagon is at the given point
+  const getHexagonAtPoint = (x: number, y: number): number | null => {
+    if (!svgRef.current) return null;
+
+    const element = document.elementFromPoint(x, y);
+    if (!element) return null;
+
+    // Check if the element is one of our hexagon paths
+    const pathElement = element.closest("path");
+    if (!pathElement || !svgRef.current.contains(pathElement)) return null;
+
+    // Get the index from the element's key/data attribute
+    const index = pathElement.getAttribute("data-hex-index");
+    return index !== null ? parseInt(index, 10) : null;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (isPointerDown) {
+      const hexIndex = getHexagonAtPoint(e.clientX, e.clientY);
+      if (hexIndex !== null) {
+        setHoveredIndex(hexIndex);
+      }
+    }
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    setIsPointerDown(true);
+    if (svgRef.current) {
+      svgRef.current.setPointerCapture(e.pointerId);
+    }
+    const hexIndex = getHexagonAtPoint(e.clientX, e.clientY);
+    if (hexIndex !== null) {
+      setHoveredIndex(hexIndex);
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    setIsPointerDown(false);
+    if (svgRef.current) {
+      try {
+        svgRef.current.releasePointerCapture(e.pointerId);
+      } catch (e) {
+        // Ignore errors if pointer capture wasn't set
+      }
+    }
+    setHoveredIndex(null);
+  };
+
+  const handleMouseLeave = () => {
+    if (!isPointerDown) {
+      setHoveredIndex(null);
+    }
+  };
 
   // Hexagon geometry constants (flat-top orientation)
   const width = hexSize * Math.sqrt(3); // Width across the flat sides
@@ -40,7 +96,7 @@ export default function HexGrid({
   // Calculate SVG dimensions (flat-top)
   const svgWidth = cols * horizontalSpacing + gap * 2;
   // Height: top gap + first hexagon half + spacing between rows + last hexagon half + bottom gap
-  const svgHeight = 2 * gap + rows * 1.5 * verticalSpacing;
+  const svgHeight = 2 * gap + (rows + 0.5) * verticalSpacing;
 
   // Generate hexagon path with center at (cx, cy) - flat-top orientation
   const generateHexPath = (cx: number, cy: number): string => {
@@ -112,6 +168,7 @@ export default function HexGrid({
 
   return (
     <svg
+      ref={svgRef}
       width={svgWidth}
       height={svgHeight}
       viewBox={`0 0 ${svgWidth} ${svgHeight}`}
@@ -119,6 +176,11 @@ export default function HexGrid({
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       style={{ overflow: "visible", touchAction: "none", ...style }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onMouseLeave={handleMouseLeave}
     >
       {hexagons.map((hex) => {
         const isHovered = hoveredIndex === hex.index;
@@ -126,6 +188,7 @@ export default function HexGrid({
         return (
           <path
             key={hex.index}
+            data-hex-index={hex.index}
             d={hex.path}
             fill={isHovered ? "#FFA940" : color} // Brighter orange on hover
             fillOpacity={hex.opacity}
@@ -135,13 +198,10 @@ export default function HexGrid({
               transition: isHovered
                 ? "fill 0.1s ease-out" // Fast in
                 : "fill 2s ease-out", // Slow out
-              touchAction: "none",
+              pointerEvents: "auto",
             }}
-            onPointerEnter={() => setHoveredIndex(hex.index)}
-            onPointerMove={() => setHoveredIndex(hex.index)}
-            onPointerLeave={() => setHoveredIndex(null)}
-            onMouseEnter={() => setHoveredIndex(hex.index)}
-            onMouseLeave={() => setHoveredIndex(null)}
+            onMouseEnter={() => !isPointerDown && setHoveredIndex(hex.index)}
+            onMouseLeave={() => !isPointerDown && setHoveredIndex(null)}
           />
         );
       })}

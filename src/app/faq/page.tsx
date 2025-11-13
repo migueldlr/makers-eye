@@ -9,6 +9,7 @@ import {
   Box,
   Anchor,
   Center,
+  Space,
 } from "@mantine/core";
 import { Metadata } from "next";
 
@@ -58,9 +59,10 @@ export default async function FaqPage() {
           manual process.
         </Text>
       </Stack>
-      <Center>
-        <HexGrid rows={1} cols={6} hexSize={35} gap={1} />
+      <Center mt="lg">
+        <HexGrid rows={3} cols={4} hexSize={35} gap={0} />
       </Center>
+      <Space h="lg" />
 
       <BackButton />
     </Container>
