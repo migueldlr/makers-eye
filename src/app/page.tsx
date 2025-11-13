@@ -116,12 +116,17 @@ export default function HomePage() {
           </Stack>
         </Stack>
       </Center>
-      <Affix position={{ left: "50vw", bottom: 20 }} ml={-100} w={200}>
+      <Affix
+        position={{ left: "50vw", bottom: 20 }}
+        ml={-100}
+        w={200}
+        visibleFrom="xs"
+      >
         <Center>
           <Text c="gray.7">created by spiderbro</Text>
         </Center>
       </Affix>
-      <Affix position={{ right: 10, top: 0 }}>
+      <Affix position={{ right: 10, top: 0 }} zIndex={-10}>
         <Image
           src="/decal-bottomleft.svg"
           style={{
@@ -138,7 +143,7 @@ export default function HomePage() {
           }}
         />
       </Affix>
-      <Affix position={{ left: 10, bottom: 0 }}>
+      <Affix position={{ left: 10, bottom: 0 }} zIndex={-10}>
         <Image
           src="/decal-bottomleft.svg"
           style={{
