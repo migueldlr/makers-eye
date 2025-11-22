@@ -40,7 +40,7 @@ export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
 export const ONLINE_OPTIONS = ["Online", "Paper"];
 export const PHASE_OPTIONS = ["Swiss", "Cut"];
 export const META_OPTIONS = {
-  Standard: ["25.10", "25.08", "25.04", "24.12"],
+  Standard: ["25.12", "25.10", "25.08", "25.04", "24.12"],
   Startup: ["25.04"],
 };
 
