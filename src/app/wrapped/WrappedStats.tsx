@@ -34,7 +34,6 @@ import {
   Alert,
   Badge,
   Button,
-  Container,
   Group,
   Paper,
   SimpleGrid,
@@ -42,12 +41,17 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { type ReactNode, useMemo } from "react";
+import { useMemo, useState, useEffect, useRef, type ReactNode } from "react";
+import { FlickerTextConfig } from "./FlickerText";
+import Slide from "./Slide";
+
+const spaceGroteskFontName = "Space Grotesk";
 
 interface WrappedStatsProps {
   summary: UploadSummary;
   fileName: string | null;
   filterRange: { start: Date; end: Date } | null;
+  cacheWarning: string | null;
   onReset: () => void;
 }
 
@@ -55,9 +59,23 @@ export default function WrappedStats({
   summary,
   fileName,
   filterRange,
+  cacheWarning,
   onReset,
 }: WrappedStatsProps) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const profile = summary.profile;
+  const baseFont = FlickerTextConfig.baseFont;
+  const debugFontFamilies = useMemo(() => {
+    const fonts = [FlickerTextConfig.baseFont, ...FlickerTextConfig.fonts];
+    return Array.from(new Set(fonts.filter(Boolean)));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+    scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
   const aggregates = summary.aggregates;
   const { start, end } = useMemo(
     () => getDateRange(summary.games),
@@ -113,106 +131,204 @@ export default function WrappedStats({
     if (!profile) return null;
     return buildWinLossReasons(summary.games, profile.username);
   }, [profile, summary.games]);
-  return (
-    <Container pt="xl" pb="4xl">
-      <Stack gap="lg">
-        <Stack gap="xs">
-          <Title order={1}>Maker&apos;s Eye Wrapped</Title>
-          <Text c="dimmed">
-            {profile
-              ? `Stats ready for ${profile.username}`
-              : "Stats ready. We could not detect a single player yet."}
+
+  const summaryStats = [
+    { label: "Total games", value: totalGames.toLocaleString() },
+    { label: "Date range", value: formatRange(start, end) },
+    {
+      label: "Matched data",
+      value: profile
+        ? `${profile.matchedGames}/${totalGames} (${formatPercent(
+            profile.coverage
+          )})`
+        : "Unknown",
+    },
+    {
+      label: "Avg games / day",
+      value: formatDecimal(aggregates.averageGamesPerDay),
+    },
+    {
+      label: "Avg minutes / game",
+      value: formatDecimal(aggregates.averageMinutesPerGame),
+    },
+    {
+      label: "Avg minutes / day",
+      value: formatDecimal(aggregates.averageMinutesPerDay),
+    },
+    {
+      label: "Total minutes",
+      value: formatMinutes(aggregates.totalMinutes),
+    },
+  ];
+
+  const highlightGroupPrimary: HighlightDescriptor[] = [
+    {
+      title: "Most shuffles",
+      highlight: highlights?.mostShuffles ?? null,
+      formatValue: (v) => formatCount(v, "shuffle"),
+      emptyMessage: "No shuffle data yet.",
+    },
+    {
+      title: "Most cards played",
+      highlight: highlights?.mostCardsPlayed ?? null,
+      formatValue: (v) => formatCount(v, "card"),
+      emptyMessage: "No card play data yet.",
+    },
+    {
+      title: "Most cards rezzed",
+      highlight: highlights?.mostCardsRezzed ?? null,
+      formatValue: (v) => formatCount(v, "card rezzed"),
+      emptyMessage: "No rez data yet.",
+    },
+    {
+      title: "Fewest cards rezzed in a corp win",
+      highlight: highlights?.fewestCardsRezzedCorpWin ?? null,
+      formatValue: (v) => formatCount(v, "card rezzed"),
+      emptyMessage: "No corp win data yet.",
+    },
+    {
+      title: "Most runs",
+      highlight: highlights?.mostRuns ?? null,
+      formatValue: (v) => formatCount(v, "run"),
+      emptyMessage: "No run data yet.",
+    },
+    {
+      title: "Least runs in a win",
+      highlight: highlights?.leastRunsInWin ?? null,
+      formatValue: (v) => formatCount(v, "run"),
+      emptyMessage: "No winning run data yet.",
+    },
+  ];
+
+  const highlightGroupSecondary: HighlightDescriptor[] = [
+    {
+      title: "Most damage dealt",
+      highlight: highlights?.mostDamage ?? null,
+      formatValue: (v) => `${v} damage`,
+      emptyMessage: "No damage data yet.",
+    },
+    {
+      title: "Most damage taken",
+      highlight: highlights?.mostDamageTaken ?? null,
+      formatValue: (v) => `${v} damage`,
+      emptyMessage: "No damage taken yet.",
+    },
+    {
+      title: "Most damage taken in a win",
+      highlight: highlights?.mostDamageTakenWin ?? null,
+      formatValue: (v) => `${v} damage`,
+      emptyMessage: "No damage taken wins yet.",
+    },
+    {
+      title: "Most tags taken",
+      highlight: highlights?.mostTagsTaken ?? null,
+      formatValue: (v) => formatCount(v, "tag"),
+      emptyMessage: "No tag data yet.",
+    },
+    {
+      title: "Fastest flatline win",
+      highlight: highlights?.fastestFlatlineWin ?? null,
+      formatValue: (v) => `${v} turns`,
+      emptyMessage: "No flatline wins yet.",
+    },
+    {
+      title: "Least credits spent in a win",
+      highlight: highlights?.leastCreditsSpentWin ?? null,
+      formatValue: (v) => `${v} credits`,
+      emptyMessage: "No winning spend data yet.",
+    },
+  ];
+
+  const highlightGroupPerTurn: HighlightDescriptor[] = [
+    {
+      title: "Most clicks per turn",
+      highlight: highlights?.mostClicksPerTurn ?? null,
+      formatValue: (v) => formatPerTurn(v, "click"),
+      emptyMessage: "No click data yet.",
+      renderDetails: renderPerTurnDetails,
+    },
+    {
+      title: "Fewest clicks per turn",
+      highlight: highlights?.leastClicksPerTurn ?? null,
+      formatValue: (v) => formatPerTurn(v, "click"),
+      emptyMessage: "No click data yet.",
+      renderDetails: renderPerTurnDetails,
+    },
+    {
+      title: "Most credits per turn",
+      highlight: highlights?.mostCreditsPerTurn ?? null,
+      formatValue: (v) => formatPerTurn(v, "credit"),
+      emptyMessage: "No credit data yet.",
+      renderDetails: renderPerTurnDetails,
+    },
+    {
+      title: "Fewest credits per turn",
+      highlight: highlights?.leastCreditsPerTurn ?? null,
+      formatValue: (v) => formatPerTurn(v, "credit"),
+      emptyMessage: "No credit data yet.",
+      renderDetails: renderPerTurnDetails,
+    },
+    {
+      title: "Most fake credits per turn",
+      highlight: highlights?.mostFakeCreditsPerTurn ?? null,
+      formatValue: (v) => formatPerTurn(v, "fake credit"),
+      emptyMessage: "No fake credit data yet.",
+      renderDetails: renderPerTurnDetails,
+    },
+    {
+      title: "Least unique accesses (agenda win)",
+      highlight: highlights?.leastUniqueAccessesAgendaWin ?? null,
+      formatValue: (v) => formatCount(v, "unique access"),
+      emptyMessage: "No agenda win data yet.",
+    },
+  ];
+
+  const slides: ReactNode[] = [
+    <Slide key="hero" gradient="radial-gradient(circle, #0c0b1d, #02010a)">
+      <Stack align="center" gap="sm">
+        <Title
+          order={1}
+          ta="center"
+          size={64}
+          style={{ fontFamily: baseFont, lineHeight: 1.05 }}
+        >
+          {profile ? profile.username : "Welcome back"}
+        </Title>
+        <Text size="xl" ta="center" c="gray.2">
+          You spent {formatMinutes(aggregates.totalMinutes)} across{" "}
+          {aggregates.totalDays || 1} days of Netrunner this season.
+        </Text>
+        {filterRange && (
+          <Text size="sm" ta="center" c="gray.5">
+            Filtered between {formatRange(filterRange.start, filterRange.end)}.
           </Text>
-          {filterRange && (
-            <Text size="xs" c="dimmed">
-              Filtered to games between{" "}
-              {formatRange(filterRange.start, filterRange.end)}.
-            </Text>
-          )}
-        </Stack>
-
-        <Paper withBorder p="lg" radius="md">
-          <Stack gap="md">
-            <Group justify="space-between" align="flex-start">
-              <Stack gap={4}>
-                <Text fw={600}>Upload summary</Text>
-                <Text size="xs" c="dimmed">
-                  Parsed locally, nothing leaves your browser.
-                </Text>
-              </Stack>
-              {fileName && (
-                <Badge variant="light" size="md">
-                  {fileName}
-                </Badge>
-              )}
-            </Group>
-            <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
-              <StatPill
-                label="Total games"
-                value={totalGames.toLocaleString()}
-              />
-              <StatPill label="Date range" value={formatRange(start, end)} />
-              <StatPill
-                label="Matched data"
-                value={
-                  profile
-                    ? `${profile.matchedGames}/${totalGames} (${formatPercent(
-                        profile.coverage
-                      )})`
-                    : "Unknown"
-                }
-              />
-              <StatPill
-                label="Total minutes"
-                value={formatMinutes(aggregates.totalMinutes)}
-              />
-              <StatPill
-                label="Avg games / day"
-                value={formatDecimal(aggregates.averageGamesPerDay)}
-              />
-              <StatPill
-                label="Avg minutes / game"
-                value={formatDecimal(aggregates.averageMinutesPerGame)}
-              />
-              <StatPill
-                label="Avg minutes / day"
-                value={formatDecimal(aggregates.averageMinutesPerDay)}
-              />
-              <StatPill
-                label="Total minutes"
-                value={formatMinutes(aggregates.totalMinutes)}
-              />
-            </SimpleGrid>
-            {profile ? (
-              <Stack gap="xs">
-                <Text size="sm" fw={600}>
-                  Detected player
-                </Text>
-                <Text size="lg" fw={700}>
-                  {profile.username}
-                </Text>
-                <Text size="sm" c="dimmed">
-                  Runner {profile.runnerGames} · Corp {profile.corpGames} ·
-                  Coverage {formatPercent(profile.coverage)}
-                </Text>
-              </Stack>
-            ) : (
-              <Alert color="yellow" variant="light">
-                Could not determine a single player in this export. You can
-                still inspect the raw data below or try another file.
-              </Alert>
-            )}
-          </Stack>
-        </Paper>
-
-        {profile && (
+        )}
+      </Stack>
+    </Slide>,
+    <Slide key="summary" gradient="linear-gradient(135deg, #1f1b52, #411858)">
+      <Stack gap="lg">
+        <Title order={2}>The Numbers</Title>
+        <SummaryGrid stats={summaryStats} />
+      </Stack>
+    </Slide>,
+    profile && (
+      <Slide key="roles" gradient="linear-gradient(145deg, #012a4a, #013a63)">
+        <Stack gap="lg">
+          <Title order={2}>Role Breakdown</Title>
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <RoleRecordCard title="Runner record" record={runnerRecord} />
             <RoleRecordCard title="Corp record" record={corpRecord} />
           </SimpleGrid>
-        )}
-
-        {profile && (
+        </Stack>
+      </Slide>
+    ),
+    profile && (
+      <Slide
+        key="identities"
+        gradient="linear-gradient(145deg, #14213d, #1d3557)"
+      >
+        <Stack gap="lg">
+          <Title order={2}>Signature identities</Title>
           <SimpleGrid cols={{ base: 1, sm: 3 }}>
             <FavoriteIdentityCard
               title="Favorite Runner ID"
@@ -224,182 +340,177 @@ export default function WrappedStats({
             />
             <LongestGameCard longest={longestGame} />
           </SimpleGrid>
-        )}
-
-        {profile && <FrequentOpponentCard opponent={frequentOpponent} />}
-
-        {profile && highlights && (
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
-            <GameHighlightCard
-              title="Most shuffles"
-              highlight={highlights.mostShuffles}
-              formatValue={(value) => formatCount(value, "shuffle")}
-              emptyMessage="No shuffle data yet."
-            />
-            <GameHighlightCard
-              title="Most cards played"
-              highlight={highlights.mostCardsPlayed}
-              formatValue={(value) => formatCount(value, "card")}
-              emptyMessage="No card play data yet."
-            />
-            <GameHighlightCard
-              title="Most cards rezzed"
-              highlight={highlights.mostCardsRezzed}
-              formatValue={(value) => formatCount(value, "card rezzed")}
-              emptyMessage="No rez data yet."
-            />
-            <GameHighlightCard
-              title="Fewest cards rezzed in a corp win"
-              highlight={highlights.fewestCardsRezzedCorpWin}
-              formatValue={(value) => formatCount(value, "card rezzed")}
-              emptyMessage="No corp win data yet."
-            />
-            <GameHighlightCard
-              title="Most runs"
-              highlight={highlights.mostRuns}
-              formatValue={(value) => formatCount(value, "run")}
-              emptyMessage="No run data yet."
-            />
-            <GameHighlightCard
-              title="Most runs per click"
-              highlight={highlights.mostRunsPerClick}
-              formatValue={(value) => formatPerTurn(value, "run")}
-              emptyMessage="No run/click data yet."
-            />
-            <GameHighlightCard
-              title="Most tags taken"
-              highlight={highlights.mostTagsTaken}
-              formatValue={(value) => formatCount(value, "tag")}
-              emptyMessage="No tag data yet."
-            />
-            <GameHighlightCard
-              title="Least runs in a win"
-              highlight={highlights.leastRunsInWin}
-              formatValue={(value) => formatCount(value, "run")}
-              emptyMessage="No winning run data yet."
-            />
-            <GameHighlightCard
-              title="Most damage dealt"
-              highlight={highlights.mostDamage}
-              formatValue={(value) => `${value} damage`}
-              emptyMessage="No damage data yet."
-            />
-            <GameHighlightCard
-              title="Most damage taken"
-              highlight={highlights.mostDamageTaken}
-              formatValue={(value) => `${value} damage`}
-              emptyMessage="No damage taken yet."
-            />
-            <GameHighlightCard
-              title="Most damage taken in a win"
-              highlight={highlights.mostDamageTakenWin}
-              formatValue={(value) => `${value} damage`}
-              emptyMessage="No damage taken wins yet."
-            />
-            <GameHighlightCard
-              title="Most fake credits"
-              highlight={highlights.mostFakeCredits}
-              formatValue={(value) => formatCount(value, "fake credit")}
-              emptyMessage="No fake credits yet."
-            />
-            <GameHighlightCard
-              title="Least unique accesses (agenda win)"
-              highlight={highlights.leastUniqueAccessesAgendaWin}
-              formatValue={(value) => formatCount(value, "unique access")}
-              emptyMessage="No agenda win data yet."
-            />
-            <GameHighlightCard
-              title="Fastest flatline win"
-              highlight={highlights.fastestFlatlineWin}
-              formatValue={(value) => `${value} turns`}
-              emptyMessage="No flatline wins yet."
-            />
-            <GameHighlightCard
-              title="Least credits spent in a win"
-              highlight={highlights.leastCreditsSpentWin}
-              formatValue={(value) => `${value} credits`}
-              emptyMessage="No winning spend data yet."
-            />
-          </SimpleGrid>
-        )}
-
-        {profile && highlights && (
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
-            <GameHighlightCard
-              title="Most clicks per turn"
-              highlight={highlights.mostClicksPerTurn}
-              formatValue={(value) => formatPerTurn(value, "click")}
-              emptyMessage="No click data yet."
-              renderDetails={renderPerTurnDetails}
-            />
-            <GameHighlightCard
-              title="Fewest clicks per turn"
-              highlight={highlights.leastClicksPerTurn}
-              formatValue={(value) => formatPerTurn(value, "click")}
-              emptyMessage="No click data yet."
-              renderDetails={renderPerTurnDetails}
-            />
-            <GameHighlightCard
-              title="Most credits per turn"
-              highlight={highlights.mostCreditsPerTurn}
-              formatValue={(value) => formatPerTurn(value, "credit")}
-              emptyMessage="No credit data yet."
-              renderDetails={renderPerTurnDetails}
-            />
-            <GameHighlightCard
-              title="Fewest credits per turn"
-              highlight={highlights.leastCreditsPerTurn}
-              formatValue={(value) => formatPerTurn(value, "credit")}
-              emptyMessage="No credit data yet."
-              renderDetails={renderPerTurnDetails}
-            />
-            <GameHighlightCard
-              title="Most fake credits per turn"
-              highlight={highlights.mostFakeCreditsPerTurn}
-              formatValue={(value) => formatPerTurn(value, "fake credit")}
-              emptyMessage="No fake credit data yet."
-              renderDetails={renderPerTurnDetails}
-            />
-          </SimpleGrid>
-        )}
-
-        {profile && winLossReasons && (
+        </Stack>
+      </Slide>
+    ),
+    profile && highlights && (
+      <Slide
+        key="highlights-1"
+        gradient="linear-gradient(120deg, #360033, #0b8793)"
+      >
+        <Stack gap="lg">
+          <Title order={2}>Cardboard feats</Title>
+          <HighlightGrid items={highlightGroupPrimary} />
+        </Stack>
+      </Slide>
+    ),
+    profile && highlights && (
+      <Slide
+        key="highlights-2"
+        gradient="linear-gradient(135deg, #0f0c29, #302b63)"
+      >
+        <Stack gap="lg">
+          <Title order={2}>Damage & drama</Title>
+          <HighlightGrid items={highlightGroupSecondary} />
+        </Stack>
+      </Slide>
+    ),
+    profile && highlights && (
+      <Slide
+        key="highlights-3"
+        gradient="linear-gradient(120deg, #1b1b2f, #162447)"
+      >
+        <Stack gap="lg">
+          <Title order={2}>Tempo plays</Title>
+          <HighlightGrid items={highlightGroupPerTurn} />
+        </Stack>
+      </Slide>
+    ),
+    profile && (
+      <Slide
+        key="opponents"
+        gradient="linear-gradient(140deg, #2a0845, #6441a5)"
+      >
+        <Stack gap="lg">
+          <Title order={2}>Rivals & outcomes</Title>
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <ReasonSummaryCard
-              title="Most common win reason"
-              summary={winLossReasons.wins}
-              emptyMessage="No wins recorded yet."
-            />
-            <ReasonSummaryCard
-              title="Most common loss reason"
-              summary={winLossReasons.losses}
-              emptyMessage="No losses recorded yet."
-            />
+            <FrequentOpponentCard opponent={frequentOpponent} />
+            {winLossReasons && (
+              <ReasonSummaryCard
+                title="Most common win reason"
+                summary={winLossReasons.wins}
+                emptyMessage="No wins recorded yet."
+              />
+            )}
+            {winLossReasons && (
+              <ReasonSummaryCard
+                title="Most common loss reason"
+                summary={winLossReasons.losses}
+                emptyMessage="No losses recorded yet."
+              />
+            )}
           </SimpleGrid>
-        )}
-
-        {profile && (
+        </Stack>
+      </Slide>
+    ),
+    profile && (
+      <Slide
+        key="font-debug"
+        gradient="linear-gradient(160deg, #111111, #222233)"
+      >
+        <Stack gap="lg" align="center">
+          <Title order={2}>Font Debug</Title>
+          <Paper
+            withBorder
+            radius="md"
+            p="xl"
+            style={{ width: "100%", maxWidth: 640 }}
+          >
+            <Stack gap="sm" align="stretch">
+              {debugFontFamilies.map((fontName, idx) => (
+                <Text
+                  key={`${fontName}-${idx}`}
+                  size="xl"
+                  fw={600}
+                  ta="center"
+                  style={{
+                    fontFamily: fontName,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {profile.username}
+                </Text>
+              ))}
+            </Stack>
+          </Paper>
+        </Stack>
+      </Slide>
+    ),
+    profile && (
+      <Slide key="tempo" gradient="linear-gradient(150deg, #0b486b, #f56217)">
+        <Stack gap="lg">
+          <Title order={2}>Streaks & pace</Title>
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <LongestStreakCard streak={longestStreak} />
             <LongestDroughtCard drought={longestDrought} />
           </SimpleGrid>
-        )}
-
-        {profile && (
           <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <BusiestDayCard busiest={busiestDay} />
             <LongestDurationCard longest={longestDuration} />
           </SimpleGrid>
-        )}
-
-        <Group>
-          <Button variant="light" onClick={onReset}>
+        </Stack>
+      </Slide>
+    ),
+    <Slide key="cta" gradient="linear-gradient(135deg, #200122, #6f0000)">
+      <Stack align="center" gap="md">
+        <Title order={2} ta="center">
+          Ready for another run?
+        </Title>
+        <Text ta="center" size="lg" c="gray.2">
+          Upload another log or head back to the dashboard for live games.
+        </Text>
+        <Group justify="center">
+          <Button
+            variant="gradient"
+            gradient={{ from: "pink", to: "orange" }}
+            onClick={onReset}
+          >
             Upload another JSON
           </Button>
           <BackButton />
         </Group>
       </Stack>
-    </Container>
+    </Slide>,
+  ].filter(Boolean) as ReactNode[];
+
+  return (
+    <div
+      ref={scrollRef}
+      style={{
+        backgroundColor: "#010104",
+        height: "100vh",
+        overflowY: "auto",
+        overflowX: "hidden",
+        scrollSnapType: "y mandatory",
+        scrollBehavior: "smooth",
+        overscrollBehavior: "none",
+        overscrollBehaviorY: "none",
+        WebkitOverflowScrolling: "touch",
+      }}
+    >
+      {cacheWarning && (
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+            padding: "1.25rem 1rem 0.5rem",
+          }}
+        >
+          <Alert
+            color="yellow"
+            radius="md"
+            title="Cache unavailable"
+            variant="light"
+          >
+            {cacheWarning}
+          </Alert>
+        </div>
+      )}
+      {slides.map((slide, index) => (
+        <div key={index}>{slide}</div>
+      ))}
+    </div>
   );
 }
 
@@ -607,6 +718,24 @@ function GameHighlightCard({
   );
 }
 
+type HighlightDescriptor = {
+  title: string;
+  highlight: GameHighlight | null;
+  formatValue: (value: number) => string;
+  emptyMessage: string;
+  renderDetails?: (highlight: GameHighlight) => ReactNode;
+};
+
+function HighlightGrid({ items }: { items: HighlightDescriptor[] }) {
+  return (
+    <SimpleGrid cols={{ base: 1, sm: 2 }}>
+      {items.map((item) => (
+        <GameHighlightCard key={item.title} {...item} />
+      ))}
+    </SimpleGrid>
+  );
+}
+
 function LongestStreakCard({ streak }: { streak: LongestStreak | null }) {
   return (
     <Paper withBorder p="md" radius="md">
@@ -780,4 +909,14 @@ function formatMinutes(minutes: number) {
   if (!minutes || minutes <= 0) return "0 min";
   const rounded = Math.round(minutes);
   return `${rounded.toLocaleString()} min`;
+}
+
+function SummaryGrid({ stats }: { stats: { label: string; value: string }[] }) {
+  return (
+    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
+      {stats.map((stat) => (
+        <StatPill key={stat.label} label={stat.label} value={stat.value} />
+      ))}
+    </SimpleGrid>
+  );
 }
