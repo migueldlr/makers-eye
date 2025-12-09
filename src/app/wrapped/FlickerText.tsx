@@ -9,6 +9,7 @@ import {
 } from "react";
 import {
   Bebas_Neue,
+  Chakra_Petch,
   Dancing_Script,
   Josefin_Sans,
   Merriweather,
@@ -17,7 +18,6 @@ import {
   Playwrite_NO,
   PT_Serif,
   Saira,
-  Space_Grotesk,
 } from "next/font/google";
 
 const playfair = Playfair_Display({
@@ -44,9 +44,9 @@ const josefinSans = Josefin_Sans({
   subsets: ["latin"],
   weight: ["400", "600"],
 });
-const spaceGrotesk = Space_Grotesk({
+const chakraPetch = Chakra_Petch({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const flickerFonts = [
@@ -62,7 +62,7 @@ const flickerFonts = [
 ];
 
 export const FlickerTextConfig = {
-  baseFont: spaceGrotesk.style.fontFamily,
+  baseFont: chakraPetch.style.fontFamily,
   fonts: flickerFonts,
 } as const;
 

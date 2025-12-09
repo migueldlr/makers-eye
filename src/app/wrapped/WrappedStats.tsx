@@ -41,11 +41,13 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { useMemo, useState, useEffect, useRef, type ReactNode } from "react";
+import { PieChart } from "@mantine/charts";
+import { useMemo, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { FlickerTextConfig } from "./FlickerText";
 import Slide from "./Slide";
-
-const spaceGroteskFontName = "Space Grotesk";
+import SummaryCarousel, { type SummaryStat } from "./SummaryCarousel";
+import FlipCard from "./FlipCard";
+import RunnerFactionCardBack from "./RunnerFactionCardBack";
 
 interface WrappedStatsProps {
   summary: UploadSummary;
@@ -90,7 +92,61 @@ export default function WrappedStats({
     return buildUserRoleRecord(summary.games, profile.username, "corp");
   }, [profile, summary.games]);
 
+  const defaultCardImage =
+    "https://card-images.netrunnerdb.com/v2/xlarge/35024.webp";
   const totalGames = summary.games.length;
+  const getCardImageForIdentity = useCallback(
+    (identity: string | undefined | null) => {
+      if (!identity) return defaultCardImage;
+      return defaultCardImage;
+    },
+    [defaultCardImage]
+  );
+  const runnerGames = runnerRecord?.total ?? 0;
+  const corpGames = corpRecord?.total ?? 0;
+  const preferredRoleLabel =
+    runnerGames === corpGames
+      ? "both sides equally"
+      : runnerGames > corpGames
+      ? "runner"
+      : "corp";
+  const rolePieData = useMemo(() => {
+    if (runnerGames === 0 && corpGames === 0) return null;
+    return [
+      { name: "Runner", value: runnerGames, color: "red" },
+      { name: "Corp", value: corpGames, color: "blue" },
+    ];
+  }, [runnerGames, corpGames]);
+  const { totalIdentities, runnerIdentityCount, corpIdentityCount } =
+    useMemo(() => {
+      if (!profile)
+        return {
+          totalIdentities: 0,
+          runnerIdentityCount: 0,
+          corpIdentityCount: 0,
+        };
+      const username = profile.username;
+      const runnerIdentities = new Set<string>();
+      const corpIdentities = new Set<string>();
+      for (const game of summary.games) {
+        if (game.runner.username === username && game.runner.identity) {
+          const identity = game.runner.identity.trim();
+          if (identity) runnerIdentities.add(identity);
+        }
+        if (game.corp.username === username && game.corp.identity) {
+          const identity = game.corp.identity.trim();
+          if (identity) corpIdentities.add(identity);
+        }
+      }
+      const totalIdentitiesSet = new Set<string>();
+      runnerIdentities.forEach((identity) => totalIdentitiesSet.add(identity));
+      corpIdentities.forEach((identity) => totalIdentitiesSet.add(identity));
+      return {
+        totalIdentities: totalIdentitiesSet.size,
+        runnerIdentityCount: runnerIdentities.size,
+        corpIdentityCount: corpIdentities.size,
+      };
+    }, [profile, summary.games]);
   const favoriteRunner = useMemo(() => {
     if (!profile) return null;
     return buildFavoriteIdentity(summary.games, profile.username, "runner");
@@ -132,32 +188,18 @@ export default function WrappedStats({
     return buildWinLossReasons(summary.games, profile.username);
   }, [profile, summary.games]);
 
-  const summaryStats = [
-    { label: "Total games", value: totalGames.toLocaleString() },
-    { label: "Date range", value: formatRange(start, end) },
+  const summaryStats: SummaryStat[] = [
     {
-      label: "Matched data",
-      value: profile
-        ? `${profile.matchedGames}/${totalGames} (${formatPercent(
-            profile.coverage
-          )})`
-        : "Unknown",
+      label: "total minutes in games",
+      value: aggregates.totalMinutes.toLocaleString(),
     },
     {
-      label: "Avg games / day",
+      label: "average games per day",
       value: formatDecimal(aggregates.averageGamesPerDay),
     },
     {
-      label: "Avg minutes / game",
-      value: formatDecimal(aggregates.averageMinutesPerGame),
-    },
-    {
-      label: "Avg minutes / day",
+      label: "average minutes per day",
       value: formatDecimal(aggregates.averageMinutesPerDay),
-    },
-    {
-      label: "Total minutes",
-      value: formatMinutes(aggregates.totalMinutes),
     },
   ];
 
@@ -292,33 +334,49 @@ export default function WrappedStats({
           size={64}
           style={{ fontFamily: baseFont, lineHeight: 1.05 }}
         >
-          {profile ? profile.username : "Welcome back"}
+          Hey, {profile ? profile.username : "Welcome back"}.
         </Title>
         <Text size="xl" ta="center" c="gray.2">
-          You spent {formatMinutes(aggregates.totalMinutes)} across{" "}
-          {aggregates.totalDays || 1} days of Netrunner this season.
+          Welcome to your Jnet Wrapped 2025.
         </Text>
-        {filterRange && (
-          <Text size="sm" ta="center" c="gray.5">
-            Filtered between {formatRange(filterRange.start, filterRange.end)}.
-          </Text>
-        )}
       </Stack>
     </Slide>,
-    <Slide key="summary" gradient="linear-gradient(135deg, #1f1b52, #411858)">
-      <Stack gap="lg">
-        <Title order={2}>The Numbers</Title>
-        <SummaryGrid stats={summaryStats} />
+    <Slide>
+      <Stack align="center" gap="sm">
+        <Text size="xl" ta="center" c="gray.2">
+          Let's get started, shall we?
+        </Text>
       </Stack>
     </Slide>,
-    profile && (
+    <Slide
+      key="summary-carousel"
+      gradient="linear-gradient(135deg, #1f1b52, #411858)"
+    >
+      <Stack align="center" gap="lg" style={{ width: "100%" }}>
+        <Title order={2} ta="center" c="gray.2">
+          You played {totalGames.toLocaleString()} games this year. That's...
+        </Title>
+        <SummaryCarousel stats={summaryStats} />
+      </Stack>
+    </Slide>,
+    profile && rolePieData && (
       <Slide key="roles" gradient="linear-gradient(145deg, #012a4a, #013a63)">
-        <Stack gap="lg">
-          <Title order={2}>Role Breakdown</Title>
-          <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <RoleRecordCard title="Runner record" record={runnerRecord} />
-            <RoleRecordCard title="Corp record" record={corpRecord} />
-          </SimpleGrid>
+        <Stack gap="lg" align="center">
+          <Title order={2} ta="center">
+            This year, you preferred to play as {preferredRoleLabel}.
+          </Title>
+          <PieChart
+            data={rolePieData}
+            size={300}
+            withLabels
+            withLabelsLine
+            labelsPosition="inside"
+            labelsType="value"
+            withTooltip
+            tooltipDataSource="segment"
+            startAngle={90}
+            endAngle={-270}
+          />
         </Stack>
       </Slide>
     ),
@@ -327,19 +385,56 @@ export default function WrappedStats({
         key="identities"
         gradient="linear-gradient(145deg, #14213d, #1d3557)"
       >
-        <Stack gap="lg">
-          <Title order={2}>Signature identities</Title>
-          <SimpleGrid cols={{ base: 1, sm: 3 }}>
-            <FavoriteIdentityCard
-              title="Favorite Runner ID"
-              favorite={favoriteRunner}
-            />
-            <FavoriteIdentityCard
-              title="Favorite Corp ID"
-              favorite={favoriteCorp}
-            />
-            <LongestGameCard longest={longestGame} />
-          </SimpleGrid>
+        <Stack align="center" gap="lg">
+          <Title order={2}>
+            You played {totalIdentities} identities this year.
+          </Title>
+          <Title order={4} c="gray.5">
+            ({runnerIdentityCount} runners and {corpIdentityCount} corps)
+          </Title>
+        </Stack>
+      </Slide>
+    ),
+    favoriteRunner && (
+      <Slide
+        key="favoriteRunner"
+        gradient="linear-gradient(145deg, #14213d, #1d3557)"
+      >
+        <Stack align="center" gap="lg">
+          <Title order={2}>Flip to reveal your standout runner.</Title>
+          <FlipCard
+            imageSrc={getCardImageForIdentity(favoriteRunner.identity)}
+            width={320}
+            height={450}
+            title="Runner MVP"
+            subtitle="Hover or tap to flip"
+            coverContent={<RunnerFactionCardBack />}
+          />
+          <FavoriteIdentityCard
+            title="Favorite Runner ID"
+            favorite={favoriteRunner}
+          />
+        </Stack>
+      </Slide>
+    ),
+    favoriteCorp && (
+      <Slide
+        key="favoriteCorp"
+        gradient="linear-gradient(145deg, #1d3557, #0b1e40)"
+      >
+        <Stack align="center" gap="lg">
+          <Title order={2}>Flip to reveal your go-to corp.</Title>
+          <FlipCard
+            imageSrc={getCardImageForIdentity(favoriteCorp.identity)}
+            width={320}
+            height={450}
+            title="Corp MVP"
+            subtitle="Hover or tap to flip"
+          />
+          <FavoriteIdentityCard
+            title="Favorite Corp ID"
+            favorite={favoriteCorp}
+          />
         </Stack>
       </Slide>
     ),
@@ -472,6 +567,58 @@ export default function WrappedStats({
       </Stack>
     </Slide>,
   ].filter(Boolean) as ReactNode[];
+
+  const scrollByStep = useCallback(
+    (direction: 1 | -1) => {
+      const container = scrollRef.current;
+      if (!container) return;
+      const viewportHeight = container.clientHeight || window.innerHeight;
+      if (!viewportHeight) return;
+      const currentIndex = Math.round(container.scrollTop / viewportHeight);
+      const nextIndex = Math.max(
+        0,
+        Math.min(slides.length - 1, currentIndex + direction)
+      );
+      if (nextIndex === currentIndex) return;
+      container.scrollTo({
+        top: nextIndex * viewportHeight,
+        behavior: "smooth",
+      });
+    },
+    [slides.length]
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.closest(
+          "input, textarea, select, button, [contenteditable='true'], [role='textbox']"
+        )
+      ) {
+        return;
+      }
+
+      if (
+        event.key === "ArrowDown" ||
+        event.key === "PageDown" ||
+        (event.key === " " && !event.shiftKey)
+      ) {
+        event.preventDefault();
+        scrollByStep(1);
+      } else if (
+        event.key === "ArrowUp" ||
+        event.key === "PageUp" ||
+        (event.key === " " && event.shiftKey)
+      ) {
+        event.preventDefault();
+        scrollByStep(-1);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown, { passive: false });
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [scrollByStep]);
 
   return (
     <div

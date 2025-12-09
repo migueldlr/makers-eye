@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 interface SlideProps {
   children: ReactNode;
-  gradient: string;
+  gradient?: string;
 }
 
 export default function Slide({ children, gradient }: SlideProps) {
@@ -17,7 +17,7 @@ export default function Slide({ children, gradient }: SlideProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: gradient,
+        background: gradient ?? "transparent",
         scrollSnapAlign: "start",
         scrollSnapStop: "always",
       }}
