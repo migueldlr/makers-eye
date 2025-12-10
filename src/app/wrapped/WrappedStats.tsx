@@ -19,7 +19,6 @@ import type {
   DayActivityStat,
   FrequentOpponent,
   GameHighlight,
-  IdentityFavorite,
   Highlights,
   LongestDurationGame,
   LongestDrought,
@@ -42,12 +41,37 @@ import {
   Title,
 } from "@mantine/core";
 import { PieChart } from "@mantine/charts";
-import { useMemo, useEffect, useRef, useCallback, type ReactNode } from "react";
+import {
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+  useState,
+  type ReactNode,
+} from "react";
 import { FlickerTextConfig } from "./FlickerText";
 import Slide from "./Slide";
 import SummaryCarousel, { type SummaryStat } from "./SummaryCarousel";
-import FlipCard from "./FlipCard";
+import FlipCardWithReveal from "./FlipCardWithReveal";
 import RunnerFactionCardBack from "./RunnerFactionCardBack";
+import {
+  fetchIdentityImageMap,
+  getIdentityImageUrl,
+  type IdentityImageMap,
+} from "@/lib/wrapped/identityImages";
+import { shortenId, idToFaction } from "@/lib/util";
+
+// Faction-based gradient backgrounds (using colors from faction SVGs)
+const FACTION_GRADIENTS: Record<string, string> = {
+  Anarch: "linear-gradient(145deg, #4a2210, #e26b35)", // #e26b35 from NSG_ANARCH.svg
+  Criminal: "linear-gradient(145deg, #0d2650, #194c9b)", // #194c9b from NSG_CRIMINAL.svg
+  Shaper: "linear-gradient(145deg, #1e3d1e, #4cb148)", // #4cb148 from NSG_SHAPER.svg
+  HB: "linear-gradient(145deg, #2d1d4a, #8854b9)", // #8854b9 from hb.svg
+  Jinteki: "linear-gradient(145deg, #3d1520, #b14157)", // #b14157 (standard Jinteki red)
+  NBN: "linear-gradient(145deg, #4d4510, #ffde00)", // #ffde00 from NSG_NBN.svg
+  Weyland: "linear-gradient(145deg, #1e2b1e, #516751)", // #516751 from NSG_WEYLAND.svg
+  _Neutral: "linear-gradient(145deg, #2d2d2d, #4a4a4a)",
+};
 
 interface WrappedStatsProps {
   summary: UploadSummary;
@@ -71,6 +95,18 @@ export default function WrappedStats({
     const fonts = [FlickerTextConfig.baseFont, ...FlickerTextConfig.fonts];
     return Array.from(new Set(fonts.filter(Boolean)));
   }, []);
+
+  // Fetch identity card images from NetrunnerDB
+  const [identityImageMap, setIdentityImageMap] = useState<IdentityImageMap>(
+    {}
+  );
+  useEffect(() => {
+    fetchIdentityImageMap().then(setIdentityImageMap);
+  }, []);
+
+  // Track card flip states for background transitions
+  const [runnerCardFlipped, setRunnerCardFlipped] = useState(false);
+  const [corpCardFlipped, setCorpCardFlipped] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -97,10 +133,9 @@ export default function WrappedStats({
   const totalGames = summary.games.length;
   const getCardImageForIdentity = useCallback(
     (identity: string | undefined | null) => {
-      if (!identity) return defaultCardImage;
-      return defaultCardImage;
+      return getIdentityImageUrl(identityImageMap, identity, defaultCardImage);
     },
-    [defaultCardImage]
+    [identityImageMap, defaultCardImage]
   );
   const runnerGames = runnerRecord?.total ?? 0;
   const corpGames = corpRecord?.total ?? 0;
@@ -336,14 +371,14 @@ export default function WrappedStats({
         >
           Hey, {profile ? profile.username : "Welcome back"}.
         </Title>
-        <Text size="xl" ta="center" c="gray.2">
+        <Text size="xl" ta="center">
           Welcome to your Jnet Wrapped 2025.
         </Text>
       </Stack>
     </Slide>,
     <Slide>
       <Stack align="center" gap="sm">
-        <Text size="xl" ta="center" c="gray.2">
+        <Text size="xl" ta="center">
           Let's get started, shall we?
         </Text>
       </Stack>
@@ -353,7 +388,7 @@ export default function WrappedStats({
       gradient="linear-gradient(135deg, #1f1b52, #411858)"
     >
       <Stack align="center" gap="lg" style={{ width: "100%" }}>
-        <Title order={2} ta="center" c="gray.2">
+        <Title order={2} ta="center">
           You played {totalGames.toLocaleString()} games this year. That's...
         </Title>
         <SummaryCarousel stats={summaryStats} />
@@ -383,14 +418,18 @@ export default function WrappedStats({
     profile && (
       <Slide
         key="identities"
-        gradient="linear-gradient(145deg, #14213d, #1d3557)"
+        gradient="linear-gradient(145deg, #1a1a2e, #16213e)"
       >
         <Stack align="center" gap="lg">
           <Title order={2}>
             You played {totalIdentities} identities this year.
           </Title>
           <Title order={4} c="gray.5">
-            ({runnerIdentityCount} runners and {corpIdentityCount} corps)
+            ({runnerIdentityCount} runners and {corpIdentityCount} corps, to be
+            exact)
+          </Title>
+          <Title order={2}>
+            But some identities stood out more than others.
           </Title>
         </Stack>
       </Slide>
@@ -398,43 +437,70 @@ export default function WrappedStats({
     favoriteRunner && (
       <Slide
         key="favoriteRunner"
-        gradient="linear-gradient(145deg, #14213d, #1d3557)"
+        initialGradient="#000000"
+        gradient={
+          FACTION_GRADIENTS[idToFaction(shortenId(favoriteRunner.identity))] ??
+          FACTION_GRADIENTS._Neutral
+        }
+        showGradient={runnerCardFlipped}
       >
         <Stack align="center" gap="lg">
-          <Title order={2}>Flip to reveal your standout runner.</Title>
-          <FlipCard
+          <Title order={2}>Your favorite runner was...</Title>
+          <FlipCardWithReveal
             imageSrc={getCardImageForIdentity(favoriteRunner.identity)}
-            width={320}
-            height={450}
-            title="Runner MVP"
-            subtitle="Hover or tap to flip"
+            cardTitle="Runner MVP"
+            cardSubtitle="Tap to flip"
             coverContent={<RunnerFactionCardBack />}
-          />
-          <FavoriteIdentityCard
-            title="Favorite Runner ID"
-            favorite={favoriteRunner}
-          />
+            coverMask="/cardback/mask-white-on-transparent.png"
+            onFlip={setRunnerCardFlipped}
+          >
+            <Stack align="center" gap="xs">
+              <Title order={2} fw={700}>
+                {shortenId(favoriteRunner.identity)}!
+              </Title>
+              <Title order={4} c="gray.5">
+                ({favoriteRunner.games} games)
+              </Title>
+            </Stack>
+          </FlipCardWithReveal>
         </Stack>
       </Slide>
     ),
     favoriteCorp && (
       <Slide
         key="favoriteCorp"
-        gradient="linear-gradient(145deg, #1d3557, #0b1e40)"
+        initialGradient="#000000"
+        gradient={
+          FACTION_GRADIENTS[idToFaction(shortenId(favoriteCorp.identity))] ??
+          FACTION_GRADIENTS._Neutral
+        }
+        showGradient={corpCardFlipped}
       >
         <Stack align="center" gap="lg">
-          <Title order={2}>Flip to reveal your go-to corp.</Title>
-          <FlipCard
+          <Title order={2}>Your go-to corp was...</Title>
+          <FlipCardWithReveal
             imageSrc={getCardImageForIdentity(favoriteCorp.identity)}
-            width={320}
-            height={450}
-            title="Corp MVP"
-            subtitle="Hover or tap to flip"
-          />
-          <FavoriteIdentityCard
-            title="Favorite Corp ID"
-            favorite={favoriteCorp}
-          />
+            cardTitle="Corp MVP"
+            cardSubtitle="Tap to flip"
+            coverContent={
+              <img
+                src="/cardback/corp-card-back.png"
+                alt="Corp card back"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            }
+            coverMask="/cardback/corp-mask.png"
+            onFlip={setCorpCardFlipped}
+          >
+            <Stack align="center" gap="xs">
+              <Title order={2} fw={700}>
+                {shortenId(favoriteCorp.identity)}!
+              </Title>
+              <Title order={4} c="gray.5">
+                ({favoriteCorp.games} games)
+              </Title>
+            </Stack>
+          </FlipCardWithReveal>
         </Stack>
       </Slide>
     ),
@@ -463,7 +529,7 @@ export default function WrappedStats({
     profile && highlights && (
       <Slide
         key="highlights-3"
-        gradient="linear-gradient(120deg, #1b1b2f, #162447)"
+        gradient="linear-gradient(120deg, #232526, #414345)"
       >
         <Stack gap="lg">
           <Title order={2}>Tempo plays</Title>
@@ -551,7 +617,7 @@ export default function WrappedStats({
         <Title order={2} ta="center">
           Ready for another run?
         </Title>
-        <Text ta="center" size="lg" c="gray.2">
+        <Text ta="center" size="lg">
           Upload another log or head back to the dashboard for live games.
         </Text>
         <Group justify="center">
@@ -700,35 +766,6 @@ function RoleRecordCard({
         <Text size="sm" c="dimmed">
           Win rate {formatPercent(record.winRate)}
         </Text>
-      </Stack>
-    </Paper>
-  );
-}
-
-function FavoriteIdentityCard({
-  title,
-  favorite,
-}: {
-  title: string;
-  favorite: IdentityFavorite | null;
-}) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>{title}</Text>
-        {favorite ? (
-          <>
-            <Text size="lg" fw={700}>
-              {favorite.identity}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {favorite.games} games · {favorite.wins}-{favorite.losses} ·{" "}
-              {formatPercent(favorite.winRate)}
-            </Text>
-          </>
-        ) : (
-          <Text size="sm">No games recorded.</Text>
-        )}
       </Stack>
     </Paper>
   );
