@@ -52,7 +52,7 @@ import {
 import { FlickerTextConfig } from "./FlickerText";
 import Slide from "./Slide";
 import SummaryCarousel, { type SummaryStat } from "./SummaryCarousel";
-import FlipCardWithReveal from "./FlipCardWithReveal";
+import FlipCardSlide from "./FlipCardSlide";
 import RunnerFactionCardBack from "./RunnerFactionCardBack";
 import {
   fetchIdentityImageMap,
@@ -93,10 +93,6 @@ export default function WrappedStats({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const profile = summary.profile;
   const baseFont = FlickerTextConfig.baseFont;
-  const debugFontFamilies = useMemo(() => {
-    const fonts = [FlickerTextConfig.baseFont, ...FlickerTextConfig.fonts];
-    return Array.from(new Set(fonts.filter(Boolean)));
-  }, []);
 
   // Fetch identity card images from NetrunnerDB
   const [identityImageMap, setIdentityImageMap] = useState<IdentityImageMap>(
@@ -105,11 +101,6 @@ export default function WrappedStats({
   useEffect(() => {
     fetchIdentityImageMap().then(setIdentityImageMap);
   }, []);
-
-  // Track card flip states for background transitions
-  const [runnerCardFlipped, setRunnerCardFlipped] = useState(false);
-  const [corpCardFlipped, setCorpCardFlipped] = useState(false);
-
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -346,6 +337,10 @@ export default function WrappedStats({
     },
   ];
 
+  const gravatarUrl = profile?.emailHash
+    ? `https://gravatar.com/avatar/${profile.emailHash}?s=200`
+    : null;
+
   const slides: ReactNode[] = [
     <Slide key="hero" gradient="radial-gradient(circle, #0c0b1d, #02010a)">
       <Stack align="center" gap="sm">
@@ -360,6 +355,17 @@ export default function WrappedStats({
         <Text size="xl" ta="center">
           Welcome to your Jnet Wrapped 2025.
         </Text>
+        {gravatarUrl && (
+          <img
+            src={gravatarUrl}
+            alt={`${profile?.username}'s avatar`}
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: "50%",
+            }}
+          />
+        )}
       </Stack>
     </Slide>,
     <Slide>
@@ -388,27 +394,27 @@ export default function WrappedStats({
         scrollContainerRef={scrollRef}
       />
     ),
-    profile && rolePieData && (
-      <Slide key="roles" gradient="linear-gradient(145deg, #012a4a, #013a63)">
-        <Stack gap="lg" align="center">
-          <Title order={2} ta="center">
-            This year, you preferred to play as {preferredRoleLabel}.
-          </Title>
-          <PieChart
-            data={rolePieData}
-            size={300}
-            withLabels
-            withLabelsLine
-            labelsPosition="inside"
-            labelsType="value"
-            withTooltip
-            tooltipDataSource="segment"
-            startAngle={90}
-            endAngle={-270}
-          />
-        </Stack>
-      </Slide>
-    ),
+    // profile && rolePieData && (
+    //   <Slide key="roles" gradient="linear-gradient(145deg, #012a4a, #013a63)">
+    //     <Stack gap="lg" align="center">
+    //       <Title order={2} ta="center">
+    //         This year, you preferred to play as {preferredRoleLabel}.
+    //       </Title>
+    //       <PieChart
+    //         data={rolePieData}
+    //         size={300}
+    //         withLabels
+    //         withLabelsLine
+    //         labelsPosition="inside"
+    //         labelsType="value"
+    //         withTooltip
+    //         tooltipDataSource="segment"
+    //         startAngle={90}
+    //         endAngle={-270}
+    //       />
+    //     </Stack>
+    //   </Slide>
+    // ),
     profile && (
       <Slide
         key="identities"
@@ -429,74 +435,46 @@ export default function WrappedStats({
       </Slide>
     ),
     favoriteRunner && (
-      <Slide
+      <FlipCardSlide
         key="favoriteRunner"
         initialGradient="#000000"
         gradient={
           FACTION_GRADIENTS[idToFaction(shortenId(favoriteRunner.identity))] ??
           FACTION_GRADIENTS._Neutral
         }
-        showGradient={runnerCardFlipped}
-      >
-        <Stack align="center" gap="lg">
-          <Title order={2}>Your favorite runner was...</Title>
-          <FlipCardWithReveal
-            imageSrc={getCardImageForIdentity(favoriteRunner.identity)}
-            cardTitle="Runner MVP"
-            cardSubtitle="Tap to flip"
-            coverContent={<RunnerFactionCardBack />}
-            coverMask="/cardback/mask-white-on-transparent.png"
-            onFlip={setRunnerCardFlipped}
-          >
-            <Stack align="center" gap="xs">
-              <Title order={2} fw={700}>
-                {shortenId(favoriteRunner.identity)}!
-              </Title>
-              <Title order={4} c="gray.5">
-                ({favoriteRunner.games} games)
-              </Title>
-            </Stack>
-          </FlipCardWithReveal>
-        </Stack>
-      </Slide>
+        title="Your favorite runner was..."
+        imageSrc={getCardImageForIdentity(favoriteRunner.identity)}
+        cardTitle="Runner MVP"
+        cardSubtitle="Tap to flip"
+        coverContent={<RunnerFactionCardBack />}
+        coverMask="/cardback/mask-white-on-transparent.png"
+        revealTitle={`${shortenId(favoriteRunner.identity)}!`}
+        revealSubtitle={`(${favoriteRunner.games} games)`}
+      />
     ),
     favoriteCorp && (
-      <Slide
+      <FlipCardSlide
         key="favoriteCorp"
         initialGradient="#000000"
         gradient={
           FACTION_GRADIENTS[idToFaction(shortenId(favoriteCorp.identity))] ??
           FACTION_GRADIENTS._Neutral
         }
-        showGradient={corpCardFlipped}
-      >
-        <Stack align="center" gap="lg">
-          <Title order={2}>Your go-to corp was...</Title>
-          <FlipCardWithReveal
-            imageSrc={getCardImageForIdentity(favoriteCorp.identity)}
-            cardTitle="Corp MVP"
-            cardSubtitle="Tap to flip"
-            coverContent={
-              <img
-                src="/cardback/corp-card-back.png"
-                alt="Corp card back"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            }
-            coverMask="/cardback/corp-mask.png"
-            onFlip={setCorpCardFlipped}
-          >
-            <Stack align="center" gap="xs">
-              <Title order={2} fw={700}>
-                {shortenId(favoriteCorp.identity)}!
-              </Title>
-              <Title order={4} c="gray.5">
-                ({favoriteCorp.games} games)
-              </Title>
-            </Stack>
-          </FlipCardWithReveal>
-        </Stack>
-      </Slide>
+        title="Your go-to corp was..."
+        imageSrc={getCardImageForIdentity(favoriteCorp.identity)}
+        cardTitle="Corp MVP"
+        cardSubtitle="Tap to flip"
+        coverContent={
+          <img
+            src="/cardback/corp-card-back.png"
+            alt="Corp card back"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        }
+        coverMask="/cardback/corp-mask.png"
+        revealTitle={`${shortenId(favoriteCorp.identity)}!`}
+        revealSubtitle={`(${favoriteCorp.games} games)`}
+      />
     ),
     profile && highlights && (
       <Slide
@@ -548,39 +526,6 @@ export default function WrappedStats({
               />
             )}
           </SimpleGrid>
-        </Stack>
-      </Slide>
-    ),
-    profile && (
-      <Slide
-        key="font-debug"
-        gradient="linear-gradient(160deg, #111111, #222233)"
-      >
-        <Stack gap="lg" align="center">
-          <Title order={2}>Font Debug</Title>
-          <Paper
-            withBorder
-            radius="md"
-            p="xl"
-            style={{ width: "100%", maxWidth: 640 }}
-          >
-            <Stack gap="sm" align="stretch">
-              {debugFontFamilies.map((fontName, idx) => (
-                <Text
-                  key={`${fontName}-${idx}`}
-                  size="xl"
-                  fw={600}
-                  ta="center"
-                  style={{
-                    fontFamily: fontName,
-                    lineHeight: 1.1,
-                  }}
-                >
-                  {profile.username}
-                </Text>
-              ))}
-            </Stack>
-          </Paper>
         </Stack>
       </Slide>
     ),

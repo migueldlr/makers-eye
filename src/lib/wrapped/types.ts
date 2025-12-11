@@ -3,6 +3,7 @@ export type PlayerRole = "runner" | "corp";
 export interface RoleSnapshot {
   username: string | null;
   identity: string | null;
+  emailHash: string | null;
 }
 
 export interface SideStats {
@@ -56,6 +57,7 @@ export interface RawRoleSnapshot {
 
 export interface RawPlayer {
   username?: unknown;
+  emailhash?: unknown;
 }
 
 export interface RawSideStats {
@@ -101,6 +103,7 @@ export interface RawStatsContainer {
 
 export interface UserProfile {
   username: string;
+  emailHash: string | null;
   totalGames: number;
   runnerGames: number;
   corpGames: number;

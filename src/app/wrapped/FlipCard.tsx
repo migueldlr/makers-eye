@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useRef, useCallback } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
 import styles from "./FlipCard.module.css";
 
@@ -43,13 +43,18 @@ export default function FlipCard({
   coverMask,
   onFlip,
 }: FlipCardProps) {
-  const [flipped, setFlipped] = useState(false);
+  const flipContainerRef = useRef<HTMLDivElement>(null);
+  const flippedRef = useRef(false);
 
-  const handleFlip = () => {
-    const newFlipped = !flipped;
-    setFlipped(newFlipped);
-    onFlip?.(newFlipped);
-  };
+  const handleFlip = useCallback(() => {
+    flippedRef.current = !flippedRef.current;
+    if (flipContainerRef.current) {
+      flipContainerRef.current.style.transform = flippedRef.current
+        ? "rotateY(180deg)"
+        : "rotateY(0deg)";
+    }
+    onFlip?.(flippedRef.current);
+  }, [onFlip]);
 
   // Spring values for 3D tilt effect
   const rotateX = useSpring(0, springConfig);
@@ -142,13 +147,14 @@ export default function FlipCard({
       >
         {/* Flip container - handles click-to-flip rotation */}
         <div
+          ref={flipContainerRef}
           style={{
             position: "relative",
             width: "100%",
             height: "100%",
             transition: "transform 700ms cubic-bezier(0.22, 1, 0.36, 1)",
             transformStyle: "preserve-3d",
-            transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+            transform: "rotateY(0deg)",
           }}
         >
           {/* Card back (initially visible - face down) */}

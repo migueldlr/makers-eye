@@ -145,6 +145,7 @@ export function detectUserProfile(games: GameRecord[]): UserProfile | null {
     corp: new Map(),
   };
   const overall = new Map<string, number>();
+  const emailHashes = new Map<string, string>();
 
   for (const game of games) {
     for (const role of ["runner", "corp"] as const) {
@@ -153,6 +154,10 @@ export function detectUserProfile(games: GameRecord[]): UserProfile | null {
       const map = totals[role];
       map.set(username, (map.get(username) ?? 0) + 1);
       overall.set(username, (overall.get(username) ?? 0) + 1);
+      // Store the emailHash if we haven't seen one for this user yet
+      if (game[role].emailHash && !emailHashes.has(username)) {
+        emailHashes.set(username, game[role].emailHash);
+      }
     }
   }
 
@@ -171,6 +176,7 @@ export function detectUserProfile(games: GameRecord[]): UserProfile | null {
 
   return {
     username: chosen.username,
+    emailHash: emailHashes.get(chosen.username) ?? null,
     runnerGames: totals.runner.get(chosen.username) ?? 0,
     corpGames: totals.corp.get(chosen.username) ?? 0,
     coverage: matchedGames / games.length,
@@ -842,7 +848,7 @@ function normalizeRole(
   rawRole: RawRoleSnapshot | null | undefined
 ): RoleSnapshot {
   if (!rawRole || typeof rawRole !== "object") {
-    return { username: null, identity: null };
+    return { username: null, identity: null, emailHash: null };
   }
   const rawPlayer = rawRole.player;
   const username =
@@ -851,9 +857,15 @@ function normalizeRole(
     typeof rawPlayer.username === "string"
       ? rawPlayer.username
       : null;
+  const emailHash =
+    rawPlayer &&
+    typeof rawPlayer === "object" &&
+    typeof rawPlayer.emailhash === "string"
+      ? rawPlayer.emailhash
+      : null;
   const identity =
     typeof rawRole.identity === "string" ? rawRole.identity : null;
-  return { username, identity };
+  return { username, identity, emailHash };
 }
 
 function pickTop(map: Map<string, number>) {
