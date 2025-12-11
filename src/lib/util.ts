@@ -91,6 +91,8 @@ const ID_MAPPING = {
   "Synapse Global: Faster than Thought": "Synapse",
   "BANGUN: When Disaster Strikes": "Bangun",
   "The Zwicky Group: Invisible Hands": "Zwicky",
+  "The Catalyst: Convention Breaker": "Catalyst",
+  "The Syndicate: Profit over Principle": "Syndicate",
 };
 
 const FACTION_MAPPING = {
@@ -168,6 +170,8 @@ const FACTION_MAPPING = {
   Synapse: "NBN",
   Bangun: "Weyland",
   Zwicky: "Weyland",
+  Catalyst: "_Neutral",
+  Syndicate: "_Neutral",
 };
 
 export const FACTION_NAMES = [
@@ -188,7 +192,7 @@ const FACTION_COLORS = {
   HB: "#8854b9",
   Jinteki: "#b14157",
   NBN: "#FFDE00",
-  Weyland: "#458c45",
+  Weyland: "#2d5a2d",
   _Neutral: "gray",
 };
 

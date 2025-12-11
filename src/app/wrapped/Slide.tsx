@@ -10,6 +10,8 @@ interface SlideProps {
   initialGradient?: string;
   /** Whether to show the animated gradient (when true, shows gradient; when false, shows initialGradient) */
   showGradient?: boolean;
+  /** Vertical alignment of content: "center" (default) or "start" */
+  align?: "center" | "start";
 }
 
 export default function Slide({
@@ -17,6 +19,7 @@ export default function Slide({
   gradient,
   initialGradient,
   showGradient = true,
+  align = "center",
 }: SlideProps) {
   const hasAnimatedBackground = initialGradient !== undefined;
 
@@ -28,7 +31,7 @@ export default function Slide({
           minHeight: "100vh",
           padding: "5rem 1rem",
           display: "flex",
-          alignItems: "center",
+          alignItems: align === "center" ? "center" : "flex-start",
           justifyContent: "center",
           background: gradient ?? "transparent",
           scrollSnapAlign: "start",
@@ -63,7 +66,7 @@ export default function Slide({
         minHeight: "100vh",
         padding: "5rem 1rem",
         display: "flex",
-        alignItems: "center",
+        alignItems: align === "center" ? "center" : "flex-start",
         justifyContent: "center",
         scrollSnapAlign: "start",
         scrollSnapStop: "always",

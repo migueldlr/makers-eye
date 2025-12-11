@@ -185,6 +185,7 @@ export interface LongestDrought {
 export interface GameHighlight {
   role: PlayerRole;
   value: number;
+  identity: string | null;
   opponent: string | null;
   opponentIdentity: string | null;
   completedAt: Date | null;
@@ -193,11 +194,17 @@ export interface GameHighlight {
 
 export interface Highlights {
   mostShuffles: GameHighlight | null;
+  mostShufflesRunner: GameHighlight | null;
+  mostShufflesCorp: GameHighlight | null;
   mostClicksPerTurn: GameHighlight | null;
+  mostClicksPerTurnCorp: GameHighlight | null;
   leastClicksPerTurn: GameHighlight | null;
   mostCreditsPerTurn: GameHighlight | null;
+  mostCreditsPerTurnCorp: GameHighlight | null;
   leastCreditsPerTurn: GameHighlight | null;
   mostCardsPlayed: GameHighlight | null;
+  mostCardsPlayedRunner: GameHighlight | null;
+  mostCardsPlayedCorp: GameHighlight | null;
   mostCardsRezzed: GameHighlight | null;
   mostRuns: GameHighlight | null;
   mostRunsPerClick: GameHighlight | null;
@@ -211,6 +218,7 @@ export interface Highlights {
   mostTagsTaken: GameHighlight | null;
   leastRunsInWin: GameHighlight | null;
   fastestFlatlineWin: GameHighlight | null;
+  fastestAgendaWin: GameHighlight | null;
   leastCreditsSpentWin: GameHighlight | null;
 }
 

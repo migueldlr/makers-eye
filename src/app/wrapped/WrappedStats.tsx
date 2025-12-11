@@ -60,6 +60,8 @@ import {
   type IdentityImageMap,
 } from "@/lib/wrapped/identityImages";
 import { shortenId, idToFaction } from "@/lib/util";
+import BentoGrid, { type HighlightDescriptor } from "./BentoGrid";
+import GameDotsGrid from "./GameDotsGrid";
 
 // Faction-based gradient backgrounds (using colors from faction SVGs)
 const FACTION_GRADIENTS: Record<string, string> = {
@@ -108,12 +110,14 @@ export default function WrappedStats({
   const [runnerCardFlipped, setRunnerCardFlipped] = useState(false);
   const [corpCardFlipped, setCorpCardFlipped] = useState(false);
 
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     }
     scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, []);
+
   const aggregates = summary.aggregates;
   const { start, end } = useMemo(
     () => getDateRange(summary.games),
@@ -238,31 +242,7 @@ export default function WrappedStats({
     },
   ];
 
-  const highlightGroupPrimary: HighlightDescriptor[] = [
-    {
-      title: "Most shuffles",
-      highlight: highlights?.mostShuffles ?? null,
-      formatValue: (v) => formatCount(v, "shuffle"),
-      emptyMessage: "No shuffle data yet.",
-    },
-    {
-      title: "Most cards played",
-      highlight: highlights?.mostCardsPlayed ?? null,
-      formatValue: (v) => formatCount(v, "card"),
-      emptyMessage: "No card play data yet.",
-    },
-    {
-      title: "Most cards rezzed",
-      highlight: highlights?.mostCardsRezzed ?? null,
-      formatValue: (v) => formatCount(v, "card rezzed"),
-      emptyMessage: "No rez data yet.",
-    },
-    {
-      title: "Fewest cards rezzed in a corp win",
-      highlight: highlights?.fewestCardsRezzedCorpWin ?? null,
-      formatValue: (v) => formatCount(v, "card rezzed"),
-      emptyMessage: "No corp win data yet.",
-    },
+  const runnerHighlights: HighlightDescriptor[] = [
     {
       title: "Most runs",
       highlight: highlights?.mostRuns ?? null,
@@ -274,15 +254,6 @@ export default function WrappedStats({
       highlight: highlights?.leastRunsInWin ?? null,
       formatValue: (v) => formatCount(v, "run"),
       emptyMessage: "No winning run data yet.",
-    },
-  ];
-
-  const highlightGroupSecondary: HighlightDescriptor[] = [
-    {
-      title: "Most damage dealt",
-      highlight: highlights?.mostDamage ?? null,
-      formatValue: (v) => `${v} damage`,
-      emptyMessage: "No damage data yet.",
     },
     {
       title: "Most damage taken",
@@ -303,60 +274,75 @@ export default function WrappedStats({
       emptyMessage: "No tag data yet.",
     },
     {
+      title: "Most shuffles",
+      highlight: highlights?.mostShufflesRunner ?? null,
+      formatValue: (v) => formatCount(v, "shuffle"),
+      emptyMessage: "No shuffle data yet.",
+    },
+    {
+      title: "Most cards played",
+      highlight: highlights?.mostCardsPlayedRunner ?? null,
+      formatValue: (v) => formatCount(v, "card"),
+      emptyMessage: "No card play data yet.",
+    },
+    {
+      title: "Fastest agenda win",
+      highlight: highlights?.fastestAgendaWin ?? null,
+      formatValue: (v) => formatCount(v, "turn"),
+      emptyMessage: "No agenda wins yet.",
+    },
+  ];
+
+  const corpHighlights: HighlightDescriptor[] = [
+    {
+      title: "Most damage dealt",
+      highlight: highlights?.mostDamage ?? null,
+      formatValue: (v) => `${v} damage`,
+      emptyMessage: "No damage data yet.",
+    },
+    {
       title: "Fastest flatline win",
       highlight: highlights?.fastestFlatlineWin ?? null,
       formatValue: (v) => `${v} turns`,
       emptyMessage: "No flatline wins yet.",
     },
     {
-      title: "Least credits spent in a win",
-      highlight: highlights?.leastCreditsSpentWin ?? null,
-      formatValue: (v) => `${v} credits`,
-      emptyMessage: "No winning spend data yet.",
-    },
-  ];
-
-  const highlightGroupPerTurn: HighlightDescriptor[] = [
-    {
-      title: "Most clicks per turn",
-      highlight: highlights?.mostClicksPerTurn ?? null,
-      formatValue: (v) => formatPerTurn(v, "click"),
-      emptyMessage: "No click data yet.",
-      renderDetails: renderPerTurnDetails,
+      title: "Most cards rezzed",
+      highlight: highlights?.mostCardsRezzed ?? null,
+      formatValue: (v) => formatCount(v, "card rezzed"),
+      emptyMessage: "No rez data yet.",
     },
     {
-      title: "Fewest clicks per turn",
-      highlight: highlights?.leastClicksPerTurn ?? null,
-      formatValue: (v) => formatPerTurn(v, "click"),
-      emptyMessage: "No click data yet.",
-      renderDetails: renderPerTurnDetails,
+      title: "Fewest cards rezzed (corp win)",
+      highlight: highlights?.fewestCardsRezzedCorpWin ?? null,
+      formatValue: (v) => formatCount(v, "card"),
+      emptyMessage: "No corp win data yet.",
     },
     {
-      title: "Most credits per turn",
-      highlight: highlights?.mostCreditsPerTurn ?? null,
+      title: "Most shuffles",
+      highlight: highlights?.mostShufflesCorp ?? null,
+      formatValue: (v) => formatCount(v, "shuffle"),
+      emptyMessage: "No shuffle data yet.",
+    },
+    {
+      title: "Most cards played",
+      highlight: highlights?.mostCardsPlayedCorp ?? null,
+      formatValue: (v) => formatCount(v, "card"),
+      emptyMessage: "No card play data yet.",
+    },
+    {
+      title: "Most credits/turn",
+      highlight: highlights?.mostCreditsPerTurnCorp ?? null,
       formatValue: (v) => formatPerTurn(v, "credit"),
       emptyMessage: "No credit data yet.",
       renderDetails: renderPerTurnDetails,
     },
     {
-      title: "Fewest credits per turn",
-      highlight: highlights?.leastCreditsPerTurn ?? null,
-      formatValue: (v) => formatPerTurn(v, "credit"),
-      emptyMessage: "No credit data yet.",
+      title: "Most clicks/turn",
+      highlight: highlights?.mostClicksPerTurnCorp ?? null,
+      formatValue: (v) => formatPerTurn(v, "click"),
+      emptyMessage: "No click data yet.",
       renderDetails: renderPerTurnDetails,
-    },
-    {
-      title: "Most fake credits per turn",
-      highlight: highlights?.mostFakeCreditsPerTurn ?? null,
-      formatValue: (v) => formatPerTurn(v, "fake credit"),
-      emptyMessage: "No fake credit data yet.",
-      renderDetails: renderPerTurnDetails,
-    },
-    {
-      title: "Least unique accesses (agenda win)",
-      highlight: highlights?.leastUniqueAccessesAgendaWin ?? null,
-      formatValue: (v) => formatCount(v, "unique access"),
-      emptyMessage: "No agenda win data yet.",
     },
   ];
 
@@ -394,6 +380,14 @@ export default function WrappedStats({
         <SummaryCarousel stats={summaryStats} />
       </Stack>
     </Slide>,
+    profile && (
+      <GameDotsGrid
+        key="game-dots"
+        games={summary.games}
+        username={profile.username}
+        scrollContainerRef={scrollRef}
+      />
+    ),
     profile && rolePieData && (
       <Slide key="roles" gradient="linear-gradient(145deg, #012a4a, #013a63)">
         <Stack gap="lg" align="center">
@@ -506,35 +500,28 @@ export default function WrappedStats({
     ),
     profile && highlights && (
       <Slide
-        key="highlights-1"
+        key="runner-highlights"
         gradient="linear-gradient(120deg, #360033, #0b8793)"
       >
-        <Stack gap="lg">
-          <Title order={2}>Cardboard feats</Title>
-          <HighlightGrid items={highlightGroupPrimary} />
-        </Stack>
+        <div>
+          <Title order={2} mb="lg">
+            Runner highlights
+          </Title>
+          <BentoGrid items={runnerHighlights} />
+        </div>
       </Slide>
     ),
     profile && highlights && (
       <Slide
-        key="highlights-2"
+        key="corp-highlights"
         gradient="linear-gradient(135deg, #0f0c29, #302b63)"
       >
-        <Stack gap="lg">
-          <Title order={2}>Damage & drama</Title>
-          <HighlightGrid items={highlightGroupSecondary} />
-        </Stack>
-      </Slide>
-    ),
-    profile && highlights && (
-      <Slide
-        key="highlights-3"
-        gradient="linear-gradient(120deg, #232526, #414345)"
-      >
-        <Stack gap="lg">
-          <Title order={2}>Tempo plays</Title>
-          <HighlightGrid items={highlightGroupPerTurn} />
-        </Stack>
+        <div>
+          <Title order={2} mb="lg">
+            Corp highlights
+          </Title>
+          <BentoGrid items={corpHighlights} />
+        </div>
       </Slide>
     ),
     profile && (
@@ -855,68 +842,6 @@ function FrequentOpponentCard({
         )}
       </Stack>
     </Paper>
-  );
-}
-
-function GameHighlightCard({
-  title,
-  highlight,
-  formatValue,
-  emptyMessage,
-  renderDetails,
-}: {
-  title: string;
-  highlight: GameHighlight | null;
-  formatValue: (value: number) => string;
-  emptyMessage: string;
-  renderDetails?: (highlight: GameHighlight) => ReactNode;
-}) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>{title}</Text>
-        {highlight ? (
-          <>
-            <Text size="xl" fw={700}>
-              {formatValue(highlight.value)}
-            </Text>
-            {!renderDetails && (
-              <>
-                <Text size="sm" c="dimmed">
-                  {describeOpponentLine(highlight)}
-                </Text>
-                {highlight.completedAt && (
-                  <Text size="xs" c="dimmed">
-                    {formatDate(highlight.completedAt)}
-                  </Text>
-                )}
-              </>
-            )}
-            {renderDetails && renderDetails(highlight)}
-          </>
-        ) : (
-          <Text size="sm">{emptyMessage}</Text>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
-
-type HighlightDescriptor = {
-  title: string;
-  highlight: GameHighlight | null;
-  formatValue: (value: number) => string;
-  emptyMessage: string;
-  renderDetails?: (highlight: GameHighlight) => ReactNode;
-};
-
-function HighlightGrid({ items }: { items: HighlightDescriptor[] }) {
-  return (
-    <SimpleGrid cols={{ base: 1, sm: 2 }}>
-      {items.map((item) => (
-        <GameHighlightCard key={item.title} {...item} />
-      ))}
-    </SimpleGrid>
   );
 }
 

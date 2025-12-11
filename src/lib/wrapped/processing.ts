@@ -487,10 +487,35 @@ export function buildHighlights(
           : null,
       max
     ),
+    mostShufflesRunner: findGameHighlight(
+      games,
+      username,
+      (stats, _game, role) =>
+        role === "runner" && stats.shuffleCount && stats.shuffleCount > 0
+          ? stats.shuffleCount
+          : null,
+      max
+    ),
+    mostShufflesCorp: findGameHighlight(
+      games,
+      username,
+      (stats, _game, role) =>
+        role === "corp" && stats.shuffleCount && stats.shuffleCount > 0
+          ? stats.shuffleCount
+          : null,
+      max
+    ),
     mostClicksPerTurn: findGameHighlight(
       games,
       username,
       (stats, game) => ratio(stats.clicksGained, game.turnCount),
+      max
+    ),
+    mostClicksPerTurnCorp: findGameHighlight(
+      games,
+      username,
+      (stats, game, role) =>
+        role === "corp" ? ratio(stats.clicksGained, game.turnCount) : null,
       max
     ),
     leastClicksPerTurn: findGameHighlight(
@@ -505,6 +530,13 @@ export function buildHighlights(
       (stats, game) => ratio(stats.creditsGained, game.turnCount),
       max
     ),
+    mostCreditsPerTurnCorp: findGameHighlight(
+      games,
+      username,
+      (stats, game, role) =>
+        role === "corp" ? ratio(stats.creditsGained, game.turnCount) : null,
+      max
+    ),
     leastCreditsPerTurn: findGameHighlight(
       games,
       username,
@@ -516,6 +548,24 @@ export function buildHighlights(
       username,
       (stats) =>
         stats.cardsPlayed && stats.cardsPlayed > 0 ? stats.cardsPlayed : null,
+      max
+    ),
+    mostCardsPlayedRunner: findGameHighlight(
+      games,
+      username,
+      (stats, _game, role) =>
+        role === "runner" && stats.cardsPlayed && stats.cardsPlayed > 0
+          ? stats.cardsPlayed
+          : null,
+      max
+    ),
+    mostCardsPlayedCorp: findGameHighlight(
+      games,
+      username,
+      (stats, _game, role) =>
+        role === "corp" && stats.cardsPlayed && stats.cardsPlayed > 0
+          ? stats.cardsPlayed
+          : null,
       max
     ),
     mostCardsRezzed: findGameHighlight(
@@ -640,6 +690,9 @@ export function buildHighlights(
       username,
       (stats, game, role) => {
         if (role !== "runner" || game.winner !== role) return null;
+        // Exclude concedes - we want real wins
+        const reason = normalizeReason(game.reason ?? "");
+        if (isConcedeReason(reason)) return null;
         const runs = stats.runsStarted ?? 0;
         return runs >= 0 ? runs : null;
       },
@@ -652,6 +705,19 @@ export function buildHighlights(
         if (role !== "corp" || game.winner !== role) return null;
         const reason = normalizeReason(game.reason ?? "");
         if (!reason.toLowerCase().includes("flatline")) return null;
+        const turns = game.turnCount;
+        if (typeof turns !== "number" || turns <= 0) return null;
+        return turns;
+      },
+      min
+    ),
+    fastestAgendaWin: findGameHighlight(
+      games,
+      username,
+      (_stats, game, role) => {
+        if (role !== "runner" || game.winner !== role) return null;
+        const reason = normalizeReason(game.reason ?? "");
+        if (!reason.toLowerCase().includes("agenda")) return null;
         const turns = game.turnCount;
         if (typeof turns !== "number" || turns <= 0) return null;
         return turns;
@@ -903,11 +969,13 @@ function buildGameHighlight(
   role: PlayerRole,
   value: number
 ): GameHighlight {
+  const userSnapshot = game[role];
   const opponentRole: PlayerRole = role === "runner" ? "corp" : "runner";
   const opponentSnapshot = game[opponentRole];
   return {
     role,
     value,
+    identity: userSnapshot.identity,
     opponent: opponentSnapshot.username,
     opponentIdentity: opponentSnapshot.identity,
     completedAt: game.completedAt,
