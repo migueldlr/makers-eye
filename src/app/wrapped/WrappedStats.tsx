@@ -12,6 +12,7 @@ import {
   findLongestGame,
   findLongestStreak,
   findMostFrequentOpponent,
+  findTopOpponents,
   getDateRange,
 } from "@/lib/wrapped/processing";
 import type {
@@ -63,6 +64,7 @@ import { shortenId, idToFaction } from "@/lib/util";
 import { type HighlightDescriptor } from "./BentoGrid";
 import HighlightCarousel from "./HighlightCarousel";
 import GameDotsGrid from "./GameDotsGrid";
+import RivalsHexGrid from "./RivalsHexGrid";
 
 // Faction-based gradient backgrounds (using colors from faction SVGs)
 const FACTION_GRADIENTS: Record<string, string> = {
@@ -218,6 +220,34 @@ export default function WrappedStats({
     if (!profile) return null;
     return buildWinLossReasons(summary.games, profile.username);
   }, [profile, summary.games]);
+  const topOpponents = useMemo(() => {
+    if (!profile) return [];
+    return findTopOpponents(summary.games, profile.username, 200);
+  }, [profile, summary.games]);
+  const totalUniqueOpponents = useMemo(() => {
+    if (!profile) return 0;
+    const opponents = new Set<string>();
+    for (const game of summary.games) {
+      const isRunner = game.runner.username === profile.username;
+      const isCorp = game.corp.username === profile.username;
+      if (isRunner && game.corp.username) opponents.add(game.corp.username);
+      if (isCorp && game.runner.username) opponents.add(game.runner.username);
+    }
+    return opponents.size;
+  }, [profile, summary.games]);
+  const frequentRivals = useMemo(() => {
+    // Filter by threshold, then adjust to multiple of 3 for seamless hex grid
+    const minThreshold = 5;
+    const filtered = topOpponents.filter((o) => o.games >= minThreshold);
+    const remainder = filtered.length % 3;
+    if (remainder === 0) return filtered;
+    // Add more opponents to reach multiple of 3
+    const needed = 3 - remainder;
+    const extras = topOpponents
+      .filter((o) => o.games < minThreshold)
+      .slice(0, needed);
+    return [...filtered, ...extras];
+  }, [topOpponents]);
 
   const summaryStats: SummaryStat[] = [
     {
@@ -525,6 +555,20 @@ export default function WrappedStats({
               color: "#f43f5e",
             }))}
           />
+        </Stack>
+      </Slide>
+    ),
+    profile && frequentRivals.length > 0 && (
+      <Slide key="rivals" gradient="linear-gradient(145deg, #1a1a2e, #4a1942)">
+        <Stack gap="md" align="center" style={{ width: "100%" }}>
+          <Title order={2}>
+            You played against {totalUniqueOpponents} different opponents this
+            year
+          </Title>
+          <Title order={4} c="gray.5">
+            (This is only some of them)
+          </Title>
+          <RivalsHexGrid rivals={frequentRivals} />
         </Stack>
       </Slide>
     ),

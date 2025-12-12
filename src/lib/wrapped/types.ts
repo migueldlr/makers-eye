@@ -160,6 +160,15 @@ export interface FrequentOpponent {
   winRate: number;
 }
 
+export interface TopOpponent {
+  username: string;
+  emailHash: string | null;
+  games: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+}
+
 export interface LongestDurationGame {
   minutes: number;
   role: PlayerRole;

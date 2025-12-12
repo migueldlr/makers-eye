@@ -18,6 +18,7 @@ import type {
   RoleRecord,
   RoleSnapshot,
   SideStats,
+  TopOpponent,
   UploadSummary,
   UserProfile,
   WinLossReasons,
@@ -364,6 +365,57 @@ export function findMostFrequentOpponent(
     losses,
     winRate: favorite.total ? favorite.wins / favorite.total : 0,
   };
+}
+
+export function findTopOpponents(
+  games: GameRecord[],
+  username: string,
+  limit = 20
+): TopOpponent[] {
+  const buckets = new Map<
+    string,
+    {
+      emailHash: string | null;
+      wins: number;
+      total: number;
+    }
+  >();
+
+  for (const game of games) {
+    const role = resolveUserRole(game, username);
+    if (!role) continue;
+    const opponentRole: PlayerRole = role === "runner" ? "corp" : "runner";
+    const opponent = game[opponentRole].username;
+    if (!opponent) continue;
+
+    const existing = buckets.get(opponent);
+    const emailHash = game[opponentRole].emailHash;
+
+    const bucket = existing ?? { emailHash: null, wins: 0, total: 0 };
+    bucket.total += 1;
+    if (game.winner === role) {
+      bucket.wins += 1;
+    }
+    // Keep the first non-null emailHash we find
+    if (!bucket.emailHash && emailHash) {
+      bucket.emailHash = emailHash;
+    }
+    buckets.set(opponent, bucket);
+  }
+
+  const sorted = Array.from(buckets.entries())
+    .map(([opponentName, data]) => ({
+      username: opponentName,
+      emailHash: data.emailHash,
+      games: data.total,
+      wins: data.wins,
+      losses: data.total - data.wins,
+      winRate: data.total ? data.wins / data.total : 0,
+    }))
+    .sort((a, b) => b.games - a.games)
+    .slice(0, limit);
+
+  return sorted;
 }
 
 export function findLongestDurationGame(
