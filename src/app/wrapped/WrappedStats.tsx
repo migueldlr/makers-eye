@@ -60,7 +60,8 @@ import {
   type IdentityImageMap,
 } from "@/lib/wrapped/identityImages";
 import { shortenId, idToFaction } from "@/lib/util";
-import BentoGrid, { type HighlightDescriptor } from "./BentoGrid";
+import { type HighlightDescriptor } from "./BentoGrid";
+import HighlightCarousel from "./HighlightCarousel";
 import GameDotsGrid from "./GameDotsGrid";
 
 // Faction-based gradient backgrounds (using colors from faction SVGs)
@@ -253,22 +254,10 @@ export default function WrappedStats({
       emptyMessage: "No damage taken yet.",
     },
     {
-      title: "Most damage taken in a win",
-      highlight: highlights?.mostDamageTakenWin ?? null,
-      formatValue: (v) => `${v} damage`,
-      emptyMessage: "No damage taken wins yet.",
-    },
-    {
       title: "Most tags taken",
       highlight: highlights?.mostTagsTaken ?? null,
       formatValue: (v) => formatCount(v, "tag"),
       emptyMessage: "No tag data yet.",
-    },
-    {
-      title: "Most shuffles",
-      highlight: highlights?.mostShufflesRunner ?? null,
-      formatValue: (v) => formatCount(v, "shuffle"),
-      emptyMessage: "No shuffle data yet.",
     },
     {
       title: "Most cards played",
@@ -281,6 +270,30 @@ export default function WrappedStats({
       highlight: highlights?.fastestAgendaWin ?? null,
       formatValue: (v) => formatCount(v, "turn"),
       emptyMessage: "No agenda wins yet.",
+    },
+    {
+      title: "Most cards drawn",
+      highlight: highlights?.mostCardsDrawnRunner ?? null,
+      formatValue: (v) => formatCount(v, "card"),
+      emptyMessage: "No card draw data yet.",
+    },
+    {
+      title: "Most unique accesses",
+      highlight: highlights?.mostUniqueAccesses ?? null,
+      formatValue: (v) => formatCount(v, "card"),
+      emptyMessage: "No access data yet.",
+    },
+    {
+      title: "Most fake credits",
+      highlight: highlights?.mostFakeCreditsRunner ?? null,
+      formatValue: (v) => `${v}c`,
+      emptyMessage: "No credit data yet.",
+    },
+    {
+      title: "Most excess clicks",
+      highlight: highlights?.mostExcessClicksRunner ?? null,
+      formatValue: (v) => formatCount(v, "click"),
+      emptyMessage: "No excess click data yet.",
     },
   ];
 
@@ -300,7 +313,7 @@ export default function WrappedStats({
     {
       title: "Most cards rezzed",
       highlight: highlights?.mostCardsRezzed ?? null,
-      formatValue: (v) => formatCount(v, "card rezzed"),
+      formatValue: (v) => formatCount(v, "card"),
       emptyMessage: "No rez data yet.",
     },
     {
@@ -334,6 +347,18 @@ export default function WrappedStats({
       formatValue: (v) => formatPerTurn(v, "click"),
       emptyMessage: "No click data yet.",
       renderDetails: renderPerTurnDetails,
+    },
+    {
+      title: "Most cards drawn",
+      highlight: highlights?.mostCardsDrawnCorp ?? null,
+      formatValue: (v) => formatCount(v, "card"),
+      emptyMessage: "No card draw data yet.",
+    },
+    {
+      title: "Most excess clicks",
+      highlight: highlights?.mostExcessClicksCorp ?? null,
+      formatValue: (v) => formatCount(v, "click"),
+      emptyMessage: "No excess click data yet.",
     },
   ];
 
@@ -466,12 +491,12 @@ export default function WrappedStats({
         cardSubtitle="Tap to flip"
         coverContent={
           <img
-            src="/cardback/corp-card-back.png"
+            src="/cardback/corp-back-2.png"
             alt="Corp card back"
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         }
-        coverMask="/cardback/corp-mask.png"
+        coverMask="/cardback/corp-mask-2.png"
         revealTitle={`${shortenId(favoriteCorp.identity)}!`}
         revealSubtitle={`(${favoriteCorp.games} games)`}
       />
@@ -479,27 +504,28 @@ export default function WrappedStats({
     profile && highlights && (
       <Slide
         key="runner-highlights"
-        gradient="linear-gradient(120deg, #360033, #0b8793)"
+        gradient="linear-gradient(120deg, #1a1a2e, #16213e)"
       >
-        <div>
-          <Title order={2} mb="lg">
-            Runner highlights
-          </Title>
-          <BentoGrid items={runnerHighlights} />
-        </div>
-      </Slide>
-    ),
-    profile && highlights && (
-      <Slide
-        key="corp-highlights"
-        gradient="linear-gradient(135deg, #0f0c29, #302b63)"
-      >
-        <div>
-          <Title order={2} mb="lg">
-            Corp highlights
-          </Title>
-          <BentoGrid items={corpHighlights} />
-        </div>
+        <Stack gap="lg" align="center">
+          <Title order={2}>Some game records as runner</Title>
+          <HighlightCarousel
+            items={runnerHighlights.map((h) => ({
+              title: h.title,
+              value: h.highlight ? h.formatValue(h.highlight.value) : "—",
+              highlight: h.highlight,
+              color: "#06b6d4",
+            }))}
+          />
+          <Title order={2}>And game records as corp</Title>
+          <HighlightCarousel
+            items={corpHighlights.map((h) => ({
+              title: h.title,
+              value: h.highlight ? h.formatValue(h.highlight.value) : "—",
+              highlight: h.highlight,
+              color: "#f43f5e",
+            }))}
+          />
+        </Stack>
       </Slide>
     ),
     profile && (
@@ -622,7 +648,7 @@ export default function WrappedStats({
     <div
       ref={scrollRef}
       style={{
-        backgroundColor: "#010104",
+        backgroundColor: "#0a0a14",
         height: "100vh",
         overflowY: "auto",
         overflowX: "hidden",

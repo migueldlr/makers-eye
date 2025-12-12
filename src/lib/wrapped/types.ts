@@ -193,6 +193,8 @@ export interface GameHighlight {
   opponentIdentity: string | null;
   completedAt: Date | null;
   turnCount: number | null;
+  result: "win" | "loss" | "draw";
+  reason: string | null;
 }
 
 export interface Highlights {
@@ -209,12 +211,17 @@ export interface Highlights {
   mostCardsPlayedRunner: GameHighlight | null;
   mostCardsPlayedCorp: GameHighlight | null;
   mostCardsRezzed: GameHighlight | null;
+  mostCardsDrawn: GameHighlight | null;
+  mostCardsDrawnRunner: GameHighlight | null;
+  mostCardsDrawnCorp: GameHighlight | null;
   mostRuns: GameHighlight | null;
   mostRunsPerClick: GameHighlight | null;
+  mostUniqueAccesses: GameHighlight | null;
   mostDamage: GameHighlight | null;
   mostDamageTaken: GameHighlight | null;
   mostDamageTakenWin: GameHighlight | null;
   mostFakeCredits: GameHighlight | null;
+  mostFakeCreditsRunner: GameHighlight | null;
   mostFakeCreditsPerTurn: GameHighlight | null;
   leastUniqueAccessesAgendaWin: GameHighlight | null;
   fewestCardsRezzedCorpWin: GameHighlight | null;
@@ -223,6 +230,8 @@ export interface Highlights {
   fastestFlatlineWin: GameHighlight | null;
   fastestAgendaWin: GameHighlight | null;
   leastCreditsSpentWin: GameHighlight | null;
+  mostExcessClicksRunner: GameHighlight | null;
+  mostExcessClicksCorp: GameHighlight | null;
 }
 
 export interface ReasonSummary {

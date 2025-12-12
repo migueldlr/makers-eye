@@ -583,6 +583,31 @@ export function buildHighlights(
           : null,
       max
     ),
+    mostCardsDrawn: findGameHighlight(
+      games,
+      username,
+      (stats) =>
+        stats.cardsDrawn && stats.cardsDrawn > 0 ? stats.cardsDrawn : null,
+      max
+    ),
+    mostCardsDrawnRunner: findGameHighlight(
+      games,
+      username,
+      (stats, _game, role) =>
+        role === "runner" && stats.cardsDrawn && stats.cardsDrawn > 0
+          ? stats.cardsDrawn
+          : null,
+      max
+    ),
+    mostCardsDrawnCorp: findGameHighlight(
+      games,
+      username,
+      (stats, _game, role) =>
+        role === "corp" && stats.cardsDrawn && stats.cardsDrawn > 0
+          ? stats.cardsDrawn
+          : null,
+      max
+    ),
     mostRuns: findGameHighlight(
       games,
       username,
@@ -601,6 +626,18 @@ export function buildHighlights(
         const clicks = stats.clicksGained ?? 0;
         if (runs <= 0 || clicks <= 0) return null;
         return runs / clicks;
+      },
+      max
+    ),
+    mostUniqueAccesses: findGameHighlight(
+      games,
+      username,
+      (_stats, game, role) => {
+        if (role !== "runner") return null;
+        const uniqueAccesses = game.runnerUniqueAccesses;
+        if (typeof uniqueAccesses !== "number" || uniqueAccesses <= 0)
+          return null;
+        return uniqueAccesses;
       },
       max
     ),
@@ -637,6 +674,18 @@ export function buildHighlights(
       games,
       username,
       (stats) => {
+        const gained = stats.creditsGained ?? 0;
+        const spent = stats.creditsSpent ?? 0;
+        const diff = spent - gained;
+        return diff > 0 ? diff : null;
+      },
+      max
+    ),
+    mostFakeCreditsRunner: findGameHighlight(
+      games,
+      username,
+      (stats, _game, role) => {
+        if (role !== "runner") return null;
         const gained = stats.creditsGained ?? 0;
         const spent = stats.creditsSpent ?? 0;
         const diff = spent - gained;
@@ -743,6 +792,41 @@ export function buildHighlights(
         return spent >= 0 ? spent : null;
       },
       min
+    ),
+    // Excess clicks = clicks gained beyond base allocation
+    // Runner gets 4 clicks per turn, Corp gets 3 clicks per turn
+    // turnCount represents the game turn number (corp goes first)
+    // For runner: if game ends on turn N, runner had N turns (if runner's turn) or N-1 turns (if corp's turn)
+    // We use turnCount as an upper bound for runner turns
+    mostExcessClicksRunner: findGameHighlight(
+      games,
+      username,
+      (stats, game, role) => {
+        if (role !== "runner") return null;
+        const clicks = stats.clicksGained ?? 0;
+        const turns = game.turnCount ?? 0;
+        if (clicks <= 0 || turns <= 0) return null;
+        // Runner gets 4 base clicks per turn
+        const baseClicks = turns * 4;
+        const excess = clicks - baseClicks;
+        return excess > 0 ? excess : null;
+      },
+      max
+    ),
+    mostExcessClicksCorp: findGameHighlight(
+      games,
+      username,
+      (stats, game, role) => {
+        if (role !== "corp") return null;
+        const clicks = stats.clicksGained ?? 0;
+        const turns = game.turnCount ?? 0;
+        if (clicks <= 0 || turns <= 0) return null;
+        // Corp gets 3 base clicks per turn
+        const baseClicks = turns * 3;
+        const excess = clicks - baseClicks;
+        return excess > 0 ? excess : null;
+      },
+      max
     ),
   };
 }
@@ -984,6 +1068,11 @@ function buildGameHighlight(
   const userSnapshot = game[role];
   const opponentRole: PlayerRole = role === "runner" ? "corp" : "runner";
   const opponentSnapshot = game[opponentRole];
+
+  let result: "win" | "loss" | "draw" = "draw";
+  if (game.winner === role) result = "win";
+  else if (game.winner && game.winner !== role) result = "loss";
+
   return {
     role,
     value,
@@ -992,6 +1081,8 @@ function buildGameHighlight(
     opponentIdentity: opponentSnapshot.identity,
     completedAt: game.completedAt,
     turnCount: game.turnCount,
+    result,
+    reason: game.reason,
   };
 }
 
