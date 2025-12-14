@@ -5,26 +5,16 @@ import {
   buildFavoriteIdentity,
   buildHighlights,
   buildUserRoleRecord,
-  buildWinLossReasons,
-  findBusiestDay,
-  findLongestDurationGame,
-  findLongestDrought,
   findLongestGame,
-  findLongestStreak,
-  findMostFrequentOpponent,
   findTopOpponents,
   getDateRange,
 } from "@/lib/wrapped/processing";
 import type {
   AggregateStats,
-  DayActivityStat,
   FrequentOpponent,
   GameHighlight,
   Highlights,
-  LongestDurationGame,
-  LongestDrought,
   LongestGame,
-  LongestStreak,
   ReasonSummary,
   RoleRecord,
   UploadSummary,
@@ -64,7 +54,8 @@ import { shortenId, idToFaction } from "@/lib/util";
 import { type HighlightDescriptor } from "./BentoGrid";
 import HighlightCarousel from "./HighlightCarousel";
 import GameDotsGrid from "./GameDotsGrid";
-import RivalsHexGrid from "./RivalsHexGrid";
+import RivalsParallaxSection from "./RivalsParallaxSection";
+import StreaksSlide from "./StreaksSlide";
 
 // Faction-based gradient backgrounds (using colors from faction SVGs)
 const FACTION_GRADIENTS: Record<string, string> = {
@@ -192,33 +183,9 @@ export default function WrappedStats({
     if (!profile) return null;
     return findLongestGame(summary.games, profile.username);
   }, [profile, summary.games]);
-  const frequentOpponent = useMemo(() => {
-    if (!profile) return null;
-    return findMostFrequentOpponent(summary.games, profile.username);
-  }, [profile, summary.games]);
-  const longestDuration = useMemo(() => {
-    if (!profile) return null;
-    return findLongestDurationGame(summary.games, profile.username);
-  }, [profile, summary.games]);
-  const longestStreak = useMemo(() => {
-    if (!profile) return null;
-    return findLongestStreak(summary.games, profile.username);
-  }, [profile, summary.games]);
-  const longestDrought = useMemo(() => {
-    if (!profile) return null;
-    return findLongestDrought(summary.games, profile.username);
-  }, [profile, summary.games]);
-  const busiestDay = useMemo(() => {
-    if (!profile) return null;
-    return findBusiestDay(summary.games, profile.username);
-  }, [profile, summary.games]);
   const highlights = useMemo<Highlights | null>(() => {
     if (!profile) return null;
     return buildHighlights(summary.games, profile.username);
-  }, [profile, summary.games]);
-  const winLossReasons = useMemo<WinLossReasons | null>(() => {
-    if (!profile) return null;
-    return buildWinLossReasons(summary.games, profile.username);
   }, [profile, summary.games]);
   const topOpponents = useMemo(() => {
     if (!profile) return [];
@@ -265,6 +232,12 @@ export default function WrappedStats({
   ];
 
   const runnerHighlights: HighlightDescriptor[] = [
+    {
+      title: "Longest game",
+      highlight: highlights?.longestGameRunner ?? null,
+      formatValue: (v) => formatCount(v, "turn"),
+      emptyMessage: "No turn count data yet.",
+    },
     {
       title: "Most runs",
       highlight: highlights?.mostRuns ?? null,
@@ -329,6 +302,12 @@ export default function WrappedStats({
 
   const corpHighlights: HighlightDescriptor[] = [
     {
+      title: "Longest game",
+      highlight: highlights?.longestGameCorp ?? null,
+      formatValue: (v) => formatCount(v, "turn"),
+      emptyMessage: "No turn count data yet.",
+    },
+    {
       title: "Most damage dealt",
       highlight: highlights?.mostDamage ?? null,
       formatValue: (v) => `${v} damage`,
@@ -347,7 +326,7 @@ export default function WrappedStats({
       emptyMessage: "No rez data yet.",
     },
     {
-      title: "Fewest cards rezzed (corp win)",
+      title: "Fewest cards rezzed in a win",
       highlight: highlights?.fewestCardsRezzedCorpWin ?? null,
       formatValue: (v) => formatCount(v, "card"),
       emptyMessage: "No corp win data yet.",
@@ -436,11 +415,19 @@ export default function WrappedStats({
     >
       <Stack align="center" gap="lg" style={{ width: "100%" }}>
         <Title order={2} ta="center">
-          You played {totalGames.toLocaleString()} games this year. That's...
+          You played {totalGames.toLocaleString()} games this year.
+          That&apos;s...
         </Title>
         <SummaryCarousel stats={summaryStats} />
       </Stack>
     </Slide>,
+    profile && (
+      <StreaksSlide
+        key="streaks"
+        games={summary.games}
+        username={profile.username}
+      />
+    ),
     profile && (
       <GameDotsGrid
         key="game-dots"
@@ -483,9 +470,7 @@ export default function WrappedStats({
             ({runnerIdentityCount} runners and {corpIdentityCount} corps, to be
             exact)
           </Title>
-          <Title order={2}>
-            But some identities stood out more than others.
-          </Title>
+          <Title order={2}>But of course, you had your favorites.</Title>
         </Stack>
       </Slide>
     ),
@@ -534,10 +519,10 @@ export default function WrappedStats({
     profile && highlights && (
       <Slide
         key="runner-highlights"
-        gradient="linear-gradient(120deg, #1a1a2e, #16213e)"
+        gradient="linear-gradient(120deg, #4a2828, #5e2535)"
       >
         <Stack gap="lg" align="center">
-          <Title order={2}>Some game records as runner</Title>
+          <Title order={2}>Some fun game records as runner.</Title>
           <HighlightCarousel
             items={runnerHighlights.map((h) => ({
               title: h.title,
@@ -546,7 +531,17 @@ export default function WrappedStats({
               color: "#06b6d4",
             }))}
           />
-          <Title order={2}>And game records as corp</Title>
+        </Stack>
+      </Slide>
+    ),
+
+    profile && highlights && (
+      <Slide
+        key="corp-highlights"
+        gradient="linear-gradient(120deg, #28284a, #253560)"
+      >
+        <Stack gap="lg" align="center">
+          <Title order={2}>And corp as well.</Title>
           <HighlightCarousel
             items={corpHighlights.map((h) => ({
               title: h.title,
@@ -559,60 +554,12 @@ export default function WrappedStats({
       </Slide>
     ),
     profile && frequentRivals.length > 0 && (
-      <Slide key="rivals" gradient="linear-gradient(145deg, #1a1a2e, #4a1942)">
-        <Stack gap="md" align="center" style={{ width: "100%" }}>
-          <Title order={2}>
-            You played against {totalUniqueOpponents} different opponents this
-            year
-          </Title>
-          <Title order={4} c="gray.5">
-            (This is only some of them)
-          </Title>
-          <RivalsHexGrid rivals={frequentRivals} />
-        </Stack>
-      </Slide>
-    ),
-    profile && (
-      <Slide
-        key="opponents"
-        gradient="linear-gradient(140deg, #2a0845, #6441a5)"
-      >
-        <Stack gap="lg">
-          <Title order={2}>Rivals & outcomes</Title>
-          <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <FrequentOpponentCard opponent={frequentOpponent} />
-            {winLossReasons && (
-              <ReasonSummaryCard
-                title="Most common win reason"
-                summary={winLossReasons.wins}
-                emptyMessage="No wins recorded yet."
-              />
-            )}
-            {winLossReasons && (
-              <ReasonSummaryCard
-                title="Most common loss reason"
-                summary={winLossReasons.losses}
-                emptyMessage="No losses recorded yet."
-              />
-            )}
-          </SimpleGrid>
-        </Stack>
-      </Slide>
-    ),
-    profile && (
-      <Slide key="tempo" gradient="linear-gradient(150deg, #0b486b, #f56217)">
-        <Stack gap="lg">
-          <Title order={2}>Streaks & pace</Title>
-          <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <LongestStreakCard streak={longestStreak} />
-            <LongestDroughtCard drought={longestDrought} />
-          </SimpleGrid>
-          <SimpleGrid cols={{ base: 1, sm: 2 }}>
-            <BusiestDayCard busiest={busiestDay} />
-            <LongestDurationCard longest={longestDuration} />
-          </SimpleGrid>
-        </Stack>
-      </Slide>
+      <RivalsParallaxSection
+        key="rivals"
+        rivals={frequentRivals}
+        totalUniqueOpponents={totalUniqueOpponents}
+        scrollContainerRef={scrollRef}
+      />
     ),
     <Slide key="cta" gradient="linear-gradient(135deg, #200122, #6f0000)">
       <Stack align="center" gap="md">
@@ -860,120 +807,6 @@ function FrequentOpponentCard({
   );
 }
 
-function LongestStreakCard({ streak }: { streak: LongestStreak | null }) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>Longest streak</Text>
-        {streak ? (
-          <>
-            <Text size="xl" fw={700}>
-              {streak.days} {streak.days === 1 ? "day" : "days"}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {formatRange(streak.start, streak.end)}
-            </Text>
-          </>
-        ) : (
-          <Text size="sm">Not enough games yet.</Text>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
-
-function LongestDroughtCard({ drought }: { drought: LongestDrought | null }) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>Longest drought</Text>
-        {drought ? (
-          <>
-            <Text size="xl" fw={700}>
-              {drought.days} {drought.days === 1 ? "day" : "days"}
-            </Text>
-            <Text size="sm" c="dimmed">
-              Between {formatDate(drought.start)} and {formatDate(drought.end)}
-            </Text>
-          </>
-        ) : (
-          <Text size="sm">No breaks detected yet.</Text>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
-
-function BusiestDayCard({ busiest }: { busiest: DayActivityStat | null }) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>Busiest day</Text>
-        {busiest ? (
-          <>
-            <Text size="xl" fw={700}>
-              {busiest.games} {busiest.games === 1 ? "game" : "games"}
-            </Text>
-            <Text size="sm" c="dimmed">
-              on {formatDate(busiest.date)}
-            </Text>
-          </>
-        ) : (
-          <Text size="sm">No dated games available.</Text>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
-
-function LongestDurationCard({
-  longest,
-}: {
-  longest: LongestDurationGame | null;
-}) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>Longest game (time)</Text>
-        {longest ? (
-          <>
-            <Text size="xl" fw={700}>
-              {formatMinutes(longest.minutes)}
-            </Text>
-            <Text size="sm" c="dimmed">
-              As {longest.role} vs {longest.opponent ?? "Unknown"}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {longest.result === "draw"
-                ? "Result unknown"
-                : `Result: ${longest.result === "win" ? "Win" : "Loss"}`}
-              {longest.completedAt
-                ? ` · ${formatDate(longest.completedAt)}`
-                : ""}
-            </Text>
-          </>
-        ) : (
-          <Text size="sm">No duration data available.</Text>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
-
-function formatRange(start: Date | null, end: Date | null) {
-  if (!start && !end) return "Unknown";
-  const formatter = new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-  if (start && end) {
-    return `${formatter.format(start)} – ${formatter.format(end)}`;
-  }
-  const date = start ?? end;
-  return date ? formatter.format(date) : "Unknown";
-}
-
 function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
 }
@@ -1027,12 +860,6 @@ function renderPerTurnDetails(highlight: GameHighlight) {
       )}
     </Stack>
   );
-}
-
-function formatMinutes(minutes: number) {
-  if (!minutes || minutes <= 0) return "0 min";
-  const rounded = Math.round(minutes);
-  return `${rounded.toLocaleString()} min`;
 }
 
 function SummaryGrid({ stats }: { stats: { label: string; value: string }[] }) {

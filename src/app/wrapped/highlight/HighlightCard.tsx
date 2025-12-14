@@ -48,8 +48,9 @@ export default function HighlightCard({
       ref={cardRef}
       onClick={handleOpen}
       style={{
-        background: "rgba(20, 20, 30, 0.9)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
+        background: "rgba(0, 0, 0, 0.4)",
+        border: "1px solid rgba(255, 255, 255, 0.15)",
+        backdropFilter: "blur(8px)",
         cursor: highlight ? "pointer" : "default",
         minWidth: 160,
         textAlign: "center",

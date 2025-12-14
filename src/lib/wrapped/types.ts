@@ -182,6 +182,18 @@ export interface DayActivityStat {
   games: number;
 }
 
+export interface WeekActivityStat {
+  weekStart: Date;
+  weekEnd: Date;
+  games: number;
+}
+
+export interface MonthActivityStat {
+  monthStart: Date;
+  monthEnd: Date;
+  games: number;
+}
+
 export interface LongestStreak {
   days: number;
   start: Date;
@@ -241,6 +253,8 @@ export interface Highlights {
   leastCreditsSpentWin: GameHighlight | null;
   mostExcessClicksRunner: GameHighlight | null;
   mostExcessClicksCorp: GameHighlight | null;
+  longestGameRunner: GameHighlight | null;
+  longestGameCorp: GameHighlight | null;
 }
 
 export interface ReasonSummary {

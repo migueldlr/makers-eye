@@ -1,3 +1,14 @@
+import {
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfDay,
+  differenceInCalendarDays,
+  addDays,
+  format as formatDate,
+  parse,
+} from "date-fns";
 import type {
   AggregateStats,
   DayActivityStat,
@@ -10,6 +21,7 @@ import type {
   LongestDrought,
   LongestGame,
   LongestStreak,
+  MonthActivityStat,
   PlayerRole,
   RawGameRecord,
   RawRoleSnapshot,
@@ -21,6 +33,7 @@ import type {
   TopOpponent,
   UploadSummary,
   UserProfile,
+  WeekActivityStat,
   WinLossReasons,
 } from "./types";
 
@@ -119,7 +132,7 @@ function computeAggregates(
     filtered
       .map((game) => game.completedAt)
       .filter((date): date is Date => !!date)
-      .map((date) => truncateDateISO(date))
+      .map((date) => truncateDateKey(date))
   );
 
   const totalDays = days.size;
@@ -318,6 +331,37 @@ export function findLongestGame(
   };
 }
 
+export function findLongestGameByRole(
+  games: GameRecord[],
+  username: string,
+  role: PlayerRole
+): LongestGame | null {
+  const relevant = games
+    .filter(
+      (game) =>
+        typeof game.turnCount === "number" &&
+        resolveUserRole(game, username) === role
+    )
+    .sort((a, b) => (b.turnCount ?? 0) - (a.turnCount ?? 0));
+  if (!relevant.length) return null;
+  const game = relevant[0];
+  const opponentRole: PlayerRole = role === "runner" ? "corp" : "runner";
+  const opponent = game[opponentRole].username ?? null;
+  const opponentIdentity = game[opponentRole].identity ?? null;
+  const turnCount = game.turnCount ?? 0;
+  let result: "win" | "loss" | "draw" = "draw";
+  if (game.winner === role) result = "win";
+  else if (game.winner && game.winner !== role) result = "loss";
+  return {
+    turnCount,
+    role,
+    opponent,
+    opponentIdentity,
+    completedAt: game.completedAt,
+    result,
+  };
+}
+
 export function findMostFrequentOpponent(
   games: GameRecord[],
   username: string
@@ -462,7 +506,7 @@ export function findLongestStreak(
   for (let i = 1; i < days.length; i++) {
     const prev = days[i - 1];
     const current = days[i];
-    const diff = differenceInDays(prev, current);
+    const diff = differenceInCalendarDays(current, prev);
     if (diff === 1) {
       currentLen += 1;
     } else {
@@ -497,7 +541,7 @@ export function findLongestDrought(
   for (let i = 1; i < days.length; i++) {
     const prev = days[i - 1];
     const current = days[i];
-    const diff = differenceInDays(prev, current) - 1;
+    const diff = differenceInCalendarDays(current, prev) - 1;
     if (diff > bestGap) {
       bestGap = diff;
       bestStart = prev;
@@ -506,7 +550,12 @@ export function findLongestDrought(
   }
 
   if (bestGap <= 0) return null;
-  return { days: bestGap, start: bestStart, end: bestEnd };
+  // Return actual drought dates (days without games), not game boundary dates
+  return {
+    days: bestGap,
+    start: addDays(bestStart, 1), // First day without a game
+    end: addDays(bestEnd, -1), // Last day without a game
+  };
 }
 
 export function findBusiestDay(
@@ -518,10 +567,88 @@ export function findBusiestDay(
   let best: { date: Date; games: number } | null = null;
   for (const [key, gamesCount] of Array.from(counts.entries())) {
     if (!best || gamesCount > best.games) {
-      best = { date: new Date(key), games: gamesCount };
+      best = { date: parse(key, "yyyy-MM-dd", new Date()), games: gamesCount };
     }
   }
   return best;
+}
+
+export function findBusiestWeek(
+  games: GameRecord[],
+  username: string
+): WeekActivityStat | null {
+  const counts = new Map<string, { weekStart: Date; games: number }>();
+
+  for (const game of games) {
+    if (!game.completedAt) continue;
+    if (!resolveUserRole(game, username)) continue;
+
+    const date = new Date(game.completedAt);
+    const weekStartDate = startOfWeek(date, { weekStartsOn: 0 });
+    const key = formatDate(weekStartDate, "yyyy-MM-dd");
+    const existing = counts.get(key);
+    if (existing) {
+      existing.games += 1;
+    } else {
+      counts.set(key, { weekStart: weekStartDate, games: 1 });
+    }
+  }
+
+  if (!counts.size) return null;
+
+  let best: { weekStart: Date; games: number } | null = null;
+  for (const entry of Array.from(counts.values())) {
+    if (!best || entry.games > best.games) {
+      best = { weekStart: entry.weekStart, games: entry.games };
+    }
+  }
+
+  if (!best) return null;
+
+  return {
+    weekStart: best.weekStart,
+    weekEnd: endOfWeek(best.weekStart, { weekStartsOn: 0 }),
+    games: best.games,
+  };
+}
+
+export function findBusiestMonth(
+  games: GameRecord[],
+  username: string
+): MonthActivityStat | null {
+  const counts = new Map<string, { monthStart: Date; games: number }>();
+
+  for (const game of games) {
+    if (!game.completedAt) continue;
+    if (!resolveUserRole(game, username)) continue;
+
+    const date = new Date(game.completedAt);
+    const monthStartDate = startOfMonth(date);
+    const key = formatDate(monthStartDate, "yyyy-MM");
+    const existing = counts.get(key);
+    if (existing) {
+      existing.games += 1;
+    } else {
+      counts.set(key, { monthStart: monthStartDate, games: 1 });
+    }
+  }
+
+  if (!counts.size) return null;
+
+  let best: { monthStart: Date; games: number } | null = null;
+  for (const entry of Array.from(counts.values())) {
+    if (!best || entry.games > best.games) {
+      best = { monthStart: entry.monthStart, games: entry.games };
+    }
+  }
+
+  if (!best) return null;
+
+  return {
+    monthStart: best.monthStart,
+    monthEnd: endOfMonth(best.monthStart),
+    games: best.games,
+  };
 }
 
 export function buildHighlights(
@@ -880,6 +1007,28 @@ export function buildHighlights(
       },
       max
     ),
+    longestGameRunner: findGameHighlight(
+      games,
+      username,
+      (_stats, game, role) => {
+        if (role !== "runner") return null;
+        const turns = game.turnCount;
+        if (typeof turns !== "number" || turns <= 0) return null;
+        return turns;
+      },
+      max
+    ),
+    longestGameCorp: findGameHighlight(
+      games,
+      username,
+      (_stats, game, role) => {
+        if (role !== "corp") return null;
+        const turns = game.turnCount;
+        if (typeof turns !== "number" || turns <= 0) return null;
+        return turns;
+      },
+      max
+    ),
   };
 }
 
@@ -917,10 +1066,10 @@ function getPlayerGameDays(games: GameRecord[], username: string): Date[] {
   for (const game of games) {
     if (!game.completedAt) continue;
     if (!resolveUserRole(game, username)) continue;
-    dates.add(truncateDateISO(game.completedAt));
+    dates.add(truncateDateKey(game.completedAt));
   }
   return Array.from(dates)
-    .map((value) => new Date(value))
+    .map((value) => parse(value, "yyyy-MM-dd", new Date()))
     .sort((a, b) => a.getTime() - b.getTime());
 }
 
@@ -929,25 +1078,14 @@ function buildDailyCounts(games: GameRecord[], username: string) {
   for (const game of games) {
     if (!game.completedAt) continue;
     if (!resolveUserRole(game, username)) continue;
-    const key = truncateDateISO(game.completedAt);
+    const key = truncateDateKey(game.completedAt);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   return counts;
 }
 
-function truncateDateISO(date: Date) {
-  const copy = new Date(date);
-  copy.setHours(0, 0, 0, 0);
-  return copy.toISOString();
-}
-
-function differenceInDays(a: Date, b: Date) {
-  const msPerDay = 1000 * 60 * 60 * 24;
-  const start = new Date(a);
-  const end = new Date(b);
-  start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
-  return Math.round((end.getTime() - start.getTime()) / msPerDay);
+function truncateDateKey(date: Date) {
+  return formatDate(startOfDay(date), "yyyy-MM-dd");
 }
 
 function normalizeGame(rawGame: RawGameRecord): GameRecord {

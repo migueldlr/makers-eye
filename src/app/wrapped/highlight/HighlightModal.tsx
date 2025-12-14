@@ -71,7 +71,7 @@ export default function HighlightModal({
             style={{
               position: "fixed",
               inset: 0,
-              background: "rgba(0, 0, 0, 0.7)",
+              // background: "rgba(0, 0, 0, 0.4)",
               backdropFilter: "blur(8px)",
               zIndex: 1000,
             }}
@@ -103,8 +103,8 @@ export default function HighlightModal({
             }}
             style={{
               position: "fixed",
-              background: "rgba(20, 20, 30, 0.9)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              background: highlight.role === "runner" ? "#34161d" : "#161d35",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
               borderRadius: 16,
               overflow: "hidden",
               zIndex: 1001,
