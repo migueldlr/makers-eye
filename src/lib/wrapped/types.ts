@@ -268,3 +268,9 @@ export interface WinLossReasons {
   wins: ReasonSummary | null;
   losses: ReasonSummary | null;
 }
+
+export interface ReasonBreakdownItem {
+  name: string;
+  value: number;
+  color: string;
+}

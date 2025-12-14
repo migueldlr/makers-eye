@@ -26,6 +26,7 @@ import type {
   RawGameRecord,
   RawRoleSnapshot,
   RawSideStats,
+  ReasonBreakdownItem,
   ReasonSummary,
   RoleRecord,
   RoleSnapshot,
@@ -299,6 +300,51 @@ export function buildFavoriteIdentity(
     losses,
     winRate: favorite.total ? favorite.wins / favorite.total : 0,
   };
+}
+
+export function buildTopIdentities(
+  games: GameRecord[],
+  username: string,
+  role: PlayerRole,
+  limit: number = 3
+): IdentityFavorite[] {
+  const acc = new Map<
+    string,
+    {
+      wins: number;
+      total: number;
+    }
+  >();
+
+  for (const game of games) {
+    const playerRole = resolveUserRole(game, username);
+    if (playerRole !== role) continue;
+    if (game.winner === null) continue;
+    const identity = game[role].identity ?? "Unknown Identity";
+    const bucket = acc.get(identity) ?? { wins: 0, total: 0 };
+    bucket.total += 1;
+    if (game.winner === role) {
+      bucket.wins += 1;
+    }
+    acc.set(identity, bucket);
+  }
+
+  // Sort by total games descending, then by wins descending
+  const sorted = Array.from(acc.entries())
+    .sort((a, b) => {
+      if (b[1].total !== a[1].total) return b[1].total - a[1].total;
+      return b[1].wins - a[1].wins;
+    })
+    .slice(0, limit);
+
+  return sorted.map(([identity, data]) => ({
+    role,
+    identity,
+    games: data.total,
+    wins: data.wins,
+    losses: data.total - data.wins,
+    winRate: data.total ? data.wins / data.total : 0,
+  }));
 }
 
 export function findLongestGame(
@@ -1304,4 +1350,59 @@ function pickReasonSummary(
     total,
     percent: total ? best.count / total : 0,
   };
+}
+
+// Color palette for reason breakdown pie charts
+const REASON_COLORS: Record<string, string> = {
+  Agenda: "#3b82f6", // blue
+  Flatline: "#ef4444", // red
+  Deck: "#f97316", // orange
+  Concede: "#6b7280", // gray
+  Conceded: "#6b7280", // gray
+  Timeout: "#eab308", // yellow
+};
+
+const FALLBACK_COLORS = [
+  "#8b5cf6", // purple
+  "#14b8a6", // teal
+  "#ec4899", // pink
+  "#22c55e", // green
+  "#06b6d4", // cyan
+  "#f59e0b", // amber
+];
+
+export function buildReasonBreakdown(
+  games: GameRecord[],
+  username: string,
+  outcome: "win" | "loss"
+): ReasonBreakdownItem[] {
+  const reasonMap = new Map<string, number>();
+
+  for (const game of games) {
+    const role = resolveUserRole(game, username);
+    if (!role) continue;
+    if (!game.reason) continue;
+
+    const isWin = game.winner === role;
+    const isLoss = game.winner !== null && game.winner !== role;
+
+    if (outcome === "win" && !isWin) continue;
+    if (outcome === "loss" && !isLoss) continue;
+
+    const normalized = normalizeReason(game.reason);
+    reasonMap.set(normalized, (reasonMap.get(normalized) ?? 0) + 1);
+  }
+
+  // Sort by count descending
+  const sorted = Array.from(reasonMap.entries()).sort((a, b) => b[1] - a[1]);
+
+  let fallbackIndex = 0;
+  return sorted.map(([reason, count]) => {
+    let color = REASON_COLORS[reason];
+    if (!color) {
+      color = FALLBACK_COLORS[fallbackIndex % FALLBACK_COLORS.length];
+      fallbackIndex++;
+    }
+    return { name: reason, value: count, color };
+  });
 }

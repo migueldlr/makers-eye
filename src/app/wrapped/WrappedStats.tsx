@@ -4,6 +4,7 @@ import { BackButton } from "@/components/common/BackButton";
 import {
   buildFavoriteIdentity,
   buildHighlights,
+  buildTopIdentities,
   buildUserRoleRecord,
   findLongestGame,
   findTopOpponents,
@@ -24,6 +25,7 @@ import {
   Alert,
   Badge,
   Button,
+  Flex,
   Group,
   Paper,
   SimpleGrid,
@@ -31,7 +33,6 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { PieChart } from "@mantine/charts";
 import {
   useMemo,
   useEffect,
@@ -50,7 +51,7 @@ import {
   getIdentityImageUrl,
   type IdentityImageMap,
 } from "@/lib/wrapped/identityImages";
-import { shortenId, idToFaction } from "@/lib/util";
+import { shortenId, idToFaction, factionToColor } from "@/lib/util";
 import { type HighlightDescriptor } from "./BentoGrid";
 import HighlightCarousel from "./HighlightCarousel";
 import GameDotsGrid from "./GameDotsGrid";
@@ -179,6 +180,14 @@ export default function WrappedStats({
     if (!profile) return null;
     return buildFavoriteIdentity(summary.games, profile.username, "corp");
   }, [profile, summary.games]);
+  const topRunners = useMemo(() => {
+    if (!profile) return [];
+    return buildTopIdentities(summary.games, profile.username, "runner", 3);
+  }, [profile, summary.games]);
+  const topCorps = useMemo(() => {
+    if (!profile) return [];
+    return buildTopIdentities(summary.games, profile.username, "corp", 3);
+  }, [profile, summary.games]);
   const longestGame = useMemo(() => {
     if (!profile) return null;
     return findLongestGame(summary.games, profile.username);
@@ -215,6 +224,27 @@ export default function WrappedStats({
       .slice(0, needed);
     return [...filtered, ...extras];
   }, [topOpponents]);
+
+  // Build gradient for summary slide based on top runner/corp factions
+  const summaryGradient = useMemo(() => {
+    const topRunner = topRunners[0];
+    const topCorp = topCorps[0];
+
+    const runnerFaction = topRunner
+      ? idToFaction(shortenId(topRunner.identity))
+      : null;
+    const corpFaction = topCorp
+      ? idToFaction(shortenId(topCorp.identity))
+      : null;
+
+    const runnerColor = runnerFaction
+      ? factionToColor(runnerFaction)
+      : "#1a1a3a";
+    const corpColor = corpFaction ? factionToColor(corpFaction) : "#0a0a14";
+
+    // Darken colors by mixing with black
+    return `linear-gradient(135deg, color-mix(in oklab, ${runnerColor}, black 50%), color-mix(in oklab, ${corpColor}, black 50%))`;
+  }, [topRunners, topCorps]);
 
   const summaryStats: SummaryStat[] = [
     {
@@ -402,10 +432,10 @@ export default function WrappedStats({
         )}
       </Stack>
     </Slide>,
-    <Slide>
+    <Slide key="intro">
       <Stack align="center" gap="sm">
         <Text size="xl" ta="center">
-          Let's get started, shall we?
+          Let&apos;s get started, shall we?
         </Text>
       </Stack>
     </Slide>,
@@ -560,6 +590,74 @@ export default function WrappedStats({
         totalUniqueOpponents={totalUniqueOpponents}
         scrollContainerRef={scrollRef}
       />
+    ),
+    profile && (
+      <Slide key="summary" gradient={summaryGradient}>
+        <Stack align="center" gap="lg" w="fit-content" mx="auto">
+          <Title order={1}>{profile.username}'s 2025</Title>
+          <Stack gap="xs" align="center">
+            {/* Top 3 Runners */}
+            <SimpleGrid cols={topRunners.length} spacing="sm">
+              {topRunners.map((runner) => (
+                <img
+                  key={runner.identity}
+                  src={getCardImageForIdentity(runner.identity)}
+                  alt={shortenId(runner.identity)}
+                  style={{
+                    width: 120,
+                    borderRadius: 6,
+                  }}
+                />
+              ))}
+            </SimpleGrid>
+            {/* Top 3 Corps */}
+            <SimpleGrid cols={topCorps.length} spacing="sm">
+              {topCorps.map((corp) => (
+                <img
+                  key={corp.identity}
+                  src={getCardImageForIdentity(corp.identity)}
+                  alt={shortenId(corp.identity)}
+                  style={{
+                    width: 120,
+                    borderRadius: 6,
+                  }}
+                />
+              ))}
+            </SimpleGrid>
+          </Stack>
+          <Flex gap="md" justify="space-between" w="100%">
+            <Stack gap={1} align="left">
+              <Title order={1} c="white">
+                {totalGames.toLocaleString()}
+              </Title>{" "}
+              <Text size="md" c="gray.5">
+                games played
+              </Text>
+            </Stack>
+            <Stack gap={1} align="right">
+              <Title order={1} c="white" ta="right">
+                {aggregates.totalMinutes.toLocaleString()}
+              </Title>
+              <Text size="md" c="gray.5">
+                minutes played
+              </Text>
+            </Stack>
+          </Flex>
+          <Stack align="center" gap="xs">
+            {gravatarUrl && (
+              <img
+                src={gravatarUrl}
+                alt={`${profile.username}'s avatar`}
+                style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: "50%",
+                }}
+              />
+            )}
+          </Stack>
+        </Stack>
+      </Slide>
     ),
     <Slide key="cta" gradient="linear-gradient(135deg, #200122, #6f0000)">
       <Stack align="center" gap="md">
