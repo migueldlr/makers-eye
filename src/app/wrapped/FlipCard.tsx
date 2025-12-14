@@ -73,14 +73,12 @@ export default function FlipCard({
   // Layer 3: radial vignette (moves on both X and Y)
   const shineBackgroundPosition = useTransform(
     [backgroundX, backgroundY],
-    ([x, y]) =>
-      `0% ${y}%, ${x}% ${y}%, ${x}% ${y}%`
+    ([x, y]) => `0% ${y}%, ${x}% ${y}%, ${x}% ${y}%`
   );
   // Inverted position for the second shine layer
   const shineAfterBackgroundPosition = useTransform(
     [backgroundX, backgroundY],
-    ([x, y]) =>
-      `0% ${y}%, ${100 - Number(x)}% ${100 - Number(y)}%, ${x}% ${y}%`
+    ([x, y]) => `0% ${y}%, ${100 - Number(x)}% ${100 - Number(y)}%, ${x}% ${y}%`
   );
   // CSS custom property strings for pointer position (used by radial gradients in CSS)
   const pointerX = useTransform(glareX, (v) => `${v}%`);
@@ -162,7 +160,7 @@ export default function FlipCard({
             style={{
               position: "absolute",
               inset: 0,
-              borderRadius: 18,
+              borderRadius: "4.19%/3%",
               overflow: "hidden",
               background: "#2f2f2f",
               color: "white",
@@ -224,7 +222,7 @@ export default function FlipCard({
             style={{
               position: "absolute",
               inset: 0,
-              borderRadius: 18,
+              borderRadius: "4.19%/3%",
               backfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
               boxShadow: "0 15px 40px rgba(5, 3, 20, 0.5)",

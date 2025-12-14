@@ -1,6 +1,5 @@
 "use client";
 
-import { BackButton } from "@/components/common/BackButton";
 import {
   buildFavoriteIdentity,
   buildHighlights,
@@ -24,9 +23,7 @@ import type {
 import {
   Alert,
   Badge,
-  Button,
   Flex,
-  Group,
   Paper,
   SimpleGrid,
   Stack,
@@ -41,7 +38,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { FlickerTextConfig } from "./FlickerText";
 import Slide from "./Slide";
 import SummaryCarousel, { type SummaryStat } from "./SummaryCarousel";
 import FlipCardSlide from "./FlipCardSlide";
@@ -57,6 +53,9 @@ import HighlightCarousel from "./HighlightCarousel";
 import GameDotsGrid from "./GameDotsGrid";
 import RivalsParallaxSection from "./RivalsParallaxSection";
 import StreaksSlide from "./StreaksSlide";
+import EndSlide from "./EndSlide";
+import CreditsSlide from "./CreditsSlide";
+import HeroSlide from "./HeroSlide";
 
 // Faction-based gradient backgrounds (using colors from faction SVGs)
 const FACTION_GRADIENTS: Record<string, string> = {
@@ -87,7 +86,6 @@ export default function WrappedStats({
 }: WrappedStatsProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const profile = summary.profile;
-  const baseFont = FlickerTextConfig.baseFont;
 
   // Fetch identity card images from NetrunnerDB
   const [identityImageMap, setIdentityImageMap] = useState<IdentityImageMap>(
@@ -406,32 +404,12 @@ export default function WrappedStats({
     : null;
 
   const slides: ReactNode[] = [
-    <Slide key="hero" gradient="radial-gradient(circle, #0c0b1d, #02010a)">
-      <Stack align="center" gap="sm">
-        <Title
-          order={1}
-          ta="center"
-          size={64}
-          style={{ fontFamily: baseFont, lineHeight: 1.05 }}
-        >
-          Hey, {profile ? profile.username : "Welcome back"}.
-        </Title>
-        <Text size="xl" ta="center">
-          Welcome to your Jnet Wrapped 2025.
-        </Text>
-        {gravatarUrl && (
-          <img
-            src={gravatarUrl}
-            alt={`${profile?.username}'s avatar`}
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: "50%",
-            }}
-          />
-        )}
-      </Stack>
-    </Slide>,
+    <HeroSlide
+      key="hero"
+      username={profile?.username ?? null}
+      gravatarUrl={gravatarUrl}
+      onReset={onReset}
+    />,
     <Slide key="intro">
       <Stack align="center" gap="sm">
         <Text size="xl" ta="center">
@@ -604,8 +582,8 @@ export default function WrappedStats({
                   src={getCardImageForIdentity(runner.identity)}
                   alt={shortenId(runner.identity)}
                   style={{
-                    width: 120,
-                    borderRadius: 6,
+                    width: 150,
+                    borderRadius: "4.19%/3%",
                   }}
                 />
               ))}
@@ -618,8 +596,8 @@ export default function WrappedStats({
                   src={getCardImageForIdentity(corp.identity)}
                   alt={shortenId(corp.identity)}
                   style={{
-                    width: 120,
-                    borderRadius: 6,
+                    width: 150,
+                    borderRadius: "4.19%/3%",
                   }}
                 />
               ))}
@@ -659,26 +637,8 @@ export default function WrappedStats({
         </Stack>
       </Slide>
     ),
-    <Slide key="cta" gradient="linear-gradient(135deg, #200122, #6f0000)">
-      <Stack align="center" gap="md">
-        <Title order={2} ta="center">
-          Ready for another run?
-        </Title>
-        <Text ta="center" size="lg">
-          Upload another log or head back to the dashboard for live games.
-        </Text>
-        <Group justify="center">
-          <Button
-            variant="gradient"
-            gradient={{ from: "pink", to: "orange" }}
-            onClick={onReset}
-          >
-            Upload another JSON
-          </Button>
-          <BackButton />
-        </Group>
-      </Stack>
-    </Slide>,
+    <CreditsSlide key="credits" />,
+    <EndSlide key="cta" onReset={onReset} />,
   ].filter(Boolean) as ReactNode[];
 
   const scrollByStep = useCallback(

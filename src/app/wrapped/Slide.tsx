@@ -28,6 +28,7 @@ export default function Slide({
     return (
       <section
         style={{
+          position: "relative",
           minHeight: "100vh",
           padding: "5rem 1rem",
           display: "flex",
