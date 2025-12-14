@@ -3,7 +3,19 @@
 import { BackButton } from "@/components/common/BackButton";
 import { summarizeUpload } from "@/lib/wrapped/processing";
 import type { UploadSummary } from "@/lib/wrapped/types";
-import { Alert, Container, FileInput, Stack, Title } from "@mantine/core";
+import {
+  Alert,
+  Box,
+  Container,
+  FileInput,
+  LoadingOverlay,
+  Stack,
+  Title,
+  Text,
+  Anchor,
+  List,
+  ListItem,
+} from "@mantine/core";
 import { useEffect, useState } from "react";
 import WrappedStats from "./WrappedStats";
 
@@ -11,6 +23,50 @@ const WRAPPED_CACHE_DB = "wrappedUploadCache";
 const WRAPPED_CACHE_VERSION = 1;
 const WRAPPED_CACHE_STORE = "uploads";
 const WRAPPED_CACHE_KEY = "latestUpload";
+
+/**
+ * Validates that the parsed JSON has the expected shape for jnet game history.
+ * Returns an error message if invalid, or null if valid.
+ */
+function validateGameHistoryJson(data: unknown): string | null {
+  if (!Array.isArray(data)) {
+    return "Invalid format: Expected an array of game records.";
+  }
+
+  if (data.length === 0) {
+    return "No game records found in the uploaded file.";
+  }
+
+  // Check the first few records for expected structure
+  const samplesToCheck = Math.min(data.length, 5);
+  for (let i = 0; i < samplesToCheck; i++) {
+    const record = data[i];
+    if (typeof record !== "object" || record === null) {
+      return `Invalid format: Record ${i + 1} is not an object.`;
+    }
+
+    // Check for at least some expected jnet fields
+    const hasRunner = "runner" in record;
+    const hasCorp = "corp" in record;
+    const hasWinner = "winner" in record;
+    const hasEndDate = "end-date" in record;
+    const hasStartDate = "start-date" in record;
+
+    if (!hasRunner && !hasCorp) {
+      return `Invalid format: Record ${
+        i + 1
+      } is missing 'runner' and 'corp' fields. This doesn't look like a jnet game history export.`;
+    }
+
+    if (!hasWinner && !hasEndDate && !hasStartDate) {
+      return `Invalid format: Record ${
+        i + 1
+      } is missing expected game fields (winner, end-date, start-date). This doesn't look like a jnet game history export.`;
+    }
+  }
+
+  return null;
+}
 
 type CachedState = {
   summary: UploadSummary;
@@ -136,6 +192,7 @@ export default function WrappedUploader() {
   } | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [cacheWarning, setCacheWarning] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -195,8 +252,28 @@ export default function WrappedUploader() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const content = await uploaded.text();
+
+      // Validate the JSON structure before processing
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(content);
+      } catch {
+        setError("Invalid JSON: The file could not be parsed.");
+        setLoading(false);
+        return;
+      }
+
+      const validationError = validateGameHistoryJson(parsed);
+      if (validationError) {
+        setError(validationError);
+        setLoading(false);
+        return;
+      }
+
       processContent(content, uploaded.name ?? null);
       if (typeof window !== "undefined") {
         try {
@@ -220,6 +297,8 @@ export default function WrappedUploader() {
           ? err.message
           : "Please upload a valid JSON export.";
       setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -248,37 +327,69 @@ export default function WrappedUploader() {
   }
 
   return (
-    <UploadScreen file={file} error={error} onFileChange={handleFileChange} />
+    <UploadScreen
+      file={file}
+      error={error}
+      loading={loading}
+      onFileChange={handleFileChange}
+    />
   );
 }
 
 interface UploadScreenProps {
   file: File | null;
   error: string | null;
+  loading: boolean;
   onFileChange: (file: File | null) => void;
 }
 
-function UploadScreen({ file, error, onFileChange }: UploadScreenProps) {
+function UploadScreen({
+  file,
+  error,
+  loading,
+  onFileChange,
+}: UploadScreenProps) {
   return (
     <Container pt="xl" pb="4xl">
       <Stack gap="lg">
-        <Stack gap="xs">
-          <Title order={1}>JNET Wrapped</Title>
-        </Stack>
+        <Title order={1}>JNET Wrapped</Title>
+        <List type="ordered" size="xl">
+          <ListItem>
+            Follow instructions from Lucy's{" "}
+            <Anchor
+              href="https://jnet-stats.nro.run/"
+              target="_blank"
+              size="xl"
+            >
+              JNet Stats Lab
+            </Anchor>{" "}
+            to get your game_history.json
+          </ListItem>
+          <ListItem>Upload your game_history.json below:</ListItem>
+        </List>
 
         <Stack gap="md">
-          <FileInput
-            variant="filled"
-            value={file}
-            onChange={onFileChange}
-            accept="application/json,.json"
-            placeholder="Click to upload a JSON file"
-            size="xl"
-            clearable
-          />
+          <Box pos="relative">
+            <LoadingOverlay visible={loading} />
+            <FileInput
+              value={file}
+              onChange={onFileChange}
+              accept="application/json,.json"
+              placeholder="Click to upload"
+              size="xl"
+              clearable
+              disabled={loading}
+            />
+          </Box>
 
           {error && <Alert color="red">{error}</Alert>}
         </Stack>
+
+        <Text size="lg" c="gray.5">
+          Note: Your game_history.json is stored in your browser's local storage
+          for convenience. It is not sent to any servers and can be cleared
+          after upload.
+        </Text>
 
         <BackButton />
       </Stack>
