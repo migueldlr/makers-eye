@@ -23,7 +23,7 @@ const wrappedTheme = createTheme({
 
 export default function WrappedLayout({ children }: { children: ReactNode }) {
   return (
-    <MantineProvider inherit theme={wrappedTheme}>
+    <MantineProvider theme={wrappedTheme}>
       <div className={chakraPetch.className}>{children}</div>
     </MantineProvider>
   );

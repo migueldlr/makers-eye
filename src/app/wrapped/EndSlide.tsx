@@ -13,7 +13,7 @@ export default function EndSlide({ onReset }: EndSlideProps) {
     <Slide gradient="linear-gradient(135deg,rgb(11, 10, 11),rgb(37, 33, 33))">
       <Stack align="center" gap="md">
         <Title order={1} ta="center">
-          That's all for now, see you next year!
+          That&apos;s all for now, see you next year!
         </Title>
         <Group justify="center">
           <Button

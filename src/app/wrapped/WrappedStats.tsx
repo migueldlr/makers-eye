@@ -10,19 +10,12 @@ import {
   getDateRange,
 } from "@/lib/wrapped/processing";
 import type {
-  AggregateStats,
-  FrequentOpponent,
   GameHighlight,
   Highlights,
-  LongestGame,
-  ReasonSummary,
-  RoleRecord,
   UploadSummary,
-  WinLossReasons,
 } from "@/lib/wrapped/types";
 import {
   Alert,
-  Badge,
   Flex,
   Paper,
   SimpleGrid,
@@ -79,8 +72,6 @@ interface WrappedStatsProps {
 
 export default function WrappedStats({
   summary,
-  fileName,
-  filterRange,
   cacheWarning,
   onReset,
 }: WrappedStatsProps) {
@@ -125,21 +116,6 @@ export default function WrappedStats({
     },
     [identityImageMap, defaultCardImage]
   );
-  const runnerGames = runnerRecord?.total ?? 0;
-  const corpGames = corpRecord?.total ?? 0;
-  const preferredRoleLabel =
-    runnerGames === corpGames
-      ? "both sides equally"
-      : runnerGames > corpGames
-      ? "runner"
-      : "corp";
-  const rolePieData = useMemo(() => {
-    if (runnerGames === 0 && corpGames === 0) return null;
-    return [
-      { name: "Runner", value: runnerGames, color: "red" },
-      { name: "Corp", value: corpGames, color: "blue" },
-    ];
-  }, [runnerGames, corpGames]);
   const { totalIdentities, runnerIdentityCount, corpIdentityCount } =
     useMemo(() => {
       if (!profile)
@@ -572,7 +548,7 @@ export default function WrappedStats({
     profile && (
       <Slide key="summary" gradient={summaryGradient}>
         <Stack align="center" gap="lg" w="fit-content" mx="auto">
-          <Title order={1}>{profile.username}'s 2025</Title>
+          <Title order={1}>{profile.username}&apos;s 2025</Title>
           <Stack gap="xs" align="center">
             {/* Top 3 Runners */}
             <SimpleGrid cols={topRunners.length} spacing="sm">
@@ -749,122 +725,6 @@ function StatPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function RoleRecordCard({
-  title,
-  record,
-}: {
-  title: string;
-  record: RoleRecord | null;
-}) {
-  if (!record) {
-    return (
-      <Paper withBorder p="md" radius="md">
-        <Text size="sm">{title}: No games detected.</Text>
-      </Paper>
-    );
-  }
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>{title}</Text>
-        <Text size="xl" fw={700}>
-          {record.wins}-{record.losses}
-        </Text>
-        <Text size="sm" c="dimmed">
-          Win rate {formatPercent(record.winRate)}
-        </Text>
-      </Stack>
-    </Paper>
-  );
-}
-
-function LongestGameCard({ longest }: { longest: LongestGame | null }) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>Longest game</Text>
-        {longest ? (
-          <>
-            <Text size="xl" fw={700}>
-              {longest.turnCount} turns
-            </Text>
-            <Text size="sm" c="dimmed">
-              As {longest.role} vs {longest.opponent ?? "Unknown"}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {longest.result === "draw"
-                ? "Result unknown"
-                : `Result: ${longest.result === "win" ? "Win" : "Loss"}`}
-              {longest.completedAt
-                ? ` · ${formatDate(longest.completedAt)}`
-                : ""}
-            </Text>
-          </>
-        ) : (
-          <Text size="sm">No turn count data available.</Text>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
-
-function ReasonSummaryCard({
-  title,
-  summary,
-  emptyMessage,
-}: {
-  title: string;
-  summary: ReasonSummary | null;
-  emptyMessage: string;
-}) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>{title}</Text>
-        {summary ? (
-          <>
-            <Text size="lg" fw={700}>
-              {summary.reason}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {summary.count}/{summary.total} ({formatPercent(summary.percent)})
-            </Text>
-          </>
-        ) : (
-          <Text size="sm">{emptyMessage}</Text>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
-
-function FrequentOpponentCard({
-  opponent,
-}: {
-  opponent: FrequentOpponent | null;
-}) {
-  return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap={6}>
-        <Text fw={600}>Most frequent opponent</Text>
-        {opponent ? (
-          <>
-            <Text size="lg" fw={700}>
-              {opponent.username}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {opponent.games} games · {opponent.wins}-{opponent.losses} ·{" "}
-              {formatPercent(opponent.winRate)}
-            </Text>
-          </>
-        ) : (
-          <Text size="sm">No opponent data available.</Text>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
-
 function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
 }
@@ -917,15 +777,5 @@ function renderPerTurnDetails(highlight: GameHighlight) {
         </Text>
       )}
     </Stack>
-  );
-}
-
-function SummaryGrid({ stats }: { stats: { label: string; value: string }[] }) {
-  return (
-    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
-      {stats.map((stat) => (
-        <StatPill key={stat.label} label={stat.label} value={stat.value} />
-      ))}
-    </SimpleGrid>
   );
 }

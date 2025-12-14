@@ -19,13 +19,16 @@ interface StreaksSlideProps {
   username: string;
 }
 
-interface StatCardProps {
+interface StatData {
   label: string;
   value: string | null;
   subtitle: string | null;
   emptyMessage: string;
   highlightRange: HighlightRange | null;
   onHighlight: (range: HighlightRange | null) => void;
+}
+
+interface StatCardProps extends StatData {
   isAnyHovered: boolean;
   isThisHovered: boolean;
 }
@@ -120,7 +123,7 @@ export default function StreaksSlide({ games, username }: StreaksSlideProps) {
     [games, username]
   );
 
-  const stats: StatCardProps[] = [
+  const stats: StatData[] = [
     {
       label: "Busiest day",
       value: busiestDay ? pluralize(busiestDay.games, "game") : null,

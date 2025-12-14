@@ -11,7 +11,7 @@ export default function CreditsSlide() {
           Credits
         </Title>
         <Title order={4} ta="center">
-          (aka spiderbro's soapbox)
+          (aka spiderbro&apos;s soapbox)
         </Title>
         <Text size="lg" ta="center">
           Card images and faction icons from NetrunnerDB.
@@ -19,14 +19,14 @@ export default function CreditsSlide() {
         <Text size="lg" ta="center">
           Thank you to the jinteki.net devs for building an amazing platform for
           helping this community to thrive online. Thank you to Lucy for the
-          original JNet Stats Lab, and for providing reassurance that there's
-          "no monopoly on good ideas". Thank you to my team, MoM, for poking
+          original JNet Stats Lab, and for providing reassurance that there&apos;s
+          &ldquo;no monopoly on good ideas&rdquo;. Thank you to my team, MoM, for poking
           around this site before its official release and providing feedback.
           Go team!
         </Text>
         <Text size="lg" ta="center">
-          I can't thank everyone enough for supporting The Maker's Eye. It's an
-          honor to be a part of the Netrunner community, and I'm glad I can
+          I can&apos;t thank everyone enough for supporting The Maker&apos;s Eye. It&apos;s an
+          honor to be a part of the Netrunner community, and I&apos;m glad I can
           contribute to it in some small way. I hope your 2025 was as rewarding
           as mine was. Be safe, be kind to yourselves and one another (yes, that
           means you, jnet #general), and see you in the new year!

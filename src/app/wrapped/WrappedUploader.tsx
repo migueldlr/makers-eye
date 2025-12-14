@@ -355,7 +355,7 @@ function UploadScreen({
         <Title order={1}>JNET Wrapped</Title>
         <List type="ordered" size="xl">
           <ListItem>
-            Follow instructions from Lucy's{" "}
+            Follow instructions from Lucy&apos;s{" "}
             <Anchor
               href="https://jnet-stats.nro.run/"
               target="_blank"
@@ -386,7 +386,7 @@ function UploadScreen({
         </Stack>
 
         <Text size="lg" c="gray.5">
-          Note: Your game_history.json is stored in your browser's local storage
+          Note: Your game_history.json is stored in your browser&apos;s local storage
           for convenience. It is not sent to any servers and can be cleared
           after upload.
         </Text>
