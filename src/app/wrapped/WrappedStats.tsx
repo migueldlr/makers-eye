@@ -14,15 +14,7 @@ import type {
   Highlights,
   UploadSummary,
 } from "@/lib/wrapped/types";
-import {
-  Alert,
-  Flex,
-  Paper,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Alert, Paper, Stack, Text, Title } from "@mantine/core";
 import {
   useMemo,
   useEffect,
@@ -49,6 +41,7 @@ import StreaksSlide from "./StreaksSlide";
 import EndSlide from "./EndSlide";
 import CreditsSlide from "./CreditsSlide";
 import HeroSlide from "./HeroSlide";
+import SummarySlide from "./SummarySlide";
 
 // Faction-based gradient backgrounds (using colors from faction SVGs)
 const FACTION_GRADIENTS: Record<string, string> = {
@@ -546,72 +539,17 @@ export default function WrappedStats({
       />
     ),
     profile && (
-      <Slide key="summary" gradient={summaryGradient}>
-        <Stack align="center" gap="lg" w="fit-content" mx="auto">
-          <Title order={1}>{profile.username}&apos;s 2025</Title>
-          <Stack gap="xs" align="center">
-            {/* Top 3 Runners */}
-            <SimpleGrid cols={topRunners.length} spacing="sm">
-              {topRunners.map((runner) => (
-                <img
-                  key={runner.identity}
-                  src={getCardImageForIdentity(runner.identity)}
-                  alt={shortenId(runner.identity)}
-                  style={{
-                    width: 150,
-                    borderRadius: "4.19%/3%",
-                  }}
-                />
-              ))}
-            </SimpleGrid>
-            {/* Top 3 Corps */}
-            <SimpleGrid cols={topCorps.length} spacing="sm">
-              {topCorps.map((corp) => (
-                <img
-                  key={corp.identity}
-                  src={getCardImageForIdentity(corp.identity)}
-                  alt={shortenId(corp.identity)}
-                  style={{
-                    width: 150,
-                    borderRadius: "4.19%/3%",
-                  }}
-                />
-              ))}
-            </SimpleGrid>
-          </Stack>
-          <Flex gap="md" justify="space-between" w="100%">
-            <Stack gap={1} align="left">
-              <Title order={1} c="white">
-                {totalGames.toLocaleString()}
-              </Title>{" "}
-              <Text size="md" c="gray.5">
-                games played
-              </Text>
-            </Stack>
-            <Stack gap={1} align="right">
-              <Title order={1} c="white" ta="right">
-                {aggregates.totalMinutes.toLocaleString()}
-              </Title>
-              <Text size="md" c="gray.5">
-                minutes played
-              </Text>
-            </Stack>
-          </Flex>
-          <Stack align="center" gap="xs">
-            {gravatarUrl && (
-              <img
-                src={gravatarUrl}
-                alt={`${profile.username}'s avatar`}
-                style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: "13.6%",
-                }}
-              />
-            )}
-          </Stack>
-        </Stack>
-      </Slide>
+      <SummarySlide
+        key="summary"
+        username={profile.username}
+        gravatarUrl={gravatarUrl}
+        gradient={summaryGradient}
+        topRunners={topRunners}
+        topCorps={topCorps}
+        totalGames={totalGames}
+        totalMinutes={aggregates.totalMinutes}
+        getCardImageForIdentity={getCardImageForIdentity}
+      />
     ),
     <CreditsSlide key="credits" />,
     <EndSlide key="cta" onReset={onReset} />,
