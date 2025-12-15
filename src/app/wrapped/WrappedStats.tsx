@@ -149,11 +149,11 @@ export default function WrappedStats({
   }, [profile, summary.games]);
   const topRunners = useMemo(() => {
     if (!profile) return [];
-    return buildTopIdentities(summary.games, profile.username, "runner", 3);
+    return buildTopIdentities(summary.games, profile.username, "runner", 5);
   }, [profile, summary.games]);
   const topCorps = useMemo(() => {
     if (!profile) return [];
-    return buildTopIdentities(summary.games, profile.username, "corp", 3);
+    return buildTopIdentities(summary.games, profile.username, "corp", 5);
   }, [profile, summary.games]);
   const longestGame = useMemo(() => {
     if (!profile) return null;
@@ -209,8 +209,7 @@ export default function WrappedStats({
       : "#1a1a3a";
     const corpColor = corpFaction ? factionToColor(corpFaction) : "#0a0a14";
 
-    // Darken colors by mixing with black
-    return `linear-gradient(135deg, color-mix(in oklab, ${runnerColor}, black 50%), color-mix(in oklab, ${corpColor}, black 50%))`;
+    return `linear-gradient(135deg in oklab, color-mix(in oklab, ${runnerColor}, black 20%), color-mix(in oklab, ${corpColor}, black 20%))`;
   }, [topRunners, topCorps]);
 
   const summaryStats: SummaryStat[] = [

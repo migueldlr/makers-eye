@@ -38,14 +38,34 @@ export default function SummarySlide({
     setIsExporting(true);
     try {
       const element = contentRef.current;
+
       const dataUrl = await domToPng(element, {
-        scale: 2,
+        scale: 3,
       });
+
+      // Scale down the image for smaller file size while keeping crispness
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise((resolve) => (img.onload = resolve));
+
+      const canvas = document.createElement("canvas");
+      const targetScale = 0.5; // Scale down to 1.5x effective (3 * 0.5 = 1.5)
+      canvas.width = img.width * targetScale;
+      canvas.height = img.height * targetScale;
+
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      }
+
+      const finalDataUrl = canvas.toDataURL("image/png");
 
       // Create download link
       const link = document.createElement("a");
       link.download = `${username}-jnet-wrapped-2025.png`;
-      link.href = dataUrl;
+      link.href = finalDataUrl;
       link.click();
     } catch (error) {
       console.error("Failed to export image:", error);
@@ -56,10 +76,10 @@ export default function SummarySlide({
 
   return (
     <Slide gradient="linear-gradient(145deg, #1a1a1a, #0a0a0a)">
+      <Title order={2} ta="center" mb="md">
+        And finally, a nice image for socials.
+      </Title>
       <Stack align="center" gap="md">
-        <Title order={2} ta="center">
-          Finally, a nice image for socials.
-        </Title>
         <div
           ref={contentRef}
           style={{
@@ -81,38 +101,72 @@ export default function SummarySlide({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "0.5rem",
+              gap: "1rem",
             }}
           >
-            {/* Top 3 Runners */}
-            <div style={{ display: "flex", gap: "0.75rem" }}>
-              {topRunners.map((runner) => (
-                <img
-                  key={runner.identity}
-                  src={getCardImageForIdentity(runner.identity)}
-                  alt={shortenId(runner.identity)}
-                  crossOrigin="anonymous"
-                  style={{
-                    width: 150,
-                    borderRadius: "4.19%/3%",
-                  }}
-                />
-              ))}
+            {/* Top 5 Runners - fanned */}
+            <div style={{ position: "relative", width: 480, height: 190 }}>
+              {topRunners.slice(0, 5).map((runner, index) => {
+                // Index 0 (top) in center, then 1-2 on sides, 3-4 furthest out
+                const positions = [
+                  { rotate: 0, x: 0, y: -18, z: 5, width: 138 },
+                  { rotate: -8, x: -84, y: -14, z: 3, width: 120 },
+                  { rotate: 8, x: 84, y: -14, z: 3, width: 120 },
+                  { rotate: -16, x: -168, y: 0, z: 1, width: 120 },
+                  { rotate: 16, x: 168, y: 0, z: 1, width: 120 },
+                ];
+                const pos = positions[index] || positions[2];
+                return (
+                  <img
+                    key={runner.identity}
+                    src={getCardImageForIdentity(runner.identity)}
+                    alt={shortenId(runner.identity)}
+                    crossOrigin="anonymous"
+                    style={{
+                      position: "absolute",
+                      width: pos.width,
+                      borderRadius: "4.19%/3%",
+                      left: "50%",
+                      top: "50%",
+                      transform: `translate(-50%, -50%) translateX(${pos.x}px) translateY(${pos.y}px) rotate(${pos.rotate}deg)`,
+                      zIndex: pos.z,
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                    }}
+                  />
+                );
+              })}
             </div>
-            {/* Top 3 Corps */}
-            <div style={{ display: "flex", gap: "0.75rem" }}>
-              {topCorps.map((corp) => (
-                <img
-                  key={corp.identity}
-                  src={getCardImageForIdentity(corp.identity)}
-                  alt={shortenId(corp.identity)}
-                  crossOrigin="anonymous"
-                  style={{
-                    width: 150,
-                    borderRadius: "4.19%/3%",
-                  }}
-                />
-              ))}
+            {/* Top 5 Corps - fanned */}
+            <div style={{ position: "relative", width: 480, height: 190 }}>
+              {topCorps.slice(0, 5).map((corp, index) => {
+                // Index 0 (top) in center, then 1-2 on sides, 3-4 furthest out
+                const positions = [
+                  { rotate: 0, x: 0, y: -18, z: 5, width: 138 },
+                  { rotate: -8, x: -84, y: -14, z: 3, width: 120 },
+                  { rotate: 8, x: 84, y: -14, z: 3, width: 120 },
+                  { rotate: -16, x: -168, y: 0, z: 1, width: 120 },
+                  { rotate: 16, x: 168, y: 0, z: 1, width: 120 },
+                ];
+                const pos = positions[index] || positions[2];
+                return (
+                  <img
+                    key={corp.identity}
+                    src={getCardImageForIdentity(corp.identity)}
+                    alt={shortenId(corp.identity)}
+                    crossOrigin="anonymous"
+                    style={{
+                      position: "absolute",
+                      width: pos.width,
+                      borderRadius: "4.19%/3%",
+                      left: "50%",
+                      top: "50%",
+                      transform: `translate(-50%, -50%) translateX(${pos.x}px) translateY(${pos.y}px) rotate(${pos.rotate}deg)`,
+                      zIndex: pos.z,
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
           <div
@@ -136,7 +190,9 @@ export default function SummarySlide({
               >
                 {totalGames.toLocaleString()}
               </div>
-              <div style={{ fontSize: "1rem", color: "#909296" }}>
+              <div
+                style={{ fontSize: "1rem", color: "rgba(255,255,255,0.7)" }}
+              >
                 games played
               </div>
             </div>
@@ -164,7 +220,9 @@ export default function SummarySlide({
               >
                 {totalMinutes.toLocaleString()}
               </div>
-              <div style={{ fontSize: "1rem", color: "#909296" }}>
+              <div
+                style={{ fontSize: "1rem", color: "rgba(255,255,255,0.7)" }}
+              >
                 minutes played
               </div>
             </div>
@@ -172,11 +230,11 @@ export default function SummarySlide({
           <div
             style={{
               fontSize: "0.75rem",
-              color: "#909296",
+              color: "rgba(255,255,255,0.6)",
               marginTop: "0.5rem",
             }}
           >
-            Jnet Wrapped from The Maker&apos;s Eye
+            Jnet Wrapped - The Maker&apos;s Eye
           </div>
         </div>
         <ActionIcon
