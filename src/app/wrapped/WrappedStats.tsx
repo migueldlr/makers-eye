@@ -605,7 +605,7 @@ export default function WrappedStats({
                 style={{
                   width: 60,
                   height: 60,
-                  borderRadius: "50%",
+                  borderRadius: "13.6%",
                 }}
               />
             )}

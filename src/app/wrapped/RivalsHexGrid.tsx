@@ -103,7 +103,7 @@ export default function RivalsHexGrid({ rivals }: RivalsHexGridProps) {
                 style={{
                   width: hexSize * 2,
                   height: hexSize * 2,
-                  borderRadius: (hexSize * 2 * 3) / 22,
+                  borderRadius: "13.6%",
                 }}
               />
             </div>
