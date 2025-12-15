@@ -7,11 +7,16 @@ import type { HighlightCardData, CardRect } from "./types";
 import { formatDate } from "./utils";
 import HighlightModal from "./HighlightModal";
 
+interface HighlightCardProps extends HighlightCardData {
+  onExpand?: () => void;
+}
+
 export default function HighlightCard({
   title,
   value,
   highlight,
-}: HighlightCardData) {
+  onExpand,
+}: HighlightCardProps) {
   const [opened, setOpened] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [cardRect, setCardRect] = useState<CardRect | null>(null);
@@ -28,6 +33,7 @@ export default function HighlightCard({
       });
       setOpened(true);
       setIsAnimating(true);
+      onExpand?.();
     }
   };
 
