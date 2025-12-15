@@ -6,6 +6,7 @@ interface CardData {
     title: string;
     printing_ids: string[];
     printings_released_by: string[];
+    card_set_ids: string[];
     latest_printing_id: string;
   };
 }
@@ -19,11 +20,18 @@ export interface IdentityImageMap {
 }
 
 function getImageUrl(card: CardData): string {
-  const { printing_ids, printings_released_by, latest_printing_id } =
-    card.attributes;
+  const {
+    printing_ids,
+    printings_released_by,
+    card_set_ids,
+    latest_printing_id,
+  } = card.attributes;
 
   // Check if any printing is from null_signal_games
   const hasNsgPrinting = printings_released_by.includes("null_signal_games");
+
+  // Check if card is from System Update 2021 (uses large/.jpg format)
+  const hasSu21 = card_set_ids.includes("system_update_2021");
 
   // Find the NSG printing ID if available, otherwise use latest
   let printingId = latest_printing_id;
@@ -34,6 +42,16 @@ function getImageUrl(card: CardData): string {
     if (nsgIndex !== -1 && printing_ids[nsgIndex]) {
       printingId = printing_ids[nsgIndex];
     }
+
+    // System Update 2021 cards use large/.jpg format, not xlarge/.webp
+    if (hasSu21) {
+      // Use the highest printing ID for better image quality
+      const maxPrintingId = printing_ids.reduce((max, id) =>
+        id > max ? id : max
+      );
+      return `https://card-images.netrunnerdb.com/v2/large/${maxPrintingId}.jpg`;
+    }
+
     return `https://card-images.netrunnerdb.com/v2/xlarge/${printingId}.webp`;
   }
 
@@ -74,6 +92,17 @@ export async function fetchIdentityImageMap(): Promise<IdentityImageMap> {
   }
 }
 
+/**
+ * Normalize quotes and special characters for matching.
+ * jnet exports use curly quotes (" ") while NetrunnerDB uses straight quotes (").
+ */
+function normalizeForMatching(str: string): string {
+  return str
+    .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"') // curly double quotes → straight
+    .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g, "'") // curly single quotes → straight
+    .toLowerCase();
+}
+
 export function getIdentityImageUrl(
   imageMap: IdentityImageMap,
   identity: string | undefined | null,
@@ -86,19 +115,22 @@ export function getIdentityImageUrl(
     return imageMap[identity];
   }
 
-  // Try case-insensitive match
-  const lowerIdentity = identity.toLowerCase();
+  // Normalize identity for comparison
+  const normalizedIdentity = normalizeForMatching(identity);
+
+  // Try normalized match
   for (const [title, url] of Object.entries(imageMap)) {
-    if (title.toLowerCase() === lowerIdentity) {
+    if (normalizeForMatching(title) === normalizedIdentity) {
       return url;
     }
   }
 
   // Try partial match (identity name might be shortened in logs)
   for (const [title, url] of Object.entries(imageMap)) {
+    const normalizedTitle = normalizeForMatching(title);
     if (
-      title.toLowerCase().includes(lowerIdentity) ||
-      lowerIdentity.includes(title.toLowerCase())
+      normalizedTitle.includes(normalizedIdentity) ||
+      normalizedIdentity.includes(normalizedTitle)
     ) {
       return url;
     }
