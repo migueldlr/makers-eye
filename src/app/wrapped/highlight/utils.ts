@@ -44,6 +44,12 @@ export function reasonToSentence(
   }
 
   if (normalized === "concede" || normalized === "conceded") {
+    if (winner === "runner") {
+      return "the corp conceded";
+    }
+    if (winner === "corp") {
+      return "the runner conceded";
+    }
     return "a player conceded";
   }
 

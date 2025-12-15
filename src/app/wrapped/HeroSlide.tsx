@@ -12,8 +12,6 @@ interface HeroSlideProps {
   onReset: () => void;
 }
 
-const baseFont = "'Geist', sans-serif";
-
 export default function HeroSlide({
   username,
   gravatarUrl,
@@ -46,7 +44,7 @@ export default function HeroSlide({
           order={1}
           ta="center"
           size={64}
-          style={{ fontFamily: baseFont, lineHeight: 1.05 }}
+          style={{ lineHeight: 1.05 }}
         >
           Hey, {username ?? "Welcome back"}.
         </Title>
