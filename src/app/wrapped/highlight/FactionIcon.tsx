@@ -41,6 +41,9 @@ const FACTION_TO_SYMBOL: Record<string, string> = {
   Jinteki: "jinteki",
   NBN: "nbn",
   Weyland: "weyland_consortium",
+  Adam: "adam",
+  Apex: "apex",
+  Sunny: "sunny_lebeau",
   _Neutral: "neutral",
 };
 
