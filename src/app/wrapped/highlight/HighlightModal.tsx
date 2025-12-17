@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Text, Stack, Divider, ActionIcon, Title } from "@mantine/core";
-import { IconX } from "@tabler/icons-react";
+import { Text, Stack, Divider, ActionIcon, Title, Anchor } from "@mantine/core";
+import { IconExternalLink, IconX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { GameHighlight } from "@/lib/wrapped/types";
 import { shortenId } from "@/lib/util";
@@ -217,6 +217,19 @@ export default function HighlightModal({
                   })()}
                   {(highlight.turnCount || highlight.reason) && "."}
                 </Text>
+                {highlight.replayUrl && (
+                  <Anchor
+                    href={highlight.replayUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="sm"
+                    c="gray.5"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+                  >
+                    Watch replay
+                    <IconExternalLink size={14} />
+                  </Anchor>
+                )}
               </Stack>
             </motion.div>
 

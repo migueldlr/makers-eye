@@ -1144,6 +1144,14 @@ function normalizeGame(rawGame: RawGameRecord): GameRecord {
       rawGame?.["creation-date"]
   );
   const elapsedMinutes = toNumber(rawGame?.stats?.time?.elapsed);
+
+  // Build replay URL if the game has a replay
+  const hasReplay = rawGame?.["has-replay"] === true;
+  const gameId =
+    typeof rawGame?.gameid === "string" ? rawGame.gameid : null;
+  const replayUrl =
+    hasReplay && gameId ? `https://jinteki.net/replay/${gameId}` : null;
+
   return {
     winner: isRole(rawGame?.winner) ? rawGame.winner : null,
     runner: normalizeRole(rawGame?.runner),
@@ -1161,6 +1169,7 @@ function normalizeGame(rawGame: RawGameRecord): GameRecord {
     runnerStats: parseSideStats(rawGame?.stats?.runner, false),
     corpStats: parseSideStats(rawGame?.stats?.corp, true),
     reason: typeof rawGame?.reason === "string" ? rawGame.reason : null,
+    replayUrl,
   };
 }
 
@@ -1319,6 +1328,7 @@ function buildGameHighlight(
     turnCount: game.turnCount,
     result,
     reason: game.reason,
+    replayUrl: game.replayUrl,
   };
 }
 

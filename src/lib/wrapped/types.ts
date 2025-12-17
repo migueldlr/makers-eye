@@ -35,6 +35,7 @@ export interface GameRecord {
   runnerStats: SideStats;
   corpStats: SideStats;
   reason: string | null;
+  replayUrl: string | null;
 }
 
 export interface RawGameRecord {
@@ -48,6 +49,8 @@ export interface RawGameRecord {
   stats?: RawStatsContainer;
   turn?: unknown;
   reason?: unknown;
+  gameid?: unknown;
+  ["has-replay"]?: unknown;
 }
 
 export interface RawRoleSnapshot {
@@ -216,6 +219,7 @@ export interface GameHighlight {
   turnCount: number | null;
   result: "win" | "loss" | "draw";
   reason: string | null;
+  replayUrl: string | null;
 }
 
 export interface Highlights {
