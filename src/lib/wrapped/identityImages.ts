@@ -30,8 +30,10 @@ function getImageUrl(card: CardData): string {
   // Check if any printing is from null_signal_games
   const hasNsgPrinting = printings_released_by.includes("null_signal_games");
 
-  // Check if card is from System Update 2021 (uses large/.jpg format)
-  const hasSu21 = card_set_ids.includes("system_update_2021");
+  // Check if card is from sets that use large/.jpg format instead of xlarge/.webp
+  const hasLegacyFormat =
+    card_set_ids.includes("system_update_2021") ||
+    card_set_ids.includes("system_core_2019");
 
   // Find the NSG printing ID if available, otherwise use latest
   let printingId = latest_printing_id;
@@ -43,8 +45,8 @@ function getImageUrl(card: CardData): string {
       printingId = printing_ids[nsgIndex];
     }
 
-    // System Update 2021 cards use large/.jpg format, not xlarge/.webp
-    if (hasSu21) {
+    // These sets use large/.jpg format, not xlarge/.webp
+    if (hasLegacyFormat) {
       // Use the highest printing ID for better image quality
       const maxPrintingId = printing_ids.reduce((max, id) =>
         id > max ? id : max
