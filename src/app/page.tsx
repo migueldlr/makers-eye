@@ -109,9 +109,9 @@ export default function HomePage() {
             </Stack>
             <Divider label="or" mx="xl" />
             <Stack align="center" gap="xs">
-              {/* <FancyLink href="/wrapped" extraFancy>
+              <FancyLink href="/wrapped" extraFancy>
                 Wrapped
-              </FancyLink> */}
+              </FancyLink>
               <FancyLink href="/stats">Meta analysis</FancyLink>
               <FancyLink href="/faq">FAQ</FancyLink>
               <FancyLink href="/credits">Credits</FancyLink>
