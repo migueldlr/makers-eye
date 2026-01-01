@@ -7,6 +7,7 @@ import { domToPng } from "modern-screenshot";
 import Slide from "./Slide";
 import type { IdentityFavorite } from "@/lib/wrapped/types";
 import { shortenId } from "@/lib/util";
+import { WRAPPED_YEAR } from "./WrappedUploader";
 
 interface SummarySlideProps {
   username: string;
@@ -64,7 +65,7 @@ export default function SummarySlide({
 
       // Create download link
       const link = document.createElement("a");
-      link.download = `${username}-jnet-wrapped-2025.png`;
+      link.download = `${username}-jnet-wrapped-${WRAPPED_YEAR}.png`;
       link.href = finalDataUrl;
       link.click();
     } catch (error) {
@@ -94,7 +95,7 @@ export default function SummarySlide({
           }}
         >
           <div style={{ fontSize: "2rem", fontWeight: 700, color: "white" }}>
-            {username}&apos;s 2025
+            {username}&apos;s {WRAPPED_YEAR}
           </div>
           <div
             style={{

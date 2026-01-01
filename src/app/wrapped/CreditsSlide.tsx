@@ -1,7 +1,8 @@
 "use client";
 
-import { Anchor, Stack, Text, Title } from "@mantine/core";
+import { Stack, Text, Title } from "@mantine/core";
 import Slide from "./Slide";
+import { WRAPPED_YEAR } from "./WrappedUploader";
 
 export default function CreditsSlide() {
   return (
@@ -27,7 +28,7 @@ export default function CreditsSlide() {
         <Text size="lg" ta="center">
           I can&apos;t thank everyone enough for supporting The Maker&apos;s Eye. It&apos;s an
           honor to be a part of the Netrunner community, and I&apos;m glad I can
-          contribute to it in some small way. I hope your 2025 was as rewarding
+          contribute to it in some small way. I hope your {WRAPPED_YEAR} was as rewarding
           as mine was. Be safe, be kind to yourselves and one another (yes, that
           means you, jnet #general), and see you in the new year!
         </Text>

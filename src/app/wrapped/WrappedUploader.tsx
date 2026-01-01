@@ -3,6 +3,7 @@
 import { BackButton } from "@/components/common/BackButton";
 import { summarizeUpload } from "@/lib/wrapped/processing";
 import type { UploadSummary } from "@/lib/wrapped/types";
+import { startOfYear, endOfYear } from "date-fns";
 import {
   Alert,
   Box,
@@ -79,16 +80,20 @@ type CachedUploadPayload = {
   fileName: string | null;
 };
 
+// The year to show in wrapped - hardcoded to 2025 for the 2025 wrapped feature
+export const WRAPPED_YEAR = 2025;
+
 function buildSummaryState(content: string, name: string | null): CachedState {
-  const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const wrappedYearDate = new Date(WRAPPED_YEAR, 0, 1);
+  const start = startOfYear(wrappedYearDate);
+  const end = endOfYear(wrappedYearDate);
   const parsedSummary = summarizeUpload(content, {
-    start: startOfYear,
-    end: now,
+    start,
+    end,
   });
   return {
     summary: parsedSummary,
-    filterRange: { start: startOfYear, end: now },
+    filterRange: { start, end },
     fileName: name,
   };
 }

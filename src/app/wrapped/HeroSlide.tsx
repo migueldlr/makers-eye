@@ -5,6 +5,7 @@ import { IconArrowDown, IconX } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import Slide from "./Slide";
+import { WRAPPED_YEAR } from "./WrappedUploader";
 
 interface HeroSlideProps {
   username: string | null;
@@ -49,7 +50,7 @@ export default function HeroSlide({
           Hey, {username ?? "Welcome back"}.
         </Title>
         <Text size="xl" ta="center">
-          Welcome to your Jnet Wrapped 2025.
+          Welcome to your Jnet Wrapped {WRAPPED_YEAR}.
         </Text>
         {gravatarUrl && (
           <img
