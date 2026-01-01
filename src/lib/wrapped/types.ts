@@ -124,6 +124,7 @@ export interface UploadSummary {
 export interface AggregateStats {
   totalMinutes: number;
   totalDays: number;
+  activeDays: number;
   averageGamesPerDay: number;
   averageMinutesPerGame: number;
   averageMinutesPerDay: number;

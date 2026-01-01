@@ -71,7 +71,12 @@ export function summarizeUpload(
     );
   }
   const profile = detectUserProfile(games);
-  const aggregates = computeAggregates(games, profile?.username ?? null);
+  const aggregates = computeAggregates(
+    games,
+    profile?.username ?? null,
+    options?.start ?? null,
+    options?.end ?? null
+  );
   return { games, profile, aggregates };
 }
 
@@ -109,12 +114,15 @@ export function getTotalMinutesPlayed(
 
 function computeAggregates(
   games: GameRecord[],
-  username: string | null
+  username: string | null,
+  rangeStart: Date | null,
+  rangeEnd: Date | null
 ): AggregateStats {
   if (!games.length || !username) {
     return {
       totalMinutes: 0,
       totalDays: 0,
+      activeDays: 0,
       averageGamesPerDay: 0,
       averageMinutesPerGame: 0,
       averageMinutesPerDay: 0,
@@ -136,7 +144,14 @@ function computeAggregates(
       .map((date) => truncateDateKey(date))
   );
 
-  const totalDays = days.size;
+  const activeDays = days.size;
+
+  // Use the date range to calculate total days, defaulting to active days if no range provided
+  const totalDays =
+    rangeStart && rangeEnd
+      ? differenceInCalendarDays(rangeEnd, rangeStart) + 1
+      : activeDays;
+
   const averageGamesPerDay = totalDays ? filtered.length / totalDays : 0;
   const averageMinutesPerGame = filtered.length
     ? totalMinutes / filtered.length
@@ -146,6 +161,7 @@ function computeAggregates(
   return {
     totalMinutes,
     totalDays,
+    activeDays,
     averageGamesPerDay,
     averageMinutesPerGame,
     averageMinutesPerDay,
