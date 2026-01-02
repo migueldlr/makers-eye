@@ -180,14 +180,22 @@ export default function WrappedStats({
   }, [profile, summary.games]);
   const frequentRivals = useMemo(() => {
     // Filter by threshold, then adjust to multiple of 3 for seamless hex grid
-    const minThreshold = 5;
-    const filtered = topOpponents.filter((o) => o.games >= minThreshold);
+    // Use a minimum count to ensure we fill the screen (need ~33 items for 11 cols x 3 rows)
+    const minCount = 33;
+    const minThreshold = 2;
+    let filtered = topOpponents.filter((o) => o.games >= minThreshold);
+
+    // If we don't have enough, lower threshold to include more opponents
+    if (filtered.length < minCount) {
+      filtered = topOpponents.slice(0, Math.max(filtered.length, minCount));
+    }
+
     const remainder = filtered.length % 3;
     if (remainder === 0) return filtered;
     // Add more opponents to reach multiple of 3
     const needed = 3 - remainder;
     const extras = topOpponents
-      .filter((o) => o.games < minThreshold)
+      .filter((o) => !filtered.includes(o))
       .slice(0, needed);
     return [...filtered, ...extras];
   }, [topOpponents]);
