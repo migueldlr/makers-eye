@@ -206,10 +206,10 @@ export default memo(function GameDotsGrid({
 
   // Calculate identity cluster positions - each identity gets a centroid in a grid, dots cluster around it
   const CLUSTER_WIDTH = 800;
-  const CLUSTER_HEIGHT = 500;
+  const CLUSTER_CELL_SIZE = 100; // Target cell size for each identity cluster
   const CLUSTER_RADIUS = 30;
 
-  const identityPositions = useMemo(() => {
+  const { identityPositions, clusterHeight } = useMemo(() => {
     // Group dots by identity
     const identityGroups = new Map<string, GameDot[]>();
     identitySortedDots.forEach((dot) => {
@@ -221,11 +221,13 @@ export default memo(function GameDotsGrid({
     const identities = Array.from(identityGroups.keys());
     const numIdentities = identities.length;
 
-    // Calculate centroids in a grid pattern
-    const cols = Math.ceil(Math.sqrt(numIdentities));
+    // Calculate grid layout - aim for wider than tall
+    const cols = Math.max(1, Math.ceil(Math.sqrt(numIdentities * 1.5)));
     const rows = Math.ceil(numIdentities / cols);
     const cellWidth = CLUSTER_WIDTH / cols;
-    const cellHeight = CLUSTER_HEIGHT / rows;
+    // Use consistent cell height based on cell size, scaled to match aspect ratio
+    const cellHeight = Math.min(CLUSTER_CELL_SIZE, cellWidth);
+    const totalClusterHeight = rows * cellHeight;
 
     // Create a seeded random function for consistent positions
     const seededRandom = (seed: number) => {
@@ -262,7 +264,7 @@ export default memo(function GameDotsGrid({
       });
     });
 
-    return positions;
+    return { identityPositions: positions, clusterHeight: totalClusterHeight };
   }, [identitySortedDots, FULL_ROW_WIDTH]);
 
   // Native scroll listener for tracking progress
@@ -363,7 +365,9 @@ export default memo(function GameDotsGrid({
   ]);
 
   const totalRows = Math.ceil(dots.length / DOTS_PER_ROW);
-  const gridHeight = totalRows * DOT_SIZE + (totalRows - 1) * DOT_GAP;
+  const chronologicalHeight = totalRows * DOT_SIZE + (totalRows - 1) * DOT_GAP;
+  // Use the max height across all layouts to ensure dots don't overflow
+  const gridHeight = Math.max(chronologicalHeight, clusterHeight);
 
   return (
     <div
