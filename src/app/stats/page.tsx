@@ -33,6 +33,7 @@ import { parseTournamentParams } from "@/lib/params";
 import { createClient } from "@/utils/supabase/server";
 import { TournamentRow } from "@/lib/localtypes";
 import WinrateDistributionChart from "@/src/components/stats/wrappers/WinrateDistributionChart";
+import MarkovAnalysis from "@/components/stats/wrappers/MarkovAnalysis";
 
 export async function generateMetadata({
   searchParams,
@@ -214,6 +215,14 @@ export default async function StatsPage({
           includeCut={includeCut}
           includeSwiss={includeSwiss}
         />
+
+        <TitleWithAnchor id="markov">Markov Chain Rankings</TitleWithAnchor>
+        <MarkovAnalysis
+          tournamentIds={tournamentIds}
+          includeCut={includeCut}
+          includeSwiss={includeSwiss}
+        />
+
         <BackButton />
       </Stack>
       <Center>

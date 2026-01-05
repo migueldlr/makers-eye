@@ -74,6 +74,20 @@ export type PopularityData = {
   player_count: number;
 };
 
+export interface MatchupRecord {
+  identity: string;
+  opponent: string;
+  wins: number;
+  losses: number;
+}
+
+export interface MarkovMatchData {
+  corpData: MatchupRecord[];
+  runnerData: MatchupRecord[];
+  corpMetaShare: Record<string, number>;
+  runnerMetaShare: Record<string, number>;
+}
+
 export async function getWinrates({
   minMatches,
   includeSwiss,
@@ -1206,4 +1220,131 @@ export async function refreshAllArchetypes() {
   }
   console.log(data);
   return data;
+}
+
+/**
+ * Get match data for Markov chain analysis
+ * Returns decisive matches only (3-0 outcomes, no draws) grouped by identity matchups
+ */
+export async function getMarkovMatchData({
+  tournamentIds,
+  includeSwiss,
+  includeCut,
+}: {
+  tournamentIds: number[];
+  includeSwiss: boolean;
+  includeCut: boolean;
+}): Promise<MarkovMatchData> {
+  const whereConditions = [];
+
+  // Tournament filter
+  if (tournamentIds.length > 0) {
+    whereConditions.push(inArray(matchesMapped.tournamentId, tournamentIds));
+  }
+
+  // Phase filter
+  const phaseConditions = [];
+  if (includeSwiss) {
+    phaseConditions.push(eq(matchesMapped.phase, "swiss"));
+  }
+  if (includeCut) {
+    phaseConditions.push(eq(matchesMapped.phase, "cut"));
+  }
+
+  if (phaseConditions.length > 0) {
+    whereConditions.push(or(...phaseConditions));
+  }
+
+  // CRITICAL: Filter for decisive results only (no draws, no byes)
+  whereConditions.push(
+    or(
+      eq(matchesMapped.result, "corpWin"),
+      eq(matchesMapped.result, "runnerWin")
+    )
+  );
+
+  // Filter out null identities
+  whereConditions.push(
+    isNotNull(matchesMapped.corpShortId),
+    isNotNull(matchesMapped.runnerShortId)
+  );
+
+  // Query for corp matchups: group by corp_id and runner_id
+  const corpMatchups = await db
+    .select({
+      corp_id: matchesMapped.corpShortId,
+      runner_id: matchesMapped.runnerShortId,
+      wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`.mapWith(Number),
+      losses: sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`.mapWith(Number),
+    })
+    .from(matchesMapped)
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+    .groupBy(matchesMapped.corpShortId, matchesMapped.runnerShortId);
+
+  // Query for runner matchups: group by runner_id and corp_id
+  const runnerMatchups = await db
+    .select({
+      runner_id: matchesMapped.runnerShortId,
+      corp_id: matchesMapped.corpShortId,
+      wins: sql<number>`count(*) filter (where ${matchesMapped.result} = 'runnerWin')`.mapWith(Number),
+      losses: sql<number>`count(*) filter (where ${matchesMapped.result} = 'corpWin')`.mapWith(Number),
+    })
+    .from(matchesMapped)
+    .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+    .groupBy(matchesMapped.runnerShortId, matchesMapped.corpShortId);
+
+  // Transform corp data to MatchupRecord format
+  const corpData: MatchupRecord[] = corpMatchups.map((row) => ({
+    identity: row.corp_id ?? "",
+    opponent: row.runner_id ?? "",
+    wins: row.wins,
+    losses: row.losses,
+  }));
+
+  // Transform runner data to MatchupRecord format
+  const runnerData: MatchupRecord[] = runnerMatchups.map((row) => ({
+    identity: row.runner_id ?? "",
+    opponent: row.corp_id ?? "",
+    wins: row.wins,
+    losses: row.losses,
+  }));
+
+  // Calculate meta share (percentage of total matches each identity participated in)
+  const corpMetaShare: Record<string, number> = {};
+  const runnerMetaShare: Record<string, number> = {};
+
+  // For corp meta share
+  let corpTotalMatches = 0;
+  const corpMatchCounts: Record<string, number> = {};
+
+  for (const record of corpData) {
+    const matchCount = record.wins + record.losses;
+    corpTotalMatches += matchCount;
+    corpMatchCounts[record.identity] = (corpMatchCounts[record.identity] || 0) + matchCount;
+  }
+
+  for (const [identity, count] of Object.entries(corpMatchCounts)) {
+    corpMetaShare[identity] = corpTotalMatches > 0 ? count / corpTotalMatches : 0;
+  }
+
+  // For runner meta share
+  let runnerTotalMatches = 0;
+  const runnerMatchCounts: Record<string, number> = {};
+
+  for (const record of runnerData) {
+    const matchCount = record.wins + record.losses;
+    runnerTotalMatches += matchCount;
+    runnerMatchCounts[record.identity] = (runnerMatchCounts[record.identity] || 0) + matchCount;
+  }
+
+  for (const [identity, count] of Object.entries(runnerMatchCounts)) {
+    runnerMetaShare[identity] = runnerTotalMatches > 0 ? count / runnerTotalMatches : 0;
+  }
+
+  return {
+    corpData,
+    runnerData,
+    corpMetaShare,
+    runnerMetaShare,
+  };
 }
