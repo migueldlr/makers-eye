@@ -56,6 +56,10 @@ export default function MarkovAnalysis({
   const [corpPrimaryIdentities, setCorpPrimaryIdentities] = useState<Set<string>>(new Set());
   const [runnerPrimaryIdentities, setRunnerPrimaryIdentities] = useState<Set<string>>(new Set());
 
+  // Matchup data for tooltips
+  const [corpMatchupData, setCorpMatchupData] = useState<any[]>([]);
+  const [runnerMatchupData, setRunnerMatchupData] = useState<any[]>([]);
+
   // Function to compute rankings with a given alpha value
   const computeRankings = (matchData: any, alphaValue: number) => {
     const computeStart = performance.now();
@@ -90,6 +94,10 @@ export default function MarkovAnalysis({
     // Update iteration info
     setIterations(result.iterations);
     setConverged(result.converged);
+
+    // Update matchup data for tooltips
+    setCorpMatchupData(matchData.corpData);
+    setRunnerMatchupData(matchData.runnerData);
 
     // Check if we have insufficient data
     if (result.corpRankings.length === 0 && result.runnerRankings.length === 0) {
@@ -208,6 +216,7 @@ export default function MarkovAnalysis({
             side="corp"
             rankings={corpResults}
             opponentRankings={runnerResults}
+            matchupData={corpMatchupData}
           />
         </>
       )}
@@ -228,6 +237,7 @@ export default function MarkovAnalysis({
             side="runner"
             rankings={runnerResults}
             opponentRankings={corpResults}
+            matchupData={runnerMatchupData}
           />
         </>
       )}

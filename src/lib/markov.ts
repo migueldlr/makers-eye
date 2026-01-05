@@ -527,7 +527,7 @@ export function computeDualMarkovRankings(
     }
   }
 
-  const identities = Array.from(new Set([...corpIdentitiesSet, ...runnerIdentitiesSet])).sort();
+  const identities = Array.from(new Set([...Array.from(corpIdentitiesSet), ...Array.from(runnerIdentitiesSet)])).sort();
 
   if (identities.length === 0) {
     return {

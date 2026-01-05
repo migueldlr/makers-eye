@@ -8,8 +8,15 @@ import {
   Stack,
   Group,
   Switch,
-  SegmentedControl,
+  Popover,
 } from "@mantine/core";
+
+interface MatchupRecord {
+  identity: string;
+  opponent: string;
+  wins: number;
+  losses: number;
+}
 
 interface MarkovFlowMatrixProps {
   matrix: number[][];
@@ -18,6 +25,7 @@ interface MarkovFlowMatrixProps {
   side: "corp" | "runner";
   rankings: Array<{ identity: string; markovValue: number }>;
   opponentRankings: Array<{ identity: string; markovValue: number }>;
+  matchupData: MatchupRecord[];
 }
 
 export default function MarkovFlowMatrix({
@@ -27,12 +35,21 @@ export default function MarkovFlowMatrix({
   side,
   rankings,
   opponentRankings,
+  matchupData,
 }: MarkovFlowMatrixProps) {
   const [showColors, setShowColors] = useState(true);
   const [showValues, setShowValues] = useState(true);
-  const [format, setFormat] = useState<"decimal" | "percentage">("decimal");
+  const [scale10000x, setScale10000x] = useState(false);
   const [showSelf, setShowSelf] = useState(false);
   const [hoveredCoords, setHoveredCoords] = useState({ row: -1, col: -1 });
+
+  // Popover state for showing matchup details
+  const [hoveredMatchup, setHoveredMatchup] = useState<{
+    identity: string;
+    opponent: string;
+    wins: number;
+    losses: number;
+  } | null>(null);
 
   // Separate primary (corps/runners being ranked) from opponents
   const primaryIds = identities.filter((id) => primaryIdentities.has(id));
@@ -90,10 +107,8 @@ export default function MarkovFlowMatrix({
 
   // Helper to format cell value
   const formatValue = (value: number) => {
-    if (format === "percentage") {
-      return `${(value * 100).toFixed(1)}%`;
-    }
-    return value.toFixed(4);
+    const scaledValue = scale10000x ? value * 10000 : value;
+    return scaledValue.toFixed(scale10000x ? 0 : 4);
   };
 
   // Helper to calculate color gradient normalized to row's range
@@ -139,13 +154,10 @@ export default function MarkovFlowMatrix({
           checked={showSelf}
           onChange={(e) => setShowSelf(e.currentTarget.checked)}
         />
-        <SegmentedControl
-          value={format}
-          onChange={(val) => setFormat(val as "decimal" | "percentage")}
-          data={[
-            { label: "Decimal", value: "decimal" },
-            { label: "Percentage", value: "percentage" },
-          ]}
+        <Switch
+          label="Scale 10000x"
+          checked={scale10000x}
+          onChange={(e) => setScale10000x(e.currentTarget.checked)}
         />
       </Group>
 
@@ -160,24 +172,28 @@ export default function MarkovFlowMatrix({
                   <Table.Th
                     style={{
                       fontSize: "0.75rem",
-                      writingMode: "vertical-rl",
-                      textOrientation: "mixed",
+                      writingMode: "sideways-lr",
                       padding: "8px 4px",
                       minHeight: "100px",
+                      ...(hoveredCoords.col === -1 && hoveredCoords.row !== -1 && {
+                        backgroundColor: "rgba(0,0,0,0.3)",
+                      }),
                     }}
                   >
                     Self (Win)
                   </Table.Th>
                 )}
-                {sortedOpponentIds.map((id) => (
+                {sortedOpponentIds.map((id, j) => (
                   <Table.Th
                     key={id}
                     style={{
                       fontSize: "0.75rem",
-                      writingMode: "vertical-rl",
-                      textOrientation: "mixed",
+                      writingMode: "sideways-lr",
                       padding: "8px 4px",
                       minHeight: "100px",
+                      ...(hoveredCoords.col === j && {
+                        backgroundColor: "rgba(0,0,0,0.3)",
+                      }),
                     }}
                   >
                     {id}
@@ -190,7 +206,16 @@ export default function MarkovFlowMatrix({
                 const fromIndex = identities.indexOf(fromId);
                 return (
                   <Table.Tr key={fromId}>
-                    <Table.Th style={{ fontSize: "0.75rem" }}>{fromId}</Table.Th>
+                    <Table.Th
+                      style={{
+                        fontSize: "0.75rem",
+                        ...(hoveredCoords.row === i && {
+                          backgroundColor: "rgba(0,0,0,0.3)",
+                        }),
+                      }}
+                    >
+                      {fromId}
+                    </Table.Th>
                     {/* Self-loop (diagonal) - weighted by own Markov value */}
                     {showSelf && (
                       <Table.Td
@@ -206,9 +231,8 @@ export default function MarkovFlowMatrix({
                               (1 - getGradient((markovValueMap.get(fromId) ?? 0) * matrix[fromIndex][fromIndex], fromId)) * 100
                             }%, #1864ab ${getGradient((markovValueMap.get(fromId) ?? 0) * matrix[fromIndex][fromIndex], fromId) * 100}%)`,
                           }),
-                          ...(hoveredCoords.row === i && {
-                            outline: "2px solid #1864ab",
-                            outlineOffset: "-2px",
+                          ...(hoveredCoords.row === i && hoveredCoords.col === -1 && {
+                            boxShadow: "inset 0 0 0 1000px rgba(0,0,0,0.3)",
                           }),
                         }}
                       >
@@ -223,32 +247,62 @@ export default function MarkovFlowMatrix({
                       const transitionProb = matrix[sourceIndex]?.[fromIndex] ?? 0;
                       const weightedInflow = sourceMarkovValue * transitionProb;
                       const gradient = getGradient(weightedInflow, fromId);
-                      const isHovered =
-                        hoveredCoords.row === i || hoveredCoords.col === j;
+
+                      const matchup = matchupData.find(
+                        (m) => m.identity === fromId && m.opponent === sourceId
+                      ) || { identity: fromId, opponent: sourceId, wins: 0, losses: 0 };
 
                       return (
-                        <Table.Td
+                        <Popover
                           key={sourceId}
-                          onMouseEnter={() => setHoveredCoords({ row: i, col: j })}
-                          onMouseLeave={() => setHoveredCoords({ row: -1, col: -1 })}
-                          style={{
-                            fontSize: "0.7rem",
-                            textAlign: "center",
-                            padding: "4px",
-                            cursor: "default",
-                            ...(showColors && {
-                              backgroundColor: `color-mix(in oklab, #071d31 ${
-                                (1 - gradient) * 100
-                              }%, #1864ab ${gradient * 100}%)`,
-                            }),
-                            ...(isHovered && {
-                              outline: "2px solid #1864ab",
-                              outlineOffset: "-2px",
-                            }),
-                          }}
+                          opened={hoveredMatchup?.identity === fromId && hoveredMatchup?.opponent === sourceId}
+                          position="top"
+                          withArrow
                         >
-                          {showValues && formatValue(weightedInflow)}
-                        </Table.Td>
+                          <Popover.Target>
+                            <Table.Td
+                              onMouseEnter={() => {
+                                setHoveredCoords({ row: i, col: j });
+                                setHoveredMatchup(matchup);
+                              }}
+                              onMouseLeave={() => {
+                                setHoveredCoords({ row: -1, col: -1 });
+                                setHoveredMatchup(null);
+                              }}
+                              style={{
+                                fontSize: "0.7rem",
+                                textAlign: "center",
+                                padding: "4px",
+                                cursor: "default",
+                                ...(showColors && {
+                                  backgroundColor: `color-mix(in oklab, #071d31 ${
+                                    (1 - gradient) * 100
+                                  }%, #1864ab ${gradient * 100}%)`,
+                                }),
+                                ...(hoveredCoords.row === i && hoveredCoords.col === j && {
+                                  boxShadow: "inset 0 0 0 1000px rgba(0,0,0,0.3)",
+                                }),
+                              }}
+                            >
+                              {showValues && formatValue(weightedInflow)}
+                            </Table.Td>
+                          </Popover.Target>
+                          <Popover.Dropdown>
+                            <Stack gap={4}>
+                              <Text c="gray.0">{matchup.identity} vs {matchup.opponent}</Text>
+                              {matchup.wins === 0 && matchup.losses === 0 ? (
+                                <Text c="gray.4">no matchup data</Text>
+                              ) : (
+                                <>
+                                  <Text c="gray.3">
+                                    {matchup.wins}-{matchup.losses}
+                                  </Text>
+                                  <Text c="gray.4">({matchup.wins + matchup.losses} games)</Text>
+                                </>
+                              )}
+                            </Stack>
+                          </Popover.Dropdown>
+                        </Popover>
                       );
                     })}
                   </Table.Tr>
