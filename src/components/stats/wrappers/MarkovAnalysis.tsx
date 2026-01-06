@@ -173,6 +173,26 @@ export default function MarkovAnalysis({
 
   return (
     <Stack gap="lg">
+      {/* Flow Matrix - single matrix with perspective toggle */}
+      {(corpResults.length > 0 || runnerResults.length > 0) && (
+        <MarkovFlowMatrix
+          matrix={corpMatrix}
+          identities={corpIdentities}
+          primaryIdentities={corpPrimaryIdentities}
+          side="corp"
+          rankings={corpResults}
+          opponentRankings={runnerResults}
+          matchupData={corpMatchupData}
+        />
+      )}
+
+      {/* Computation info */}
+      {(corpResults.length > 0 || runnerResults.length > 0) && (
+        <Text size="xs" c="dimmed">
+          Computation time: {computationTime.toFixed(0)}ms | {iterations} iterations{!converged && " (not converged)"}
+        </Text>
+      )}
+
       {/* Controls */}
       <Stack gap="xs" style={{ maxWidth: 600 }}>
         <Text size="sm" fw={500}>
@@ -195,52 +215,29 @@ export default function MarkovAnalysis({
         />
       </Stack>
 
-      {/* Computation info */}
-      {(corpResults.length > 0 || runnerResults.length > 0) && (
-        <Text size="xs" c="dimmed">
-          Computation time: {computationTime.toFixed(0)}ms | {iterations} iterations{!converged && " (not converged)"}
-        </Text>
-      )}
-
       {/* Corp rankings */}
-      {corpResults.length > 0 && (
+      {/* {corpResults.length > 0 && (
         <>
           {showRankingTable && (
             <MarkovRankingChart rankings={corpResults} side="corp" />
           )}
           <MarkovValueChart rankings={corpResults} side="corp" />
-          <MarkovFlowMatrix
-            matrix={corpMatrix}
-            identities={corpIdentities}
-            primaryIdentities={corpPrimaryIdentities}
-            side="corp"
-            rankings={corpResults}
-            opponentRankings={runnerResults}
-            matchupData={corpMatchupData}
-          />
         </>
-      )}
+      )} */}
 
-      <Divider />
+      {/* <Divider /> */}
 
       {/* Runner rankings */}
-      {runnerResults.length > 0 && (
+      {/* {runnerResults.length > 0 && (
         <>
           {showRankingTable && (
             <MarkovRankingChart rankings={runnerResults} side="runner" />
           )}
           <MarkovValueChart rankings={runnerResults} side="runner" />
-          <MarkovFlowMatrix
-            matrix={runnerMatrix}
-            identities={runnerIdentities}
-            primaryIdentities={runnerPrimaryIdentities}
-            side="runner"
-            rankings={runnerResults}
-            opponentRankings={corpResults}
-            matchupData={runnerMatchupData}
-          />
         </>
-      )}
+      )} */}
+
+      {/* <Divider /> */}
     </Stack>
   );
 }

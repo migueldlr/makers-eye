@@ -83,7 +83,7 @@ function matrixVectorMultiply(matrix: number[][], vector: number[]): number[] {
   const cols = vector.length;
 
   if (matrix[0].length !== cols) {
-    throw new Error('Matrix columns must match vector length');
+    throw new Error("Matrix columns must match vector length");
   }
 
   const result: number[] = new Array(rows).fill(0);
@@ -102,7 +102,7 @@ function matrixVectorMultiply(matrix: number[][], vector: number[]): number[] {
  */
 function vectorMaxDiff(a: number[], b: number[]): number {
   if (a.length !== b.length) {
-    throw new Error('Vectors must have same length');
+    throw new Error("Vectors must have same length");
   }
 
   let maxDiff = 0;
@@ -220,7 +220,7 @@ function buildLossFlowMatrix(
       const sameSide = identityIsPrimary === opponentIsPrimary;
 
       if (sameSide) {
-        continue;  // Skip identities on the same side
+        continue; // Skip identities on the same side
       }
 
       const j = indexMap.get(opponent);
@@ -254,7 +254,7 @@ function buildLossFlowMatrix(
  */
 function iterativeConvergence(
   matrix: number[][],
-  epsilon: number = 1e-9,
+  epsilon: number = 1e-12,
   maxIterations: number = 10000
 ): ConvergenceResult {
   const n = matrix.length;
@@ -315,7 +315,10 @@ export function computeMarkovRankings(
   alpha: number = 1.0
 ): MarkovAnalysisResult {
   // Build matchup data structure
-  const matchupData = new Map<string, Map<string, { wins: number; losses: number }>>();
+  const matchupData = new Map<
+    string,
+    Map<string, { wins: number; losses: number }>
+  >();
   const identitiesSet = new Set<string>();
   const primaryIdentitiesSet = new Set<string>(); // Track which identities we're actually ranking
 
@@ -345,8 +348,8 @@ export function computeMarkovRankings(
     }
     const reverseOpponents = matchupData.get(record.opponent)!;
     reverseOpponents.set(record.identity, {
-      wins: record.losses,  // opponent's wins = identity's losses
-      losses: record.wins,   // opponent's losses = identity's wins
+      wins: record.losses, // opponent's wins = identity's losses
+      losses: record.wins, // opponent's losses = identity's wins
     });
   }
 
@@ -368,13 +371,15 @@ export function computeMarkovRankings(
     // Edge case: single identity
     const identity = identities[0];
     return {
-      rankings: [{
-        identity,
-        markovValue: 1.0,
-        rawWinrate: 0.5,
-        metaShare: metaShare[identity] || 0,
-        totalGames: 0,
-      }],
+      rankings: [
+        {
+          identity,
+          markovValue: 1.0,
+          rawWinrate: 0.5,
+          metaShare: metaShare[identity] || 0,
+          totalGames: 0,
+        },
+      ],
       matrix: [[1.0]],
       identities,
       primaryIdentities: primaryIdentitiesSet,
@@ -384,7 +389,12 @@ export function computeMarkovRankings(
   }
 
   // Build loss-flow matrix
-  const matrix = buildLossFlowMatrix(identities, primaryIdentitiesSet, matchupData, alpha);
+  const matrix = buildLossFlowMatrix(
+    identities,
+    primaryIdentitiesSet,
+    matchupData,
+    alpha
+  );
 
   // Solve for steady-state distribution
   const { stateVector, iterations, converged } = iterativeConvergence(matrix);
@@ -394,7 +404,9 @@ export function computeMarkovRankings(
   );
 
   if (!converged) {
-    console.warn(`Markov chain did not fully converge after ${iterations} iterations`);
+    console.warn(
+      `Markov chain did not fully converge after ${iterations} iterations`
+    );
   }
 
   // Calculate raw winrates and total games
@@ -419,7 +431,8 @@ export function computeMarkovRankings(
     }
 
     totalGames[identity] = wins + losses;
-    rawWinrates[identity] = totalGames[identity] > 0 ? wins / totalGames[identity] : 0.5;
+    rawWinrates[identity] =
+      totalGames[identity] > 0 ? wins / totalGames[identity] : 0.5;
   }
 
   // Combine results, but only for primary identities (the ones we're ranking)
@@ -471,7 +484,10 @@ export function computeDualMarkovRankings(
   alpha: number = 1.0
 ): DualMarkovAnalysisResult {
   // Build matchup data structure from BOTH perspectives
-  const matchupData = new Map<string, Map<string, { wins: number; losses: number }>>();
+  const matchupData = new Map<
+    string,
+    Map<string, { wins: number; losses: number }>
+  >();
   const corpIdentitiesSet = new Set<string>();
   const runnerIdentitiesSet = new Set<string>();
 
@@ -506,7 +522,9 @@ export function computeDualMarkovRankings(
     if (!matchupData.has(record.identity)) {
       matchupData.set(record.identity, new Map());
     }
-    const existingMatchup = matchupData.get(record.identity)!.get(record.opponent);
+    const existingMatchup = matchupData
+      .get(record.identity)!
+      .get(record.opponent);
     if (!existingMatchup) {
       matchupData.get(record.identity)!.set(record.opponent, {
         wins: record.wins,
@@ -518,7 +536,9 @@ export function computeDualMarkovRankings(
     if (!matchupData.has(record.opponent)) {
       matchupData.set(record.opponent, new Map());
     }
-    const existingReverse = matchupData.get(record.opponent)!.get(record.identity);
+    const existingReverse = matchupData
+      .get(record.opponent)!
+      .get(record.identity);
     if (!existingReverse) {
       matchupData.get(record.opponent)!.set(record.identity, {
         wins: record.losses,
@@ -527,7 +547,12 @@ export function computeDualMarkovRankings(
     }
   }
 
-  const identities = Array.from(new Set([...Array.from(corpIdentitiesSet), ...Array.from(runnerIdentitiesSet)])).sort();
+  const identities = Array.from(
+    new Set([
+      ...Array.from(corpIdentitiesSet),
+      ...Array.from(runnerIdentitiesSet),
+    ])
+  ).sort();
 
   if (identities.length === 0) {
     return {
@@ -543,7 +568,12 @@ export function computeDualMarkovRankings(
   }
 
   // Build loss-flow matrix (corps as primary for matrix construction, but doesn't matter)
-  const matrix = buildLossFlowMatrix(identities, corpIdentitiesSet, matchupData, alpha);
+  const matrix = buildLossFlowMatrix(
+    identities,
+    corpIdentitiesSet,
+    matchupData,
+    alpha
+  );
 
   // Solve for steady-state distribution ONCE
   const { stateVector, iterations, converged } = iterativeConvergence(matrix);
@@ -553,7 +583,9 @@ export function computeDualMarkovRankings(
   );
 
   if (!converged) {
-    console.warn(`Markov chain did not fully converge after ${iterations} iterations`);
+    console.warn(
+      `Markov chain did not fully converge after ${iterations} iterations`
+    );
   }
 
   // Calculate raw winrates and total games for ALL identities
@@ -579,7 +611,8 @@ export function computeDualMarkovRankings(
     }
 
     totalGames[identity] = wins + losses;
-    rawWinrates[identity] = totalGames[identity] > 0 ? wins / totalGames[identity] : 0.5;
+    rawWinrates[identity] =
+      totalGames[identity] > 0 ? wins / totalGames[identity] : 0.5;
   }
 
   // Extract corp rankings
