@@ -168,20 +168,20 @@ export default function MarkovFlowMatrix({
     } else {
       // Diverging red-to-blue scale for net flows
       const absMax = netFlowRanges.absMax;
-      if (absMax === 0) return "#071d31";
+      if (absMax === 0) return "transparent";
 
       const normalizedValue = value / absMax; // Range: -1 to 1
 
       if (normalizedValue < 0) {
         // Negative: red (net loss)
         const ratio = Math.abs(normalizedValue);
-        return `color-mix(in oklab, #071d31 ${(1 - ratio) * 100}%, #dc2626 ${ratio * 100}%)`;
+        return `color-mix(in oklab, transparent ${(1 - ratio) * 100}%, #dc2626 ${ratio * 100}%)`;
       } else if (normalizedValue > 0) {
         // Positive: blue (net gain)
         const ratio = normalizedValue;
-        return `color-mix(in oklab, #071d31 ${(1 - ratio) * 100}%, #1864ab ${ratio * 100}%)`;
+        return `color-mix(in oklab, transparent ${(1 - ratio) * 100}%, #1971c2 ${ratio * 100}%)`;
       } else {
-        return "#071d31";
+        return "transparent";
       }
     }
   };
