@@ -205,7 +205,7 @@ export default function MatchupTable({
   );
 
   return (
-    <Stack gap="xl" pb="xl">
+    <Stack gap="xl">
       <Table>
         <TableThead>
           <TableTr>

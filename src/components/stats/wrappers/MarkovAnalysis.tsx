@@ -41,6 +41,9 @@ export default function MarkovAnalysis({
   // Alpha smoothing factor controls
   const [alpha, setAlpha] = useState<number>(1.0);
 
+  // Retention multiplier controls
+  const [retentionMultiplier, setRetentionMultiplier] = useState<number>(1.0);
+
   // Cache match data so we can recompute without refetching
   const [cachedMatchData, setCachedMatchData] = useState<any>(null);
 
@@ -60,8 +63,8 @@ export default function MarkovAnalysis({
   const [corpMatchupData, setCorpMatchupData] = useState<any[]>([]);
   const [runnerMatchupData, setRunnerMatchupData] = useState<any[]>([]);
 
-  // Function to compute rankings with a given alpha value
-  const computeRankings = (matchData: any, alphaValue: number) => {
+  // Function to compute rankings with a given alpha value and retention multiplier
+  const computeRankings = (matchData: any, alphaValue: number, retentionValue: number) => {
     const computeStart = performance.now();
 
     console.time("Markov computation");
@@ -71,7 +74,8 @@ export default function MarkovAnalysis({
       matchData.runnerData,
       matchData.corpMetaShare,
       matchData.runnerMetaShare,
-      alphaValue
+      alphaValue,
+      retentionValue
     );
 
     console.timeEnd("Markov computation");
@@ -124,7 +128,7 @@ export default function MarkovAnalysis({
         });
 
         setCachedMatchData(matchData);
-        computeRankings(matchData, alpha);
+        computeRankings(matchData, alpha, retentionMultiplier);
       } catch (err) {
         console.error("Error computing Markov rankings:", err);
         setError(
@@ -140,12 +144,12 @@ export default function MarkovAnalysis({
     fetchAndCompute();
   }, [tournamentIds, includeCut, includeSwiss]);
 
-  // Recompute when alpha changes (instant refresh)
+  // Recompute when alpha or retentionMultiplier changes (instant refresh)
   useEffect(() => {
     if (!cachedMatchData) return;
 
-    computeRankings(cachedMatchData, alpha);
-  }, [alpha, cachedMatchData]);
+    computeRankings(cachedMatchData, alpha, retentionMultiplier);
+  }, [alpha, retentionMultiplier, cachedMatchData]);
 
   if (loading) {
     return (
@@ -173,26 +177,6 @@ export default function MarkovAnalysis({
 
   return (
     <Stack gap="lg">
-      {/* Flow Matrix - single matrix with perspective toggle */}
-      {(corpResults.length > 0 || runnerResults.length > 0) && (
-        <MarkovFlowMatrix
-          matrix={corpMatrix}
-          identities={corpIdentities}
-          primaryIdentities={corpPrimaryIdentities}
-          side="corp"
-          rankings={corpResults}
-          opponentRankings={runnerResults}
-          matchupData={corpMatchupData}
-        />
-      )}
-
-      {/* Computation info */}
-      {(corpResults.length > 0 || runnerResults.length > 0) && (
-        <Text size="xs" c="dimmed">
-          Computation time: {computationTime.toFixed(0)}ms | {iterations} iterations{!converged && " (not converged)"}
-        </Text>
-      )}
-
       {/* Controls */}
       <Stack gap="xs" style={{ maxWidth: 600 }}>
         <Text size="sm" fw={500}>
@@ -214,6 +198,46 @@ export default function MarkovAnalysis({
           ]}
         />
       </Stack>
+
+      <Stack gap="xs" style={{ maxWidth: 600 }}>
+        <Text size="sm" fw={500}>
+          Retention Multiplier: {retentionMultiplier.toFixed(2)}
+        </Text>
+        <Slider
+          value={retentionMultiplier}
+          onChange={setRetentionMultiplier}
+          min={0}
+          max={1}
+          step={0.05}
+          marks={[
+            { value: 0, label: "0" },
+            { value: 0.25, label: "0.25" },
+            { value: 0.5, label: "0.5" },
+            { value: 0.75, label: "0.75" },
+            { value: 1, label: "1.0" },
+          ]}
+        />
+      </Stack>
+
+      {/* Flow Matrix - single matrix with perspective toggle */}
+      {(corpResults.length > 0 || runnerResults.length > 0) && (
+        <MarkovFlowMatrix
+          matrix={corpMatrix}
+          identities={corpIdentities}
+          primaryIdentities={corpPrimaryIdentities}
+          side="corp"
+          rankings={corpResults}
+          opponentRankings={runnerResults}
+          matchupData={corpMatchupData}
+        />
+      )}
+
+      {/* Computation info */}
+      {(corpResults.length > 0 || runnerResults.length > 0) && (
+        <Text size="xs" c="dimmed">
+          Computation time: {computationTime.toFixed(0)}ms | {iterations} iterations{!converged && " (not converged)"}
+        </Text>
+      )}
 
       {/* Corp rankings */}
       {/* {corpResults.length > 0 && (

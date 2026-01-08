@@ -136,7 +136,8 @@ function buildLossFlowMatrix(
   identities: string[],
   primaryIdentities: Set<string>,
   matchupData: Map<string, Map<string, { wins: number; losses: number }>>,
-  alpha: number = 1.0
+  alpha: number = 1.0,
+  retentionMultiplier: number = 1.0
 ): number[][] {
   const n = identities.length;
   const matrix: number[][] = [];
@@ -184,14 +185,16 @@ function buildLossFlowMatrix(
       continue;
     }
 
-    // Diagonal element: probability of winning (with Laplace smoothing)
+    // Diagonal element: probability of winning (with Laplace smoothing) multiplied by retention factor
     const adjustedWins = totalWins + alpha;
     const adjustedTotal = totalGames + 2 * alpha;
-    matrix[i][i] = adjustedWins / adjustedTotal;
+    const rawWinRate = adjustedWins / adjustedTotal;
+    const retention = Math.min(rawWinRate * retentionMultiplier, 1.0); // Clamp at 1.0
+    matrix[i][i] = retention;
 
     // Off-diagonal elements: distribute loss probability
-    const adjustedLosses = totalLosses + alpha;
-    const lossMass = adjustedLosses / adjustedTotal;
+    // Loss mass is whatever remains after retention (maintains row sum = 1.0)
+    const lossMass = 1.0 - matrix[i][i];
 
     // Calculate total number of possible opponents (identities on the opposite side)
     // For a primary identity (corp when ranking corps), this is all non-primary (runners)
@@ -312,7 +315,8 @@ function iterativeConvergence(
 export function computeMarkovRankings(
   matchupRecords: MatchupRecord[],
   metaShare: Record<string, number>,
-  alpha: number = 1.0
+  alpha: number = 1.0,
+  retentionMultiplier: number = 1.0
 ): MarkovAnalysisResult {
   // Build matchup data structure
   const matchupData = new Map<
@@ -393,7 +397,8 @@ export function computeMarkovRankings(
     identities,
     primaryIdentitiesSet,
     matchupData,
-    alpha
+    alpha,
+    retentionMultiplier
   );
 
   // Solve for steady-state distribution
@@ -481,7 +486,8 @@ export function computeDualMarkovRankings(
   runnerMatchupRecords: MatchupRecord[],
   corpMetaShare: Record<string, number>,
   runnerMetaShare: Record<string, number>,
-  alpha: number = 1.0
+  alpha: number = 1.0,
+  retentionMultiplier: number = 1.0
 ): DualMarkovAnalysisResult {
   // Build matchup data structure from BOTH perspectives
   const matchupData = new Map<
@@ -572,7 +578,8 @@ export function computeDualMarkovRankings(
     identities,
     corpIdentitiesSet,
     matchupData,
-    alpha
+    alpha,
+    retentionMultiplier
   );
 
   // Solve for steady-state distribution ONCE

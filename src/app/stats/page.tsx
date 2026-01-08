@@ -223,6 +223,7 @@ export default async function StatsPage({
           includeSwiss={includeSwiss}
         />
 
+        <Space h="xl" />
         <BackButton />
       </Stack>
       <Center>
