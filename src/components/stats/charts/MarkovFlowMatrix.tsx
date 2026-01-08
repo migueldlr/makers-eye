@@ -50,17 +50,17 @@ const ColumnBar = memo(({
   markovValue,
   faction,
   totalColumnValue,
-  scale10000x,
+  scale1000x,
 }: {
   identity: string;
   markovValue: number;
   faction: string;
   totalColumnValue: number;
-  scale10000x: boolean;
+  scale1000x: boolean;
 }) => {
   const heightPercent = (markovValue / totalColumnValue) * 100;
-  const displayValue = scale10000x ? markovValue * 1000 : markovValue;
-  const formattedValue = displayValue.toFixed(scale10000x ? 1 : 4);
+  const displayValue = scale1000x ? markovValue * 1000 : markovValue;
+  const formattedValue = displayValue.toFixed(scale1000x ? 1 : 4);
 
   return (
     <Table.Th
@@ -216,13 +216,13 @@ const RowBar = memo(({
   markovValue,
   faction,
   totalRowValue,
-  scale10000x,
+  scale1000x,
 }: {
   identity: string;
   markovValue: number;
   faction: string;
   totalRowValue: number;
-  scale10000x: boolean;
+  scale1000x: boolean;
 }) => {
   return (
     <Table.Td
@@ -253,7 +253,7 @@ const RowBar = memo(({
                 whiteSpace: 'nowrap',
               }}
             >
-              {(scale10000x ? markovValue * 1000 : markovValue).toFixed(scale10000x ? 1 : 4)}
+              {(scale1000x ? markovValue * 1000 : markovValue).toFixed(scale1000x ? 1 : 4)}
             </Text>
             <Box
               className="matrix-hover-bar"
@@ -295,7 +295,7 @@ export default function MarkovFlowMatrix({
 }: MarkovFlowMatrixProps) {
   const [showColors, setShowColors] = useState(true);
   const [showValues, setShowValues] = useState(true);
-  const [scale10000x, setScale10000x] = useState(true);
+  const [scale1000x, setScale1000x] = useState(true);
   const [showSelf, setShowSelf] = useState(false);
   const [viewMode, setViewMode] = useState<"inflow" | "netflow">("netflow");
   const [perspective, setPerspective] = useState<"primary" | "opponent">("primary");
@@ -430,16 +430,16 @@ export default function MarkovFlowMatrix({
 
   // Helper to format cell value
   const formatValue = useCallback((value: number, showSign: boolean = false) => {
-    const scaledValue = scale10000x ? value * 1000 : value;
+    const scaledValue = scale1000x ? value * 1000 : value;
     // Always use 1 decimal place when scaled, 4 when not
-    const decimalPlaces = scale10000x ? 1 : 4;
+    const decimalPlaces = scale1000x ? 1 : 4;
     const formatted = scaledValue.toFixed(decimalPlaces);
 
     if (showSign && value > 0) {
       return `+${formatted}`;
     }
     return formatted;
-  }, [scale10000x]);
+  }, [scale1000x]);
 
   // Helper to calculate color for cell based on view mode
   const getCellColor = useCallback((value: number, rowId: string) => {
@@ -508,8 +508,15 @@ export default function MarkovFlowMatrix({
                   Value
                 </Table.Th>
                 {effectiveShowSelf && (
-                  <Table.Th rowSpan={2} style={{ verticalAlign: 'bottom' }}>
-                    {/* Self column spans both rows */}
+                  <Table.Th
+                    style={{
+                      verticalAlign: 'bottom',
+                      padding: '2px',
+                      width: "40px",
+                      maxWidth: "40px",
+                    }}
+                  >
+                    {/* Empty space for bar above Self label */}
                   </Table.Th>
                 )}
                 {columnBarData.map((data) => (
@@ -519,7 +526,7 @@ export default function MarkovFlowMatrix({
                     markovValue={data.markovValue}
                     faction={data.faction}
                     totalColumnValue={totalColumnValue}
-                    scale10000x={scale10000x}
+                    scale1000x={scale1000x}
                   />
                 ))}
               </Table.Tr>
@@ -582,7 +589,7 @@ export default function MarkovFlowMatrix({
                       markovValue={rowBarData[i].markovValue}
                       faction={rowBarData[i].faction}
                       totalRowValue={totalRowValue}
-                      scale10000x={scale10000x}
+                      scale1000x={scale1000x}
                     />
                     {/* Self-loop (diagonal) - weighted by own Markov value */}
                     {effectiveShowSelf && (
@@ -679,8 +686,8 @@ export default function MarkovFlowMatrix({
         />
         <Switch
           label="Scale 1000x"
-          checked={scale10000x}
-          onChange={(e) => setScale10000x(e.currentTarget.checked)}
+          checked={scale1000x}
+          onChange={(e) => setScale1000x(e.currentTarget.checked)}
         />
       </Group>
 
