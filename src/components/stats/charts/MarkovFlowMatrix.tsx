@@ -42,6 +42,7 @@ interface MarkovFlowMatrixProps {
   rankings: Array<{ identity: string; markovValue: number }>;
   opponentRankings: Array<{ identity: string; markovValue: number }>;
   matchupData: MatchupRecord[];
+  opponentMatchupData: MatchupRecord[];
 }
 
 // Memoized column bar component
@@ -51,15 +52,21 @@ const ColumnBar = memo(({
   faction,
   totalColumnValue,
   scale1000x,
+  record,
+  perspective,
+  isPrimaryIdentity,
 }: {
   identity: string;
   markovValue: number;
   faction: string;
   totalColumnValue: number;
   scale1000x: boolean;
+  record: { wins: number; losses: number };
+  perspective: "primary" | "opponent";
+  isPrimaryIdentity: boolean;
 }) => {
   const heightPercent = (markovValue / totalColumnValue) * 100;
-  const displayValue = scale1000x ? markovValue * 1000 : markovValue;
+  const displayValue = scale1000x ? markovValue * 100 : markovValue;
   const formattedValue = displayValue.toFixed(scale1000x ? 1 : 4);
 
   return (
@@ -82,6 +89,8 @@ const ColumnBar = memo(({
               alignItems: 'center',
               cursor: 'pointer',
               justifyContent: 'flex-end',
+              height: '100%',
+              width: '100%',
             }}
           >
             <Text size="xs" mb={4} c="gray.4" ta="center">
@@ -107,6 +116,14 @@ const ColumnBar = memo(({
             <Text c="gray.3" size="sm">
               Markov: {markovValue.toFixed(4)}
             </Text>
+            <Text c="gray.3" size="sm">
+              Record: {
+                // Flip record if perspective doesn't match identity type
+                (perspective === "primary" && isPrimaryIdentity) || (perspective === "opponent" && !isPrimaryIdentity)
+                  ? `${record.wins}-${record.losses}`
+                  : `${record.losses}-${record.wins}`
+              }
+            </Text>
           </Stack>
         </Popover.Dropdown>
       </Popover>
@@ -130,6 +147,8 @@ const MatrixCell = memo(({
   matrix,
   markovValueMap,
   identities,
+  perspective,
+  primaryIdentities,
 }: {
   cellValue: number;
   fromId: string;
@@ -143,6 +162,8 @@ const MatrixCell = memo(({
   matrix: number[][];
   markovValueMap: Map<string, number>;
   identities: string[];
+  perspective: "primary" | "opponent";
+  primaryIdentities: Set<string>;
 }) => {
   return (
     <Popover position="top" withArrow>
@@ -167,7 +188,7 @@ const MatrixCell = memo(({
       </Popover.Target>
       <Popover.Dropdown>
         <Stack gap={4}>
-          <Text c="gray.0">{matchupOrDefault.identity} vs {matchupOrDefault.opponent}</Text>
+          <Text c="gray.0">{fromId} vs {sourceId}</Text>
 
           {viewMode === "netflow" && (() => {
             const sourceIndex = identities.indexOf(sourceId);
@@ -183,10 +204,10 @@ const MatrixCell = memo(({
                   Net: {formatValue(cellValue, true)}
                 </Text>
                 <Text c="gray.4" size="xs">
-                  {matchupOrDefault.opponent} → {matchupOrDefault.identity}: {formatValue(weightedInflow, false)}
+                  {sourceId} → {fromId}: {formatValue(weightedInflow, false)}
                 </Text>
                 <Text c="gray.4" size="xs">
-                  {matchupOrDefault.identity} → {matchupOrDefault.opponent}: {formatValue(weightedOutflow, false)}
+                  {fromId} → {sourceId}: {formatValue(weightedOutflow, false)}
                 </Text>
               </>
             );
@@ -197,7 +218,13 @@ const MatrixCell = memo(({
           ) : (
             <>
               <Text c="gray.3">
-                {matchupOrDefault.wins}-{matchupOrDefault.losses}
+                {
+                  // Flip record if perspective doesn't match identity type
+                  (perspective === "primary" && primaryIdentities.has(matchupOrDefault.identity)) ||
+                  (perspective === "opponent" && !primaryIdentities.has(matchupOrDefault.identity))
+                    ? `${matchupOrDefault.wins}-${matchupOrDefault.losses}`
+                    : `${matchupOrDefault.losses}-${matchupOrDefault.wins}`
+                }
               </Text>
               <Text c="gray.4">({matchupOrDefault.wins + matchupOrDefault.losses} games)</Text>
             </>
@@ -217,12 +244,18 @@ const RowBar = memo(({
   faction,
   totalRowValue,
   scale1000x,
+  record,
+  perspective,
+  isPrimaryIdentity,
 }: {
   identity: string;
   markovValue: number;
   faction: string;
   totalRowValue: number;
   scale1000x: boolean;
+  record: { wins: number; losses: number };
+  perspective: "primary" | "opponent";
+  isPrimaryIdentity: boolean;
 }) => {
   return (
     <Table.Td
@@ -253,7 +286,7 @@ const RowBar = memo(({
                 whiteSpace: 'nowrap',
               }}
             >
-              {(scale1000x ? markovValue * 1000 : markovValue).toFixed(scale1000x ? 1 : 4)}
+              {(scale1000x ? markovValue * 100 : markovValue).toFixed(scale1000x ? 1 : 4)}
             </Text>
             <Box
               className="matrix-hover-bar"
@@ -275,6 +308,14 @@ const RowBar = memo(({
             <Text c="gray.3" size="sm">
               Markov: {markovValue.toFixed(4)}
             </Text>
+            <Text c="gray.3" size="sm">
+              Record: {
+                // Flip record if perspective doesn't match identity type
+                (perspective === "primary" && isPrimaryIdentity) || (perspective === "opponent" && !isPrimaryIdentity)
+                  ? `${record.wins}-${record.losses}`
+                  : `${record.losses}-${record.wins}`
+              }
+            </Text>
           </Stack>
         </Popover.Dropdown>
       </Popover>
@@ -292,6 +333,7 @@ export default function MarkovFlowMatrix({
   rankings,
   opponentRankings,
   matchupData,
+  opponentMatchupData,
 }: MarkovFlowMatrixProps) {
   const [showColors, setShowColors] = useState(true);
   const [showValues, setShowValues] = useState(true);
@@ -365,6 +407,29 @@ export default function MarkovFlowMatrix({
     opponentRankings.forEach((r) => map.set(r.identity, r.markovValue));
     return map;
   }, [rankings, opponentRankings]);
+
+  // Create a map of identity -> overall W-L record
+  const overallRecords = useMemo(() => {
+    const records = new Map<string, { wins: number; losses: number }>();
+
+    // Process primary matchup data (e.g., corps)
+    matchupData.forEach((m) => {
+      const existing = records.get(m.identity) || { wins: 0, losses: 0 };
+      existing.wins += m.wins;
+      existing.losses += m.losses;
+      records.set(m.identity, existing);
+    });
+
+    // Process opponent matchup data (e.g., runners)
+    opponentMatchupData.forEach((m) => {
+      const existing = records.get(m.identity) || { wins: 0, losses: 0 };
+      existing.wins += m.wins;
+      existing.losses += m.losses;
+      records.set(m.identity, existing);
+    });
+
+    return records;
+  }, [matchupData, opponentMatchupData]);
 
   // In net flow mode, self-loop doesn't make sense (no opponent to compare)
   // Also, when perspective is switched, primary vs opponent are different sides, so no self-loop
@@ -527,6 +592,9 @@ export default function MarkovFlowMatrix({
                     faction={data.faction}
                     totalColumnValue={totalColumnValue}
                     scale1000x={scale1000x}
+                    record={overallRecords.get(data.identity) || { wins: 0, losses: 0 }}
+                    perspective={perspective}
+                    isPrimaryIdentity={primaryIdentities.has(data.identity)}
                   />
                 ))}
               </Table.Tr>
@@ -590,6 +658,9 @@ export default function MarkovFlowMatrix({
                       faction={rowBarData[i].faction}
                       totalRowValue={totalRowValue}
                       scale1000x={scale1000x}
+                      record={overallRecords.get(fromId) || { wins: 0, losses: 0 }}
+                      perspective={perspective}
+                      isPrimaryIdentity={primaryIdentities.has(fromId)}
                     />
                     {/* Self-loop (diagonal) - weighted by own Markov value */}
                     {effectiveShowSelf && (
@@ -656,6 +727,8 @@ export default function MarkovFlowMatrix({
                           matrix={matrix}
                           markovValueMap={markovValueMap}
                           identities={identities}
+                          perspective={perspective}
+                          primaryIdentities={primaryIdentities}
                         />
                       );
                     })}
@@ -685,7 +758,7 @@ export default function MarkovFlowMatrix({
           onChange={(e) => setShowSelf(e.currentTarget.checked)}
         />
         <Switch
-          label="Scale 1000x"
+          label="Magnify values"
           checked={scale1000x}
           onChange={(e) => setScale1000x(e.currentTarget.checked)}
         />

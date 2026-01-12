@@ -229,6 +229,7 @@ export default function MarkovAnalysis({
           rankings={corpResults}
           opponentRankings={runnerResults}
           matchupData={corpMatchupData}
+          opponentMatchupData={runnerMatchupData}
         />
       )}
 
