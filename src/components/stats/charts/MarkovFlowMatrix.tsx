@@ -46,284 +46,314 @@ interface MarkovFlowMatrixProps {
 }
 
 // Memoized column bar component
-const ColumnBar = memo(({
-  identity,
-  markovValue,
-  faction,
-  totalColumnValue,
-  scale1000x,
-  record,
-  perspective,
-  isPrimaryIdentity,
-}: {
-  identity: string;
-  markovValue: number;
-  faction: string;
-  totalColumnValue: number;
-  scale1000x: boolean;
-  record: { wins: number; losses: number };
-  perspective: "primary" | "opponent";
-  isPrimaryIdentity: boolean;
-}) => {
-  const heightPercent = (markovValue / totalColumnValue) * 100;
-  const displayValue = scale1000x ? markovValue * 100 : markovValue;
-  const formattedValue = displayValue.toFixed(scale1000x ? 1 : 4);
+const ColumnBar = memo(
+  ({
+    identity,
+    markovValue,
+    faction,
+    totalColumnValue,
+    scale1000x,
+    record,
+    perspective,
+    isPrimaryIdentity,
+  }: {
+    identity: string;
+    markovValue: number;
+    faction: string;
+    totalColumnValue: number;
+    scale1000x: boolean;
+    record: { wins: number; losses: number };
+    perspective: "primary" | "opponent";
+    isPrimaryIdentity: boolean;
+  }) => {
+    const heightPercent = (markovValue / totalColumnValue) * 100;
+    const displayValue = scale1000x ? markovValue * 100 : markovValue;
+    const formattedValue = displayValue.toFixed(scale1000x ? 1 : 4);
 
-  return (
-    <Table.Th
-      className="matrix-hover-cell"
-      style={{
-        padding: '2px',
-        verticalAlign: 'bottom',
-        width: "40px",
-        maxWidth: "40px",
-        transition: 'background-color 0.15s',
-      }}
-    >
-      <Popover position="top" withArrow>
-        <Popover.Target>
-          <Box
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              cursor: 'pointer',
-              justifyContent: 'flex-end',
-              height: '100%',
-              width: '100%',
-            }}
-          >
-            <Text size="xs" mb={4} c="gray.4" ta="center">
-              {formattedValue}
-            </Text>
+    return (
+      <Table.Th
+        className="matrix-hover-cell"
+        style={{
+          padding: "2px",
+          verticalAlign: "bottom",
+          width: "40px",
+          maxWidth: "40px",
+          transition: "background-color 0.15s",
+        }}
+      >
+        <Popover position="top" withArrow>
+          <Popover.Target>
             <Box
-              className="matrix-hover-bar"
               style={{
-                width: '20px',
-                height: `${Math.max(heightPercent * 4.5, 2)}px`,
-                maxHeight: '450px',
-                minHeight: '4px',
-                backgroundColor: factionToColor(faction),
-                opacity: 0.85,
-                transition: 'opacity 0.15s',
-              }}
-            />
-          </Box>
-        </Popover.Target>
-        <Popover.Dropdown>
-          <Stack gap={4}>
-            <Text c="gray.0" fw={600}>{identity}</Text>
-            <Text c="gray.3" size="sm">
-              Markov: {markovValue.toFixed(4)}
-            </Text>
-            <Text c="gray.3" size="sm">
-              Record: {
-                // Flip record if perspective doesn't match identity type
-                (perspective === "primary" && isPrimaryIdentity) || (perspective === "opponent" && !isPrimaryIdentity)
-                  ? `${record.wins}-${record.losses}`
-                  : `${record.losses}-${record.wins}`
-              }
-            </Text>
-          </Stack>
-        </Popover.Dropdown>
-      </Popover>
-    </Table.Th>
-  );
-});
-
-ColumnBar.displayName = 'ColumnBar';
-
-// Memoized matrix cell component
-const MatrixCell = memo(({
-  cellValue,
-  fromId,
-  sourceId,
-  matchupOrDefault,
-  viewMode,
-  showColors,
-  showValues,
-  getCellColor,
-  formatValue,
-  matrix,
-  markovValueMap,
-  identities,
-  perspective,
-  primaryIdentities,
-}: {
-  cellValue: number;
-  fromId: string;
-  sourceId: string;
-  matchupOrDefault: MatchupRecord;
-  viewMode: "inflow" | "netflow";
-  showColors: boolean;
-  showValues: boolean;
-  getCellColor: (value: number, rowId: string) => string;
-  formatValue: (value: number, showSign?: boolean) => string;
-  matrix: number[][];
-  markovValueMap: Map<string, number>;
-  identities: string[];
-  perspective: "primary" | "opponent";
-  primaryIdentities: Set<string>;
-}) => {
-  return (
-    <Popover position="top" withArrow>
-      <Popover.Target>
-        <Table.Td
-          className="matrix-hover-light"
-          style={{
-            fontSize: "0.7rem",
-            textAlign: "center",
-            padding: "2px",
-            cursor: "pointer",
-            width: "40px",
-            maxWidth: "40px",
-            transition: 'box-shadow 0.15s',
-            ...(showColors && {
-              backgroundColor: getCellColor(cellValue, fromId),
-            }),
-          }}
-        >
-          {showValues && formatValue(cellValue, viewMode === "netflow")}
-        </Table.Td>
-      </Popover.Target>
-      <Popover.Dropdown>
-        <Stack gap={4}>
-          <Text c="gray.0">{fromId} vs {sourceId}</Text>
-
-          {viewMode === "netflow" && (() => {
-            const sourceIndex = identities.indexOf(sourceId);
-            const destIndex = identities.indexOf(fromId);
-            const sourceMarkovValue = markovValueMap.get(sourceId) ?? 0;
-            const destMarkovValue = markovValueMap.get(fromId) ?? 0;
-            const weightedInflow = sourceMarkovValue * (matrix[sourceIndex]?.[destIndex] ?? 0);
-            const weightedOutflow = destMarkovValue * (matrix[destIndex]?.[sourceIndex] ?? 0);
-
-            return (
-              <>
-                <Text c="gray.3" size="sm">
-                  Net: {formatValue(cellValue, true)}
-                </Text>
-                <Text c="gray.4" size="xs">
-                  {sourceId} → {fromId}: {formatValue(weightedInflow, false)}
-                </Text>
-                <Text c="gray.4" size="xs">
-                  {fromId} → {sourceId}: {formatValue(weightedOutflow, false)}
-                </Text>
-              </>
-            );
-          })()}
-
-          {matchupOrDefault.wins === 0 && matchupOrDefault.losses === 0 ? (
-            <Text c="gray.4">no matchup data</Text>
-          ) : (
-            <>
-              <Text c="gray.3">
-                {
-                  // Flip record if perspective doesn't match identity type
-                  (perspective === "primary" && primaryIdentities.has(matchupOrDefault.identity)) ||
-                  (perspective === "opponent" && !primaryIdentities.has(matchupOrDefault.identity))
-                    ? `${matchupOrDefault.wins}-${matchupOrDefault.losses}`
-                    : `${matchupOrDefault.losses}-${matchupOrDefault.wins}`
-                }
-              </Text>
-              <Text c="gray.4">({matchupOrDefault.wins + matchupOrDefault.losses} games)</Text>
-            </>
-          )}
-        </Stack>
-      </Popover.Dropdown>
-    </Popover>
-  );
-});
-
-MatrixCell.displayName = 'MatrixCell';
-
-// Memoized row bar component
-const RowBar = memo(({
-  identity,
-  markovValue,
-  faction,
-  totalRowValue,
-  scale1000x,
-  record,
-  perspective,
-  isPrimaryIdentity,
-}: {
-  identity: string;
-  markovValue: number;
-  faction: string;
-  totalRowValue: number;
-  scale1000x: boolean;
-  record: { wins: number; losses: number };
-  perspective: "primary" | "opponent";
-  isPrimaryIdentity: boolean;
-}) => {
-  return (
-    <Table.Td
-      className="matrix-hover-cell"
-      style={{
-        padding: '4px',
-        transition: 'background-color 0.15s',
-      }}
-    >
-      <Popover position="right" withArrow>
-        <Popover.Target>
-          <Box
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              cursor: 'pointer',
-              width: '100%',
-              height: '100%',
-              gap: '4px',
-            }}
-          >
-            <Text
-              size="xs"
-              c="gray.4"
-              style={{
-                fontWeight: 500,
-                whiteSpace: 'nowrap',
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                cursor: "pointer",
+                justifyContent: "flex-end",
+                height: "100%",
+                width: "100%",
               }}
             >
-              {(scale1000x ? markovValue * 100 : markovValue).toFixed(scale1000x ? 1 : 4)}
-            </Text>
-            <Box
-              className="matrix-hover-bar"
-              style={{
-                width: `${Math.max((markovValue / totalRowValue) * 450, 2)}px`,
-                maxWidth: '450px',
-                height: '20px',
-                minWidth: '4px',
-                backgroundColor: factionToColor(faction),
-                opacity: 0.85,
-                transition: 'opacity 0.15s',
-              }}
-            />
-          </Box>
+              <Text size="xs" mb={4} c="gray.4" ta="center">
+                {formattedValue}
+              </Text>
+              <Box
+                className="matrix-hover-bar"
+                style={{
+                  width: "20px",
+                  height: `${Math.max(heightPercent * 4.5, 2)}px`,
+                  maxHeight: "450px",
+                  minHeight: "4px",
+                  backgroundColor: factionToColor(faction),
+                  opacity: 0.85,
+                  transition: "opacity 0.15s",
+                }}
+              />
+            </Box>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Stack gap={4}>
+              <Text c="gray.0" fw={600}>
+                {identity}
+              </Text>
+              <Text c="gray.3" size="sm">
+                Markov: {markovValue.toFixed(4)}
+              </Text>
+              <Text c="gray.3" size="sm">
+                Record:{" "}
+                {
+                  // Flip record if perspective doesn't match identity type
+                  (perspective === "primary" && isPrimaryIdentity) ||
+                  (perspective === "opponent" && !isPrimaryIdentity)
+                    ? `${record.wins}-${record.losses}`
+                    : `${record.losses}-${record.wins}`
+                }
+              </Text>
+            </Stack>
+          </Popover.Dropdown>
+        </Popover>
+      </Table.Th>
+    );
+  }
+);
+
+ColumnBar.displayName = "ColumnBar";
+
+// Memoized matrix cell component
+const MatrixCell = memo(
+  ({
+    cellValue,
+    fromId,
+    sourceId,
+    matchupOrDefault,
+    viewMode,
+    showColors,
+    showValues,
+    getCellColor,
+    formatValue,
+    matrix,
+    markovValueMap,
+    identities,
+    perspective,
+    primaryIdentities,
+  }: {
+    cellValue: number;
+    fromId: string;
+    sourceId: string;
+    matchupOrDefault: MatchupRecord;
+    viewMode: "inflow" | "netflow";
+    showColors: boolean;
+    showValues: boolean;
+    getCellColor: (value: number, rowId: string) => string;
+    formatValue: (value: number, showSign?: boolean) => string;
+    matrix: number[][];
+    markovValueMap: Map<string, number>;
+    identities: string[];
+    perspective: "primary" | "opponent";
+    primaryIdentities: Set<string>;
+  }) => {
+    return (
+      <Popover position="top" withArrow>
+        <Popover.Target>
+          <Table.Td
+            className="matrix-hover-light"
+            style={{
+              fontSize: "0.7rem",
+              textAlign: "center",
+              padding: "2px",
+              cursor: "pointer",
+              width: "40px",
+              maxWidth: "40px",
+              transition: "box-shadow 0.15s",
+              ...(showColors && {
+                backgroundColor: getCellColor(cellValue, fromId),
+              }),
+            }}
+          >
+            {showValues && formatValue(cellValue, viewMode === "netflow")}
+          </Table.Td>
         </Popover.Target>
         <Popover.Dropdown>
           <Stack gap={4}>
-            <Text c="gray.0" fw={600}>{identity}</Text>
-            <Text c="gray.3" size="sm">
-              Markov: {markovValue.toFixed(4)}
+            <Text c="gray.0">
+              {fromId} vs {sourceId}
             </Text>
-            <Text c="gray.3" size="sm">
-              Record: {
-                // Flip record if perspective doesn't match identity type
-                (perspective === "primary" && isPrimaryIdentity) || (perspective === "opponent" && !isPrimaryIdentity)
-                  ? `${record.wins}-${record.losses}`
-                  : `${record.losses}-${record.wins}`
-              }
-            </Text>
+
+            {viewMode === "netflow" &&
+              (() => {
+                const sourceIndex = identities.indexOf(sourceId);
+                const destIndex = identities.indexOf(fromId);
+                const sourceMarkovValue = markovValueMap.get(sourceId) ?? 0;
+                const destMarkovValue = markovValueMap.get(fromId) ?? 0;
+                const weightedInflow =
+                  sourceMarkovValue * (matrix[sourceIndex]?.[destIndex] ?? 0);
+                const weightedOutflow =
+                  destMarkovValue * (matrix[destIndex]?.[sourceIndex] ?? 0);
+
+                return (
+                  <>
+                    <Text c="gray.3" size="sm">
+                      Net: {formatValue(cellValue, true)}
+                    </Text>
+                    <Text c="gray.4" size="xs">
+                      {sourceId} → {fromId}:{" "}
+                      {formatValue(weightedInflow, false)}
+                    </Text>
+                    <Text c="gray.4" size="xs">
+                      {fromId} → {sourceId}:{" "}
+                      {formatValue(weightedOutflow, false)}
+                    </Text>
+                  </>
+                );
+              })()}
+
+            {matchupOrDefault.wins === 0 && matchupOrDefault.losses === 0 ? (
+              <Text c="gray.4">no matchup data</Text>
+            ) : (
+              <>
+                <Text c="gray.3">
+                  {
+                    // Flip record if perspective doesn't match identity type
+                    (perspective === "primary" &&
+                      primaryIdentities.has(matchupOrDefault.identity)) ||
+                    (perspective === "opponent" &&
+                      !primaryIdentities.has(matchupOrDefault.identity))
+                      ? `${matchupOrDefault.wins}-${matchupOrDefault.losses}`
+                      : `${matchupOrDefault.losses}-${matchupOrDefault.wins}`
+                  }
+                </Text>
+                <Text c="gray.4">
+                  ({matchupOrDefault.wins + matchupOrDefault.losses} games)
+                </Text>
+              </>
+            )}
           </Stack>
         </Popover.Dropdown>
       </Popover>
-    </Table.Td>
-  );
-});
+    );
+  }
+);
 
-RowBar.displayName = 'RowBar';
+MatrixCell.displayName = "MatrixCell";
+
+// Memoized row bar component
+const RowBar = memo(
+  ({
+    identity,
+    markovValue,
+    faction,
+    totalRowValue,
+    scale1000x,
+    record,
+    perspective,
+    isPrimaryIdentity,
+  }: {
+    identity: string;
+    markovValue: number;
+    faction: string;
+    totalRowValue: number;
+    scale1000x: boolean;
+    record: { wins: number; losses: number };
+    perspective: "primary" | "opponent";
+    isPrimaryIdentity: boolean;
+  }) => {
+    return (
+      <Table.Td
+        className="matrix-hover-cell"
+        style={{
+          padding: "4px",
+          transition: "background-color 0.15s",
+        }}
+      >
+        <Popover position="right" withArrow>
+          <Popover.Target>
+            <Box
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                cursor: "pointer",
+                width: "100%",
+                height: "100%",
+                gap: "4px",
+              }}
+            >
+              <Text
+                size="xs"
+                c="gray.4"
+                style={{
+                  fontWeight: 500,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {(scale1000x ? markovValue * 100 : markovValue).toFixed(
+                  scale1000x ? 1 : 4
+                )}
+              </Text>
+              <Box
+                className="matrix-hover-bar"
+                style={{
+                  width: `${Math.max(
+                    (markovValue / totalRowValue) * 450,
+                    2
+                  )}px`,
+                  maxWidth: "450px",
+                  height: "20px",
+                  minWidth: "4px",
+                  backgroundColor: factionToColor(faction),
+                  opacity: 0.85,
+                  transition: "opacity 0.15s",
+                }}
+              />
+            </Box>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Stack gap={4}>
+              <Text c="gray.0" fw={600}>
+                {identity}
+              </Text>
+              <Text c="gray.3" size="sm">
+                Markov: {markovValue.toFixed(4)}
+              </Text>
+              <Text c="gray.3" size="sm">
+                Record:{" "}
+                {
+                  // Flip record if perspective doesn't match identity type
+                  (perspective === "primary" && isPrimaryIdentity) ||
+                  (perspective === "opponent" && !isPrimaryIdentity)
+                    ? `${record.wins}-${record.losses}`
+                    : `${record.losses}-${record.wins}`
+                }
+              </Text>
+            </Stack>
+          </Popover.Dropdown>
+        </Popover>
+      </Table.Td>
+    );
+  }
+);
+
+RowBar.displayName = "RowBar";
 
 export default function MarkovFlowMatrix({
   matrix,
@@ -340,7 +370,9 @@ export default function MarkovFlowMatrix({
   const [scale1000x, setScale1000x] = useState(true);
   const [showSelf, setShowSelf] = useState(false);
   const [viewMode, setViewMode] = useState<"inflow" | "netflow">("netflow");
-  const [perspective, setPerspective] = useState<"primary" | "opponent">("primary");
+  const [perspective, setPerspective] = useState<"primary" | "opponent">(
+    "primary"
+  );
 
   // Separate primary (corps/runners being ranked) from opponents
   const primaryIds = identities.filter((id) => primaryIdentities.has(id));
@@ -361,8 +393,10 @@ export default function MarkovFlowMatrix({
   });
 
   // Rows and columns depend on perspective
-  const rowIdentities = perspective === "primary" ? sortedPrimaryIds : sortedOpponentIds;
-  const columnIdentities = perspective === "primary" ? sortedOpponentIds : sortedPrimaryIds;
+  const rowIdentities =
+    perspective === "primary" ? sortedPrimaryIds : sortedOpponentIds;
+  const columnIdentities =
+    perspective === "primary" ? sortedOpponentIds : sortedPrimaryIds;
   const rowRankings = perspective === "primary" ? rankings : opponentRankings;
   const colRankings = perspective === "primary" ? opponentRankings : rankings;
 
@@ -431,9 +465,9 @@ export default function MarkovFlowMatrix({
     return records;
   }, [matchupData, opponentMatchupData]);
 
-  // In net flow mode, self-loop doesn't make sense (no opponent to compare)
-  // Also, when perspective is switched, primary vs opponent are different sides, so no self-loop
-  const effectiveShowSelf = showSelf && viewMode === "inflow" && perspective === "primary";
+  // In net flow mode, self-loop doesn't make sense (there's no single-sided "inflow" to display).
+  // In weighted inflow mode, self-loop is meaningful for either perspective.
+  const effectiveShowSelf = showSelf && viewMode === "inflow";
 
   // Calculate min/max for each row separately
   const rowRanges = useMemo(() => {
@@ -453,7 +487,9 @@ export default function MarkovFlowMatrix({
       columnIdentities.forEach((sourceId) => {
         const sourceIndex = identities.indexOf(sourceId);
         const sourceMarkovValue = markovValueMap.get(sourceId) ?? 0;
-        rowValues.push(sourceMarkovValue * (matrix[sourceIndex]?.[destIndex] ?? 0));
+        rowValues.push(
+          sourceMarkovValue * (matrix[sourceIndex]?.[destIndex] ?? 0)
+        );
       });
 
       const minValue = Math.min(...rowValues);
@@ -462,7 +498,14 @@ export default function MarkovFlowMatrix({
     });
 
     return ranges;
-  }, [rowIdentities, identities, matrix, markovValueMap, effectiveShowSelf, columnIdentities]);
+  }, [
+    rowIdentities,
+    identities,
+    matrix,
+    markovValueMap,
+    effectiveShowSelf,
+    columnIdentities,
+  ]);
 
   // Calculate global min/max for net flow view (diverging color scale)
   const netFlowRanges = useMemo(() => {
@@ -478,8 +521,10 @@ export default function MarkovFlowMatrix({
         const sourceIndex = identities.indexOf(sourceId);
         const sourceMarkovValue = markovValueMap.get(sourceId) ?? 0;
 
-        const inflow = sourceMarkovValue * (matrix[sourceIndex]?.[destIndex] ?? 0);
-        const outflow = destMarkovValue * (matrix[destIndex]?.[sourceIndex] ?? 0);
+        const inflow =
+          sourceMarkovValue * (matrix[sourceIndex]?.[destIndex] ?? 0);
+        const outflow =
+          destMarkovValue * (matrix[destIndex]?.[sourceIndex] ?? 0);
         const netFlow = inflow - outflow;
 
         netFlowValues.push(netFlow);
@@ -491,52 +536,71 @@ export default function MarkovFlowMatrix({
     const absMax = Math.max(Math.abs(min), Math.abs(max));
 
     return { min, max, absMax };
-  }, [viewMode, matrix, identities, rowIdentities, columnIdentities, markovValueMap]);
+  }, [
+    viewMode,
+    matrix,
+    identities,
+    rowIdentities,
+    columnIdentities,
+    markovValueMap,
+  ]);
 
   // Helper to format cell value
-  const formatValue = useCallback((value: number, showSign: boolean = false) => {
-    const scaledValue = scale1000x ? value * 1000 : value;
-    // Always use 1 decimal place when scaled, 4 when not
-    const decimalPlaces = scale1000x ? 1 : 4;
-    const formatted = scaledValue.toFixed(decimalPlaces);
+  const formatValue = useCallback(
+    (value: number, showSign: boolean = false) => {
+      const scaledValue = scale1000x ? value * 1000 : value;
+      // Always use 1 decimal place when scaled, 4 when not
+      const decimalPlaces = scale1000x ? 1 : 4;
+      const formatted = scaledValue.toFixed(decimalPlaces);
 
-    if (showSign && value > 0) {
-      return `+${formatted}`;
-    }
-    return formatted;
-  }, [scale1000x]);
+      if (showSign && value > 0) {
+        return `+${formatted}`;
+      }
+      return formatted;
+    },
+    [scale1000x]
+  );
 
   // Helper to calculate color for cell based on view mode
-  const getCellColor = useCallback((value: number, rowId: string) => {
-    if (viewMode === "inflow") {
-      // Blue gradient for weighted inflows
-      const range = rowRanges.get(rowId);
-      if (!range) return "#071d31";
-      const valueRange = range.max - range.min;
-      if (valueRange === 0) return "#071d31";
-      const gradient = (value - range.min) / valueRange;
+  const getCellColor = useCallback(
+    (value: number, rowId: string) => {
+      if (viewMode === "inflow") {
+        // Blue gradient for weighted inflows
+        const range = rowRanges.get(rowId);
+        if (!range) return "#071d31";
+        const valueRange = range.max - range.min;
+        if (valueRange === 0) return "#071d31";
+        const gradient = (value - range.min) / valueRange;
 
-      return `color-mix(in oklab, #071d31 ${(1 - gradient) * 100}%, #1864ab ${gradient * 100}%)`;
-    } else {
-      // Diverging red-to-blue scale for net flows
-      const absMax = netFlowRanges.absMax;
-      if (absMax === 0) return "transparent";
-
-      const normalizedValue = value / absMax; // Range: -1 to 1
-
-      if (normalizedValue < 0) {
-        // Negative: red (net loss)
-        const ratio = Math.abs(normalizedValue);
-        return `color-mix(in oklab, transparent ${(1 - ratio) * 100}%, #dc2626 ${ratio * 100}%)`;
-      } else if (normalizedValue > 0) {
-        // Positive: blue (net gain)
-        const ratio = normalizedValue;
-        return `color-mix(in oklab, transparent ${(1 - ratio) * 100}%, #1971c2 ${ratio * 100}%)`;
+        return `color-mix(in oklab, #071d31 ${(1 - gradient) * 100}%, #1864ab ${
+          gradient * 100
+        }%)`;
       } else {
-        return "transparent";
+        // Diverging red-to-blue scale for net flows
+        const absMax = netFlowRanges.absMax;
+        if (absMax === 0) return "transparent";
+
+        const normalizedValue = value / absMax; // Range: -1 to 1
+
+        if (normalizedValue < 0) {
+          // Negative: red (net loss)
+          const ratio = Math.abs(normalizedValue);
+          return `color-mix(in oklab, transparent ${
+            (1 - ratio) * 100
+          }%, #dc2626 ${ratio * 100}%)`;
+        } else if (normalizedValue > 0) {
+          // Positive: blue (net gain)
+          const ratio = normalizedValue;
+          return `color-mix(in oklab, transparent ${
+            (1 - ratio) * 100
+          }%, #1971c2 ${ratio * 100}%)`;
+        } else {
+          return "transparent";
+        }
       }
-    }
-  }, [viewMode, rowRanges, netFlowRanges]);
+    },
+    [viewMode, rowRanges, netFlowRanges]
+  );
 
   if (rowIdentities.length === 0) {
     return (
@@ -553,30 +617,40 @@ export default function MarkovFlowMatrix({
       <Group justify="space-between">
         <Text fw={600} size="lg">
           {perspective === "primary"
-            ? (side === "corp" ? "Corp" : "Runner")
-            : (side === "corp" ? "Runner" : "Corp")
-          } {viewMode === "inflow" ? "Flow Matrix" : "Net Flow Matrix"}
+            ? side === "corp"
+              ? "Corp"
+              : "Runner"
+            : side === "corp"
+            ? "Runner"
+            : "Corp"}{" "}
+          {viewMode === "inflow" ? "Flow Matrix" : "Net Flow Matrix"}
         </Text>
       </Group>
 
       {/* Matrix Table */}
-      <Paper withBorder style={{ width: 'fit-content' }}>
+      <Paper withBorder style={{ width: "fit-content" }}>
         <Table.ScrollContainer minWidth={200} type="native">
           <Table highlightOnHover={false} withTableBorder withColumnBorders>
             <Table.Thead>
               {/* Column bars row */}
               <Table.Tr>
-                <Table.Th rowSpan={2} style={{ verticalAlign: 'bottom', padding: '8px' }}>
+                <Table.Th
+                  rowSpan={2}
+                  style={{ verticalAlign: "bottom", padding: "8px" }}
+                >
                   Identity
                 </Table.Th>
-                <Table.Th rowSpan={2} style={{ verticalAlign: 'bottom', padding: '8px' }}>
+                <Table.Th
+                  rowSpan={2}
+                  style={{ verticalAlign: "bottom", padding: "8px" }}
+                >
                   Value
                 </Table.Th>
                 {effectiveShowSelf && (
                   <Table.Th
                     style={{
-                      verticalAlign: 'bottom',
-                      padding: '2px',
+                      verticalAlign: "bottom",
+                      padding: "2px",
                       width: "40px",
                       maxWidth: "40px",
                     }}
@@ -592,7 +666,12 @@ export default function MarkovFlowMatrix({
                     faction={data.faction}
                     totalColumnValue={totalColumnValue}
                     scale1000x={scale1000x}
-                    record={overallRecords.get(data.identity) || { wins: 0, losses: 0 }}
+                    record={
+                      overallRecords.get(data.identity) || {
+                        wins: 0,
+                        losses: 0,
+                      }
+                    }
                     perspective={perspective}
                     isPrimaryIdentity={primaryIdentities.has(data.identity)}
                   />
@@ -612,7 +691,7 @@ export default function MarkovFlowMatrix({
                       minHeight: "100px",
                       width: "40px",
                       maxWidth: "40px",
-                      transition: 'background-color 0.15s',
+                      transition: "background-color 0.15s",
                     }}
                   >
                     Self (Win)
@@ -629,7 +708,7 @@ export default function MarkovFlowMatrix({
                       minHeight: "100px",
                       width: "40px",
                       maxWidth: "40px",
-                      transition: 'background-color 0.15s',
+                      transition: "background-color 0.15s",
                     }}
                   >
                     {id}
@@ -646,7 +725,7 @@ export default function MarkovFlowMatrix({
                       className="matrix-hover-cell"
                       style={{
                         fontSize: "0.75rem",
-                        transition: 'background-color 0.15s',
+                        transition: "background-color 0.15s",
                       }}
                     >
                       {fromId}
@@ -658,7 +737,9 @@ export default function MarkovFlowMatrix({
                       faction={rowBarData[i].faction}
                       totalRowValue={totalRowValue}
                       scale1000x={scale1000x}
-                      record={overallRecords.get(fromId) || { wins: 0, losses: 0 }}
+                      record={
+                        overallRecords.get(fromId) || { wins: 0, losses: 0 }
+                      }
                       perspective={perspective}
                       isPrimaryIdentity={primaryIdentities.has(fromId)}
                     />
@@ -673,11 +754,19 @@ export default function MarkovFlowMatrix({
                           width: "40px",
                           maxWidth: "40px",
                           ...(showColors && {
-                            backgroundColor: getCellColor((markovValueMap.get(fromId) ?? 0) * matrix[fromIndex][fromIndex], fromId),
+                            backgroundColor: getCellColor(
+                              (markovValueMap.get(fromId) ?? 0) *
+                                matrix[fromIndex][fromIndex],
+                              fromId
+                            ),
                           }),
                         }}
                       >
-                        {showValues && formatValue((markovValueMap.get(fromId) ?? 0) * matrix[fromIndex][fromIndex])}
+                        {showValues &&
+                          formatValue(
+                            (markovValueMap.get(fromId) ?? 0) *
+                              matrix[fromIndex][fromIndex]
+                          )}
                       </Table.Td>
                     )}
                     {/* Column transitions - showing WEIGHTED INFLOWS or NET FLOW */}
@@ -689,28 +778,52 @@ export default function MarkovFlowMatrix({
                       let cellValue: number;
                       if (viewMode === "inflow") {
                         // Weighted inflow: state[source] * M[source][dest]
-                        const sourceMarkovValue = markovValueMap.get(sourceId) ?? 0;
-                        const transitionProb = matrix[sourceIndex]?.[destIndex] ?? 0;
+                        const sourceMarkovValue =
+                          markovValueMap.get(sourceId) ?? 0;
+                        const transitionProb =
+                          matrix[sourceIndex]?.[destIndex] ?? 0;
                         cellValue = sourceMarkovValue * transitionProb;
                       } else {
                         // Net flow: weighted inflow - weighted outflow
-                        const sourceMarkovValue = markovValueMap.get(sourceId) ?? 0;
+                        const sourceMarkovValue =
+                          markovValueMap.get(sourceId) ?? 0;
                         const destMarkovValue = markovValueMap.get(fromId) ?? 0;
-                        const inflow = sourceMarkovValue * (matrix[sourceIndex]?.[destIndex] ?? 0);
-                        const outflow = destMarkovValue * (matrix[destIndex]?.[sourceIndex] ?? 0);
+                        const inflow =
+                          sourceMarkovValue *
+                          (matrix[sourceIndex]?.[destIndex] ?? 0);
+                        const outflow =
+                          destMarkovValue *
+                          (matrix[destIndex]?.[sourceIndex] ?? 0);
                         cellValue = inflow - outflow;
                       }
 
                       // When perspective is flipped, matchup lookup needs to be flipped too
-                      const matchup = perspective === "primary"
-                        ? matchupData.find((m) => m.identity === fromId && m.opponent === sourceId)
-                        : matchupData.find((m) => m.identity === sourceId && m.opponent === fromId);
-
-                      const matchupOrDefault = matchup || (
+                      const matchup =
                         perspective === "primary"
-                          ? { identity: fromId, opponent: sourceId, wins: 0, losses: 0 }
-                          : { identity: sourceId, opponent: fromId, wins: 0, losses: 0 }
-                      );
+                          ? matchupData.find(
+                              (m) =>
+                                m.identity === fromId && m.opponent === sourceId
+                            )
+                          : matchupData.find(
+                              (m) =>
+                                m.identity === sourceId && m.opponent === fromId
+                            );
+
+                      const matchupOrDefault =
+                        matchup ||
+                        (perspective === "primary"
+                          ? {
+                              identity: fromId,
+                              opponent: sourceId,
+                              wins: 0,
+                              losses: 0,
+                            }
+                          : {
+                              identity: sourceId,
+                              opponent: fromId,
+                              wins: 0,
+                              losses: 0,
+                            });
 
                       return (
                         <MatrixCell
@@ -772,7 +885,7 @@ export default function MarkovFlowMatrix({
           color="blue"
           data={[
             { label: "Net Flow", value: "netflow" },
-            { label: "Weighted Inflow", value: "inflow" }
+            { label: "Weighted Inflow", value: "inflow" },
           ]}
         />
       </Group>
@@ -785,7 +898,7 @@ export default function MarkovFlowMatrix({
           color="blue"
           data={[
             { label: side === "corp" ? "Corp" : "Runner", value: "primary" },
-            { label: side === "corp" ? "Runner" : "Corp", value: "opponent" }
+            { label: side === "corp" ? "Runner" : "Corp", value: "opponent" },
           ]}
         />
       </Group>
