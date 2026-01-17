@@ -4,9 +4,9 @@ import { isAfter, parseISO, subDays } from "date-fns";
 
 const featuredTournaments = [
   {
-    name: "New Year's Showdown",
-    href: "/cobra/4381",
-    date: "2026-01-03",
+    name: "CBI - APAC Pod",
+    href: "/cobra/4441",
+    date: "2026-01-16",
   },
 ];
 
