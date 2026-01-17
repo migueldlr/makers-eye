@@ -8,6 +8,11 @@ const featuredTournaments = [
     href: "/cobra/4441",
     date: "2026-01-16",
   },
+  {
+    name: "CBI - Americas Pod",
+    href: "/cobra/4442",
+    date: "2026-01-16",
+  }
 ];
 
 export default function FeaturedTournaments() {
