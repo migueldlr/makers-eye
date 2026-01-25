@@ -4,19 +4,9 @@ import { isAfter, parseISO, subDays } from "date-fns";
 
 const featuredTournaments = [
   {
-    name: "CBI - APAC Pod",
-    href: "/cobra/4441",
-    date: "2026-01-16",
-  },
-  {
-    name: "CBI - Americas Pod",
-    href: "/cobra/4442",
-    date: "2026-01-16",
-  },
-  {
-    name: "CBI - EMEA Pod",
-    href: "/cobra/4443",
-    date: "2026-01-16",
+    name: "CBI - Finals",
+    href: "/cobra/4470",
+    date: "2026-01-24",
   },
 ];
 
