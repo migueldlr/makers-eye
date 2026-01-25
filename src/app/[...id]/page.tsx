@@ -71,6 +71,18 @@ export default async function Page({
         <Anchor href={`${URLS[site]}${id[1]}`}>
           {`${URLS[site]}${id[1]}`}
         </Anchor>
+        {site === "cobra" && id[1] === "4470" && (
+          <Alert
+            variant="light"
+            color="orange"
+            title="A word of caution!"
+            icon={<IconAlertHexagon />}
+          >
+            CBI finals was the bracket stage of CBI. In order to properly seed
+            the bracket, TOs had to perform a manual seeding via a fake Swiss
+            round. Stats on this page are not accurate.
+          </Alert>
+        )}
         <TournamentNotConcludedAlert tournament={tournament} />
         <SideComparison roundsAugmented={roundsAugmented} />
         <RepresentationChart tournament={tournament} side="runner" />
