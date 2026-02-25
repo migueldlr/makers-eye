@@ -58,6 +58,10 @@ export default async function FaqPage() {
           or have enough participants. Additionally, uploading results is a
           manual process.
         </Text>
+        <Title order={3}>Where did wrapped go?</Title>
+        <Text>
+          <Anchor href="/wrapped">Here</Anchor>.
+        </Text>
       </Stack>
       <Center mt="lg">
         <HexGrid rows={3} cols={4} hexSize={35} gap={0} />
