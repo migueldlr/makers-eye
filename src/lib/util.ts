@@ -71,7 +71,6 @@ const ID_MAPPING = {
   "Weyland Consortium: Building a Better World": "BABW",
   "Weyland Consortium: Built to Last": "BtL",
   "Zahya Sadeghi: Versatile Smuggler": "Zahya",
-
   "Ryō “Phoenix” Ōno: Out of the Ashes": "Phoenix",
   "Ryo “Phoenix” Ono: Out of the Ashes": "Phoenix",
   'Ryō "Phoenix" Ōno: Out of the Ashes': "Phoenix",
@@ -92,6 +91,13 @@ const ID_MAPPING = {
   "BANGUN: When Disaster Strikes": "Bangun",
   "The Zwicky Group: Invisible Hands": "Zwicky",
   "The Catalyst: Convention Breaker": "Catalyst",
+  "Hiram “0mission” Svensson: Shadow of the Past": "Hiram",
+  'Hiram "0mission" Svensson: Shadow of the Past': "Hiram",
+  "Virtual Intelligence, P.I.: “You Can Call Me Vic”": "Vic",
+  'Virtual Intelligence, P.I.: "You Can Call Me Vic"': "Vic",
+  "Méliès U: Only the Brightest": "Méliès",
+  "Melies U: Only the Brightest": "Méliès",
+  "Editorial Division: Ad Nihilum": "ED",
   "The Syndicate: Profit over Principle": "Syndicate",
 };
 
@@ -170,6 +176,12 @@ const FACTION_MAPPING = {
   Synapse: "NBN",
   Bangun: "Weyland",
   Zwicky: "Weyland",
+
+  Hiram: "Shaper",
+  Vic: "Criminal",
+  Méliès: "Jinteki",
+  ED: "NBN",
+
   Catalyst: "_Neutral",
   Syndicate: "_Neutral",
 };
@@ -368,7 +380,7 @@ export const factionToColor = (faction?: string) => {
 
 export function mergeObjects<T>(
   a: Record<string, T[]>,
-  b: Record<string, T[]>
+  b: Record<string, T[]>,
 ) {
   const merged: Record<string, T[]> = {};
   for (const key in a) {
@@ -435,7 +447,7 @@ export const EXCLUDE_FILTER_KEY = "exclude";
 export function isWithinDateRange(
   startDate: string,
   endDate: string,
-  date: string | null
+  date: string | null,
 ) {
   if (date == null) return false;
   return (
@@ -449,7 +461,7 @@ export const RADIAN = Math.PI / 180;
 export function convertRange(
   value: number,
   r1: [number, number],
-  r2: [number, number]
+  r2: [number, number],
 ) {
   return ((value - r1[0]) * (r2[1] - r2[0])) / (r1[1] - r1[0]) + r2[0];
 }
@@ -462,7 +474,7 @@ export function getNrdbLink(decklistId: string) {
 
 export function getIdentity(decklist: Decklist) {
   const identity = decklist.find(
-    (card) => card.card_type === "identity"
+    (card) => card.card_type === "identity",
   )?.card_name;
   if (!identity) {
     return null;
@@ -471,10 +483,13 @@ export function getIdentity(decklist: Decklist) {
 }
 
 export function getCardTypeDistribution(decklist: Decklist) {
-  return decklist.reduce((acc, card) => {
-    acc[card.card_type] = (acc[card.card_type] || 0) + card.card_count;
-    return acc;
-  }, {} as { [key: string]: number });
+  return decklist.reduce(
+    (acc, card) => {
+      acc[card.card_type] = (acc[card.card_type] || 0) + card.card_count;
+      return acc;
+    },
+    {} as { [key: string]: number },
+  );
 }
 
 export function evalRule(decklist: Decklist, rule: string) {
@@ -557,7 +572,7 @@ export function groupDecklistsByIdentity(idToCardsMap: {
 
   for (const [decklistId, decklist] of Object.entries(idToCardsMap)) {
     const identity = decklist.find(
-      (card) => card.card_type === "identity"
+      (card) => card.card_type === "identity",
     )?.card_name;
 
     if (!identity) {
