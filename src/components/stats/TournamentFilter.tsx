@@ -40,7 +40,7 @@ export const ALL_REGION_OPTIONS = [...REGION_OPTIONS, DEFAULT_NONE];
 export const ONLINE_OPTIONS = ["Online", "Paper"];
 export const PHASE_OPTIONS = ["Swiss", "Cut"];
 export const META_OPTIONS = {
-  Standard: ["25.12", "25.10", "25.08", "25.04", "24.12"],
+  Standard: ["26.03", "25.12", "25.10", "25.08", "25.04", "24.12"],
   Startup: ["25.04"],
 };
 
@@ -50,18 +50,18 @@ export default function TournamentFilter({
   tournaments: TournamentRow[];
 }) {
   const [accordionValue, setAccordionValue] = useState<string | null>(
-    "filters"
+    "filters",
   );
   const [interacted, setInteracted] = useState(false);
   const [scroll] = useWindowScroll();
   const [sticky, setSticky] = useState(true);
   const toggleSticky = useCallback(
     () => setSticky(sticky ? false : true),
-    [setSticky]
+    [setSticky],
   );
   const showHide = useCallback(
     () => setAccordionValue((oldVal) => (oldVal ? null : "filters")),
-    [setAccordionValue]
+    [setAccordionValue],
   );
   useHotkeys([
     ["alt+F", toggleSticky],
@@ -162,10 +162,10 @@ function AccordionPanelContent_raw({
   const os = useOs();
 
   const [startDateSelected, setStartDateSelected] = useState(
-    searchParams.get(START_DATE_FILTER_KEY) ?? ""
+    searchParams.get(START_DATE_FILTER_KEY) ?? "",
   );
   const [endDateSelected, setEndDateSelected] = useState(
-    searchParams.get(END_DATE_FILTER_KEY) ?? ""
+    searchParams.get(END_DATE_FILTER_KEY) ?? "",
   );
   const initialRegion_raw = searchParams.get(REGION_FILTER_KEY);
   const initialRegion = (initialRegion_raw ?? "")
@@ -173,14 +173,14 @@ function AccordionPanelContent_raw({
     .filter((x) => x.length > 0);
 
   const [regionsSelected, setRegionsSelected] = useState<string[]>(
-    initialRegion.length > 0 ? initialRegion : ALL_REGION_OPTIONS
+    initialRegion.length > 0 ? initialRegion : ALL_REGION_OPTIONS,
   );
   const initialOnline_raw = searchParams.get(ONLINE_FILTER_KEY);
   const initialOnline = (initialOnline_raw ?? "")
     .split(",")
     .filter((x) => x.length > 0);
   const [onlineSelected, setOnlineSelected] = useState(
-    initialOnline.length > 0 ? initialOnline : ONLINE_OPTIONS
+    initialOnline.length > 0 ? initialOnline : ONLINE_OPTIONS,
   );
 
   const initialPhase_raw = searchParams.get(PHASE_FILTER_KEY);
@@ -188,7 +188,7 @@ function AccordionPanelContent_raw({
     .split(",")
     .filter((x) => x.length > 0);
   const [phaseSelected, setPhaseSelected] = useState(
-    initialPhase.length > 0 ? initialPhase : PHASE_OPTIONS
+    initialPhase.length > 0 ? initialPhase : PHASE_OPTIONS,
   );
 
   const intitalFormat_raw = searchParams.get(FORMAT_FILTER_KEY);
@@ -198,7 +198,7 @@ function AccordionPanelContent_raw({
 
   const initialMeta_raw = searchParams.get(META_FILTER_KEY);
   const [metaSelected, setMetaSelected] = useState(
-    initialMeta_raw ?? DEFAULT_META
+    initialMeta_raw ?? DEFAULT_META,
   );
 
   const hasFilters =
@@ -242,7 +242,7 @@ function AccordionPanelContent_raw({
       phaseSelected,
       metaSelected,
       cardpoolSelected,
-    ]
+    ],
   );
 
   const tournamentsFiltered = useMemo(
@@ -251,16 +251,16 @@ function AccordionPanelContent_raw({
         .filter(
           (t) =>
             regionsSelected.length === 0 ||
-            regionsSelected.includes(t.region ?? DEFAULT_NONE)
+            regionsSelected.includes(t.region ?? DEFAULT_NONE),
         )
         .filter((t) => t.cardpool === cardpoolSelected)
         .filter(
           (t) =>
             onlineSelected.length === 0 ||
-            onlineSelected.includes(t.location ?? "Paper")
+            onlineSelected.includes(t.location ?? "Paper"),
         )
         .filter((t) => t.meta === metaSelected),
-    [regionsSelected, onlineSelected, metaSelected]
+    [regionsSelected, onlineSelected, metaSelected],
   );
   return (
     <>
