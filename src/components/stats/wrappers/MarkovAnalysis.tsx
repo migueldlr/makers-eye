@@ -43,6 +43,8 @@ export default function MarkovAnalysis({
 
   // Retention multiplier controls
   const [retentionMultiplier, setRetentionMultiplier] = useState<number>(1.0);
+  // Matchup-pressure tuning controls
+  const [b, setB] = useState<number>(5);
 
   // Cache match data so we can recompute without refetching
   const [cachedMatchData, setCachedMatchData] = useState<any>(null);
@@ -63,8 +65,13 @@ export default function MarkovAnalysis({
   const [corpMatchupData, setCorpMatchupData] = useState<any[]>([]);
   const [runnerMatchupData, setRunnerMatchupData] = useState<any[]>([]);
 
-  // Function to compute rankings with a given alpha value and retention multiplier
-  const computeRankings = (matchData: any, alphaValue: number, retentionValue: number) => {
+  // Function to compute rankings with current parameter controls
+  const computeRankings = (
+    matchData: any,
+    alphaValue: number,
+    retentionValue: number,
+    bValue: number
+  ) => {
     const computeStart = performance.now();
 
     console.time("Markov computation");
@@ -75,7 +82,8 @@ export default function MarkovAnalysis({
       matchData.corpMetaShare,
       matchData.runnerMetaShare,
       alphaValue,
-      retentionValue
+      retentionValue,
+      bValue
     );
 
     console.timeEnd("Markov computation");
@@ -128,7 +136,7 @@ export default function MarkovAnalysis({
         });
 
         setCachedMatchData(matchData);
-        computeRankings(matchData, alpha, retentionMultiplier);
+        computeRankings(matchData, alpha, retentionMultiplier, b);
       } catch (err) {
         console.error("Error computing Markov rankings:", err);
         setError(
@@ -144,12 +152,12 @@ export default function MarkovAnalysis({
     fetchAndCompute();
   }, [tournamentIds, includeCut, includeSwiss]);
 
-  // Recompute when alpha or retentionMultiplier changes (instant refresh)
+  // Recompute when tuning parameters change (instant refresh)
   useEffect(() => {
     if (!cachedMatchData) return;
 
-    computeRankings(cachedMatchData, alpha, retentionMultiplier);
-  }, [alpha, retentionMultiplier, cachedMatchData]);
+    computeRankings(cachedMatchData, alpha, retentionMultiplier, b);
+  }, [alpha, retentionMultiplier, b, cachedMatchData]);
 
   if (loading) {
     return (
@@ -215,6 +223,26 @@ export default function MarkovAnalysis({
             { value: 0.5, label: "0.5" },
             { value: 0.75, label: "0.75" },
             { value: 1, label: "1.0" },
+          ]}
+        />
+      </Stack>
+
+      <Stack gap="xs" style={{ maxWidth: 600 }}>
+        <Text size="sm" fw={500}>
+          Matchup Pressure Tuning (b): {b.toFixed(2)}
+        </Text>
+        <Slider
+          value={b}
+          onChange={setB}
+          min={1}
+          max={10}
+          step={0.1}
+          marks={[
+            { value: 1, label: "1" },
+            { value: 2.5, label: "2.5" },
+            { value: 5, label: "5" },
+            { value: 7.5, label: "7.5" },
+            { value: 10, label: "10" },
           ]}
         />
       </Stack>

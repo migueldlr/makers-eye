@@ -137,7 +137,9 @@ function buildLossFlowMatrix(
   primaryIdentities: Set<string>,
   matchupData: Map<string, Map<string, { wins: number; losses: number }>>,
   alpha: number = 1.0,
-  retentionMultiplier: number = 1.0
+  retentionMultiplier: number = 1.0,
+  b: number = 0,
+  metaShare: Record<string, number> = {}
 ): number[][] {
   const n = identities.length;
   const matrix: number[][] = [];
@@ -152,6 +154,37 @@ function buildLossFlowMatrix(
   identities.forEach((id, idx) => {
     indexMap.set(id, idx);
   });
+
+  // Precompute overall win rates for surprise calculation.
+  // These are from each identity's aggregate matchup performance.
+  const overallWinRates = new Map<string, number>();
+  for (const identity of identities) {
+    const opponents = matchupData.get(identity);
+    if (!opponents) {
+      overallWinRates.set(identity, 0.5);
+      continue;
+    }
+
+    let wins = 0;
+    let losses = 0;
+    for (const record of Array.from(opponents.values())) {
+      wins += record.wins;
+      losses += record.losses;
+    }
+
+    const total = wins + losses;
+    if (total === 0) {
+      overallWinRates.set(identity, 0.5);
+      continue;
+    }
+
+    const adjustedWins = wins + alpha;
+    const adjustedTotal = total + 2 * alpha;
+    overallWinRates.set(
+      identity,
+      adjustedTotal > 0 ? adjustedWins / adjustedTotal : 0.5
+    );
+  }
 
   // Fill matrix - build rows for ALL identities (both sides of the matchup)
   for (let i = 0; i < n; i++) {
@@ -196,46 +229,80 @@ function buildLossFlowMatrix(
     // Loss mass is whatever remains after retention (maintains row sum = 1.0)
     const lossMass = 1.0 - matrix[i][i];
 
-    // Calculate total number of possible opponents (identities on the opposite side)
-    // For a primary identity (corp when ranking corps), this is all non-primary (runners)
-    // For a non-primary identity (runner when ranking corps), this is all primary (corps)
+    // Build list of possible opponents on the opposite side.
     const identityIsPrimary = primaryIdentities.has(identity);
-    const numPossibleOpponents = identities.filter((id) => {
+    const possibleOpponents = identities.filter((id) => {
       const idIsPrimary = primaryIdentities.has(id);
       return id !== identity && idIsPrimary !== identityIsPrimary;
-    }).length;
+    });
 
-    // Loss normalizer uses RAW losses (not adjusted) + alpha * ALL possible opponents
-    // This matches the Rust implementation: losses + alpha * opponents.len()
-    const lossNormalizer = totalLosses + alpha * numPossibleOpponents;
+    if (possibleOpponents.length === 0) {
+      matrix[i][i] = 1.0;
+      continue;
+    }
 
-    // Distribute loss mass to ALL possible opponents (not just ones played)
-    // This matches Rust: iterates through all runners/corps, not just matchup data
-    for (const opponent of identities) {
-      // Skip self
-      if (opponent === identity) {
-        continue;
+    // Normalize opponent shares; if unavailable, fall back to uniform.
+    const normalizedShare = new Map<string, number>();
+    let totalShare = 0;
+    for (const opponent of possibleOpponents) {
+      const rawShare = metaShare[opponent] ?? 0;
+      const safeShare = Number.isFinite(rawShare) && rawShare > 0 ? rawShare : 0;
+      normalizedShare.set(opponent, safeShare);
+      totalShare += safeShare;
+    }
+    for (const opponent of possibleOpponents) {
+      if (totalShare > 0) {
+        normalizedShare.set(
+          opponent,
+          (normalizedShare.get(opponent) || 0) / totalShare
+        );
+      } else {
+        normalizedShare.set(opponent, 1 / possibleOpponents.length);
       }
+    }
 
-      // Only distribute to identities on the OPPOSITE side
-      // (corps to runners, runners to corps)
-      const opponentIsPrimary = primaryIdentities.has(opponent);
-      const sameSide = identityIsPrimary === opponentIsPrimary;
-
-      if (sameSide) {
-        continue; // Skip identities on the same side
-      }
-
+    // Compute pressure(i -> j) = share(j) * exp(b * surprise(i -> j)).
+    // surprise(i -> j) = overall_win_rate(j) - win_rate(i -> j)
+    const pressures = new Map<string, number>();
+    let totalPressure = 0;
+    for (const opponent of possibleOpponents) {
       const j = indexMap.get(opponent);
       if (j === undefined) continue;
 
-      // Get matchup data if it exists, otherwise use 0
       const matchup = opponents?.get(opponent);
-      const lossesToOpponent = matchup?.losses || 0;
+      const winsVsOpponent = matchup?.wins || 0;
+      const lossesVsOpponent = matchup?.losses || 0;
+      const gamesVsOpponent = winsVsOpponent + lossesVsOpponent;
 
-      const adjustedOppLosses = lossesToOpponent + alpha;
-      const lossShare = adjustedOppLosses / lossNormalizer;
-      matrix[i][j] = lossMass * lossShare;
+      const adjustedPairWins = winsVsOpponent + alpha;
+      const adjustedPairTotal = gamesVsOpponent + 2 * alpha;
+      const matchupWinRate =
+        adjustedPairTotal > 0 ? adjustedPairWins / adjustedPairTotal : 0.5;
+
+      const overallWinRate = overallWinRates.get(opponent) ?? 0.5;
+      const surprise = overallWinRate - matchupWinRate;
+
+      // Clamp exponent input to avoid numeric overflow with extreme b values.
+      const exponentInput = Math.max(Math.min(b * surprise, 50), -50);
+      const pressure =
+        (normalizedShare.get(opponent) || 0) * Math.exp(exponentInput);
+
+      const safePressure =
+        Number.isFinite(pressure) && pressure > 0 ? pressure : 0;
+      pressures.set(opponent, safePressure);
+      totalPressure += safePressure;
+    }
+
+    // Convert pressure to transfer distribution, with safe fallback.
+    for (const opponent of possibleOpponents) {
+      const j = indexMap.get(opponent);
+      if (j === undefined) continue;
+
+      const transferShare =
+        totalPressure > 0
+          ? (pressures.get(opponent) || 0) / totalPressure
+          : normalizedShare.get(opponent) || 1 / possibleOpponents.length;
+      matrix[i][j] = lossMass * transferShare;
     }
   }
 
@@ -316,7 +383,8 @@ export function computeMarkovRankings(
   matchupRecords: MatchupRecord[],
   metaShare: Record<string, number>,
   alpha: number = 1.0,
-  retentionMultiplier: number = 1.0
+  retentionMultiplier: number = 1.0,
+  b: number = 0
 ): MarkovAnalysisResult {
   // Build matchup data structure
   const matchupData = new Map<
@@ -398,14 +466,16 @@ export function computeMarkovRankings(
     primaryIdentitiesSet,
     matchupData,
     alpha,
-    retentionMultiplier
+    retentionMultiplier,
+    b,
+    metaShare
   );
 
   // Solve for steady-state distribution
   const { stateVector, iterations, converged } = iterativeConvergence(matrix);
 
   console.log(
-    `Markov: ${iterations} iterations, converged: ${converged}, matrix: ${identities.length}x${identities.length}, alpha: ${alpha}`
+    `Markov: ${iterations} iterations, converged: ${converged}, matrix: ${identities.length}x${identities.length}, alpha: ${alpha}, b: ${b}`
   );
 
   if (!converged) {
@@ -487,7 +557,8 @@ export function computeDualMarkovRankings(
   corpMetaShare: Record<string, number>,
   runnerMetaShare: Record<string, number>,
   alpha: number = 1.0,
-  retentionMultiplier: number = 1.0
+  retentionMultiplier: number = 1.0,
+  b: number = 0
 ): DualMarkovAnalysisResult {
   // Build matchup data structure from BOTH perspectives
   const matchupData = new Map<
@@ -579,14 +650,16 @@ export function computeDualMarkovRankings(
     corpIdentitiesSet,
     matchupData,
     alpha,
-    retentionMultiplier
+    retentionMultiplier,
+    b,
+    { ...corpMetaShare, ...runnerMetaShare }
   );
 
   // Solve for steady-state distribution ONCE
   const { stateVector, iterations, converged } = iterativeConvergence(matrix);
 
   console.log(
-    `Markov: ${iterations} iterations, converged: ${converged}, matrix: ${identities.length}x${identities.length}, alpha: ${alpha}`
+    `Markov: ${iterations} iterations, converged: ${converged}, matrix: ${identities.length}x${identities.length}, alpha: ${alpha}, b: ${b}`
   );
 
   if (!converged) {
