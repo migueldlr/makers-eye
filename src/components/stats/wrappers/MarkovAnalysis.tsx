@@ -42,7 +42,7 @@ export default function MarkovAnalysis({
   const [alpha, setAlpha] = useState<number>(1.0);
 
   // Retention multiplier controls
-  const [retentionMultiplier, setRetentionMultiplier] = useState<number>(1.0);
+  const [retentionMultiplier, setRetentionMultiplier] = useState<number>(0.0);
   // Matchup-pressure tuning controls
   const [b, setB] = useState<number>(5);
 
