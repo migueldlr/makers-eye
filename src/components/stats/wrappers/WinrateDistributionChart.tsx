@@ -12,6 +12,7 @@ import {
 } from "@/src/lib/util";
 import { theme } from "@/theme";
 import {
+  Group,
   Select,
   Stack,
   useMantineTheme,
@@ -90,7 +91,7 @@ function groupById(data: StandingsRow[], side: "corp" | "runner") {
 
 function processData(
   row: StandingsRow,
-  side: "corp" | "runner"
+  side: "corp" | "runner",
 ): ProcessedStandingsRow {
   const sideWins = side === "corp" ? "corpWins" : "runnerWins";
   const sideLosses = side === "corp" ? "corpLosses" : "runnerLosses";
@@ -123,7 +124,7 @@ function processData(
     oppositeSideWr,
     normalizedSos,
     color: factionToColor(
-      idToFaction(side === "corp" ? row.corpShortId : row.runnerShortId)
+      idToFaction(side === "corp" ? row.corpShortId : row.runnerShortId),
     ),
   };
 }
@@ -132,7 +133,7 @@ function stackDataPoints(
   groupedData: Record<string, ProcessedStandingsRow[]>,
   selectedIds: string[],
   yAxis: "oppositeSideWr" | "sos" | "normalizedSos",
-  side: "corp" | "runner"
+  side: "corp" | "runner",
 ): StackedDataPoint[] {
   // Collect all points from selected IDs
   const allPoints: ProcessedStandingsRow[] = [];
@@ -153,8 +154,8 @@ function stackDataPoints(
           ? parseFloat(point.sos)
           : 0
         : yAxis === "normalizedSos"
-        ? point.normalizedSos
-        : point.oppositeSideWr;
+          ? point.normalizedSos
+          : point.oppositeSideWr;
     // Round SoS values to 3 decimal places, win rate to 1 decimal place
     const y =
       yAxis === "sos" || yAxis === "normalizedSos"
@@ -184,8 +185,9 @@ function stackDataPoints(
       colorSet.add(p.color);
 
       // Add player information
-      const wins = side === "corp" ? p.corpWins ?? 0 : p.runnerWins ?? 0;
-      const losses = side === "corp" ? p.corpLosses ?? 0 : p.runnerLosses ?? 0;
+      const wins = side === "corp" ? (p.corpWins ?? 0) : (p.runnerWins ?? 0);
+      const losses =
+        side === "corp" ? (p.corpLosses ?? 0) : (p.runnerLosses ?? 0);
 
       players.push({
         name: p.name ?? "Unknown Player",
@@ -256,13 +258,13 @@ function ChartTooltip({
           {yAxis === "sos"
             ? "SoS: "
             : yAxis === "normalizedSos"
-            ? "Normalized SoS: "
-            : "Opposite Side WR: "}
+              ? "Normalized SoS: "
+              : "Opposite Side WR: "}
           {yAxis === "sos"
             ? data.sos.toFixed(3)
             : yAxis === "normalizedSos"
-            ? data.normalizedSos.toFixed(4)
-            : `${data.oppositeSideWr.toFixed(1)}%`}
+              ? data.normalizedSos.toFixed(4)
+              : `${data.oppositeSideWr.toFixed(1)}%`}
         </Text>
         {data.count > 1 && (
           <Text size="sm" c="dimmed">
@@ -383,8 +385,8 @@ export default function WinrateDistributionChart({
                 yAxis === "sos"
                   ? "Strength of Schedule"
                   : yAxis === "normalizedSos"
-                  ? "Normalized SoS (per game)"
-                  : "Opposite Side WR (%)"
+                    ? "Normalized SoS (per game)"
+                    : "Opposite Side WR (%)"
               }
               angle={-90}
               position="insideLeft"
@@ -403,25 +405,27 @@ export default function WinrateDistributionChart({
           />
         </ScatterChart>
       </ResponsiveContainer>
-      <SegmentedControl
-        value={yAxis}
-        onChange={(value) =>
-          setYAxis(value as "oppositeSideWr" | "sos" | "normalizedSos")
-        }
-        data={[
-          { label: "Opposite Side Win Rate", value: "oppositeSideWr" },
-          { label: "Strength of Schedule", value: "sos" },
-          { label: "Normalized SoS", value: "normalizedSos" },
-        ]}
-      />
-      <Select
-        placeholder={side === "corp" ? "Select a corp" : "Select a runner"}
-        value={singleId}
-        onChange={setSingleId}
-        data={allMainSideIds}
-        searchable
-        clearable
-      />
+      <Group wrap="nowrap" align="flex-end">
+        <Select
+          placeholder={side === "corp" ? "Select a corp" : "Select a runner"}
+          value={singleId}
+          onChange={setSingleId}
+          data={allMainSideIds}
+          searchable
+          clearable
+        />
+        <SegmentedControl
+          value={yAxis}
+          onChange={(value) =>
+            setYAxis(value as "oppositeSideWr" | "sos" | "normalizedSos")
+          }
+          data={[
+            { label: "Opposite Side Win Rate", value: "oppositeSideWr" },
+            { label: "Strength of Schedule", value: "sos" },
+            { label: "Normalized SoS", value: "normalizedSos" },
+          ]}
+        />
+      </Group>
     </Stack>
   );
 }
