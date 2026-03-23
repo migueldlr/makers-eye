@@ -5,10 +5,12 @@ import { createClient } from "@/utils/supabase/client";
 import {
   Button,
   Container,
+  CopyButton,
   Group,
   Stack,
   TextInput,
   Text,
+  Textarea,
   useCombobox,
   Title,
   Switch,
@@ -158,6 +160,14 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState<string>("last_updated_at");
 
   const [decklistId, setDecklistId] = useState<string>("");
+  const [cobraDeckUrl, setCobraDeckUrl] = useState<string>("");
+  const [cobraDeckMarkdown, setCobraDeckMarkdown] = useState<string>("");
+  const [cobraDeckError, setCobraDeckError] = useState<string>("");
+  const [cobraDeckMessage, setCobraDeckMessage] = useState<string>("");
+  const [cobraDeckLoading, setCobraDeckLoading] = useState(false);
+  const [cobraDeckTournament, setCobraDeckTournament] = useState<
+    Tournament | undefined
+  >();
 
   useEffect(() => {
     setData(undefined);
@@ -251,6 +261,88 @@ export default function Dashboard() {
 
   const refreshArchetypes = async () => {
     await refreshAllArchetypes();
+  };
+
+  const generateCobraDeckLinks = async () => {
+    setCobraDeckError("");
+    setCobraDeckMessage("");
+    setCobraDeckTournament(undefined);
+    setCobraDeckMarkdown("");
+
+    let parsed: ReturnType<typeof parseUrl>;
+    try {
+      parsed = parseUrl(cobraDeckUrl.trim());
+    } catch (_e) {
+      setCobraDeckError("Please enter a valid URL.");
+      return;
+    }
+
+    if (!parsed || parsed[0] !== "cobra") {
+      setCobraDeckError(
+        "Please enter a Cobra tournament URL (tournaments.nullsignal.games)."
+      );
+      return;
+    }
+
+    const [, tournamentId] = parsed;
+    setCobraDeckLoading(true);
+
+    try {
+      const tournament = (await proxyFetch(
+        `${URLS.cobra}${tournamentId}.json`
+      )) as unknown as Tournament;
+      setCobraDeckTournament(tournament);
+
+      const eliminationPlayers = tournament.eliminationPlayers ?? [];
+      if (eliminationPlayers.length === 0) {
+        setCobraDeckError("No elimination players found in this tournament.");
+        return;
+      }
+
+      const sortedEliminationPlayers = [...eliminationPlayers].sort(
+        (a, b) =>
+          (a.rank ?? Number.POSITIVE_INFINITY) -
+          (b.rank ?? Number.POSITIVE_INFINITY)
+      );
+
+      const links = sortedEliminationPlayers
+        .filter((player) => player.id != null)
+        .map((player) => {
+          const playerName = player.name?.trim() || `Player ${player.id}`;
+          const deckUrl = `${URLS.cobra}${tournamentId}/players/${player.id}/view_decks`;
+          return `- [${playerName}](${deckUrl})`;
+        });
+
+      const skippedCount = sortedEliminationPlayers.filter(
+        (player) => player.id == null
+      ).length;
+
+      if (links.length === 0) {
+        setCobraDeckError(
+          "Top-cut players were found, but none had a valid player ID for deck links."
+        );
+        return;
+      }
+
+      const tournamentName = tournament.name?.trim() || `Tournament ${tournamentId}`;
+      const standingsUrl = normalizeUrl(cobraDeckUrl.trim());
+      const markdown = `## ${tournamentName}\n\n[Standings](${standingsUrl})\n\n${links.join("\n")}`;
+
+      setCobraDeckMarkdown(markdown);
+      if (skippedCount > 0) {
+        setCobraDeckMessage(
+          `Generated ${links.length} links. Skipped ${skippedCount} elimination player(s) with missing IDs.`
+        );
+      } else {
+        setCobraDeckMessage(`Generated ${links.length} elimination deck link(s).`);
+      }
+    } catch (_e) {
+      setCobraDeckError(
+        "Failed to fetch tournament data. Please verify the URL and try again."
+      );
+    } finally {
+      setCobraDeckLoading(false);
+    }
   };
 
   if (!user) {
@@ -359,6 +451,57 @@ export default function Dashboard() {
             Refresh archetypes
           </Button>
         </Group>
+        <Title order={3} mt="xl">
+          Cobra elimination deck links
+        </Title>
+        <Stack align="start">
+          <TextInput
+            label="Cobra tournament URL"
+            placeholder="https://tournaments.nullsignal.games/tournaments/4535"
+            value={cobraDeckUrl}
+            onChange={(e) => setCobraDeckUrl(e.target.value)}
+            w="50vw"
+          />
+          <Group>
+            <Button
+              onClick={() => generateCobraDeckLinks()}
+              loading={cobraDeckLoading}
+            >
+              Generate markdown
+            </Button>
+            <CopyButton value={cobraDeckMarkdown} timeout={1200}>
+              {({ copied, copy }) => (
+                <Button
+                  onClick={copy}
+                  variant="light"
+                  disabled={cobraDeckMarkdown === ""}
+                >
+                  {copied ? "Copied" : "Copy markdown"}
+                </Button>
+              )}
+            </CopyButton>
+          </Group>
+          {cobraDeckTournament && (
+            <Text size="sm" c="dimmed">
+              Loaded tournament <Code>{cobraDeckTournament.name}</Code>
+            </Text>
+          )}
+          {cobraDeckMessage && (
+            <Text size="sm" c="dimmed">
+              {cobraDeckMessage}
+            </Text>
+          )}
+          {cobraDeckError && <Text c="red">{cobraDeckError}</Text>}
+          <Textarea
+            label="Markdown output"
+            placeholder="Generated markdown links will appear here."
+            minRows={8}
+            autosize
+            value={cobraDeckMarkdown}
+            onChange={(e) => setCobraDeckMarkdown(e.currentTarget.value)}
+            w="50vw"
+          />
+        </Stack>
 
         <Title order={3} mt="xl">
           Uploaded

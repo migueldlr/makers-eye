@@ -12,7 +12,7 @@ export async function uploadTournament(
   region: string | null,
   location: string | null,
   abrUrl: string,
-  cardpool: string
+  cardpool: string,
 ) {
   const supabase = await createClient();
 
@@ -38,7 +38,7 @@ export async function uploadTournament(
 
 export async function uploadStandings(
   tournamentId: number,
-  standings: Omit<StandingResult, "tournament">[]
+  standings: Omit<StandingResult, "tournament">[],
 ) {
   const supabase = await createClient();
 
@@ -64,7 +64,7 @@ export async function uploadStandings(
           top_cut_rank: standing.topCutRank,
         };
         return out;
-      })
+      }),
     )
     .select();
 
@@ -86,7 +86,7 @@ export async function uploadMatches(tournamentId: number, matches: RawMatch[]) {
           tournament_id: tournamentId,
         };
         return out;
-      })
+      }),
     )
     .select();
 
