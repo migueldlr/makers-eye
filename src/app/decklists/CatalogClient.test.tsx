@@ -212,6 +212,13 @@ describe("CatalogClient", () => {
     expect(await screen.findByText("Sure Gamble")).toBeVisible();
     expect(screen.getByText("Operation (3)")).toBeVisible();
     expect(screen.getByText("Event (3)")).toBeVisible();
+    expect(
+      screen.getAllByRole("link", { name: "Cobra" }).map((link) =>
+        link.getAttribute("href")
+      )
+    ).toContain(
+      "https://tournaments.nullsignal.games/tournaments/10/players/17/view_decks"
+    );
     expect(fetchMock).toHaveBeenCalledWith("/decklists/decks/301");
     expect(fetchMock).toHaveBeenCalledWith("/decklists/decks/302");
   });

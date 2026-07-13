@@ -43,16 +43,28 @@ function DeckCards({ deck }: { deck: CatalogDeckSnapshot }) {
           <div className={styles.deckTitle}>{deck.title || "Submitted deck"}</div>
           <div className={styles.identity}>{identityLabel(deck.identity)}</div>
         </div>
-        {deck.nrdbUrl && (
-          <a
-            className={styles.externalLink}
-            href={deck.nrdbUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            NRDB <IconExternalLink size={12} aria-hidden="true" />
-          </a>
-        )}
+        <div className={styles.deckLinks}>
+          {deck.sourceKind === "cobra" && deck.sourceUrl && (
+            <a
+              className={styles.externalLink}
+              href={deck.sourceUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              Cobra <IconExternalLink size={12} aria-hidden="true" />
+            </a>
+          )}
+          {deck.nrdbUrl && (
+            <a
+              className={styles.externalLink}
+              href={deck.nrdbUrl}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              NRDB <IconExternalLink size={12} aria-hidden="true" />
+            </a>
+          )}
+        </div>
       </header>
       {deck.cards.length === 0 ? (
         <div className={styles.missingDeck}>No card list saved.</div>

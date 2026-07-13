@@ -283,6 +283,13 @@
   border-bottom: 1px solid var(--line);
 }
 
+.deckLinks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 .sideLabel {
   color: var(--muted);
   font-size: 0.72rem;
