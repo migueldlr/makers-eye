@@ -20,18 +20,13 @@ export default async function DecklistCatalogPage() {
           <IconChevronLeft size={15} aria-hidden="true" /> Home
         </Link>
         <header className={styles.hero}>
-          <div className={styles.eyebrow}>The Maker&apos;s Eye / Tournament ledger</div>
-          <h1 className={styles.title}>Every top cut. One page.</h1>
-          <Text className={styles.lede}>
-            Search every published event and top-cut player. Submitted Corp and
-            Runner lists open from the ledger when available.
-          </Text>
+          <h1 className={styles.title}>Tournament decklists</h1>
         </header>
         {events.length === 0 ? (
-          <div className={styles.empty} style={{ marginTop: 30 }}>
-            <Text fw={650}>No events have been published yet.</Text>
+          <div className={styles.empty}>
+            <Text fw={600}>No tournaments published yet</Text>
             <Text size="sm" mt={6}>
-              Reviewed tournaments will appear here.
+              Published tournaments will show up here.
             </Text>
           </div>
         ) : (

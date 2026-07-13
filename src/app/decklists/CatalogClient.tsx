@@ -49,7 +49,7 @@ function DeckCards({ deck }: { deck: CatalogDeckSnapshot }) {
         )}
       </header>
       {deck.cards.length === 0 ? (
-        <div className={styles.missingDeck}>No cards were stored for this Cobra list.</div>
+        <div className={styles.missingDeck}>No card list saved.</div>
       ) : (
         <>
           <table className={styles.cardTable}>
@@ -108,7 +108,7 @@ function DeckCell({
           )}
         </div>
       ) : (
-        <span className={styles.noList}>No Cobra list</span>
+        <span className={styles.noList}>No list</span>
       )}
     </div>
   );
@@ -121,7 +121,7 @@ function MissingDeck({ side, identity }: { side: DeckSide; identity: string }) {
         {side === "corp" ? "Corp" : "Runner"}
       </div>
       <div className={styles.identity}>{identityLabel(identity)}</div>
-      <div className={styles.missingDeck}>No Cobra list available.</div>
+      <div className={styles.missingDeck}>No decklist saved.</div>
     </section>
   );
 }
@@ -160,7 +160,7 @@ function EntrantRows({
         try {
           const response = await fetch(`/decklists/decks/${deckId}`);
           if (!response.ok) {
-            throw new Error("The stored decklist could not be loaded.");
+            throw new Error("This decklist could not be loaded.");
           }
           return {
             side,
@@ -170,7 +170,7 @@ function EntrantRows({
           nextErrors[side] =
             caught instanceof Error
               ? caught.message
-              : "The stored decklist could not be loaded.";
+              : "This decklist could not be loaded.";
           return null;
         }
       })
@@ -242,7 +242,7 @@ function EntrantRows({
                   <DeckCards deck={loaded[side]} key={side} />
                 ) : loading && entrant.decks[side]?.id ? (
                   <div className={styles.deckStatus} role="status" key={side}>
-                    Loading stored Cobra list...
+                    Loading decklist…
                   </div>
                 ) : (
                   <MissingDeck
@@ -296,9 +296,9 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
       />
       {filteredEvents.length === 0 ? (
         <div className={styles.empty}>
-          <Text fw={650}>No events or entrants match this search.</Text>
+          <Text fw={600}>No events or entrants match this search.</Text>
           <Text size="sm" mt={6}>
-            Try a player handle, tournament name, or date.
+            Try a player, tournament, or date.
           </Text>
         </div>
       ) : (
@@ -311,12 +311,12 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
                   <div className={styles.eventMeta}>
                     {[event.displayDate, event.location, event.cardpool ?? event.format]
                       .filter(Boolean)
-                      .join(" / ")}
+                      .join(" · ")}
                   </div>
                 </div>
                 <div className={styles.eventActions}>
                   <div className={styles.coverage}>
-                    TOP {event.cutSize} / {event.deckCount} LISTS
+                    Top {event.cutSize} cut · {event.deckCount} lists
                   </div>
                   <div className={styles.eventLinks}>
                     {event.cobraUrl && (
