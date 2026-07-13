@@ -219,9 +219,12 @@
 .deckCell {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
+}
+
+.deckCell .nrdbLink {
+  flex-shrink: 0;
 }
 
 .deckIdentity {
@@ -231,19 +234,6 @@
   line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.deckCellActions {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  white-space: nowrap;
-}
-
-.listAvailable {
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
 }
 
 .nrdbLink {
@@ -325,9 +315,33 @@
   border-bottom: 0;
 }
 
+.cardTable .cardTypeCell {
+  padding: 0;
+  border-bottom: 0;
+}
+
+.cardTypeHeader {
+  padding: 14px 12px 5px;
+  border-bottom: 1px solid var(--line);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardTypeRow:first-child .cardTypeHeader {
+  padding-top: 10px;
+}
+
+.colQuantity,
+.colInfluence {
+  width: 40px;
+}
+
 .quantity,
 .influence {
-  width: 40px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   text-align: right;
@@ -339,6 +353,7 @@
 
 .deckFooter {
   display: flex;
+  justify-content: space-between;
   gap: 14px;
   padding: 10px 16px;
   border-top: 1px solid var(--line);

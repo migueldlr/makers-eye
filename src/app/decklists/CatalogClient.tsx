@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type MouseEvent } from "react";
+import { Fragment, useMemo, useState, type MouseEvent } from "react";
 import { IconExternalLink, IconSearch } from "@tabler/icons-react";
 import { Text, TextInput } from "@mantine/core";
 import type {
@@ -14,6 +14,7 @@ import {
   catalogEntrantMatchesSearch,
   catalogEventMatchesSearch,
   catalogEventMetadataMatchesSearch,
+  groupDeckCardsByType,
   normalizeCatalogText,
 } from "@/lib/catalog/util";
 import { shortenId } from "@/lib/util";
@@ -27,6 +28,7 @@ function identityLabel(identity: string): string {
 }
 
 function DeckCards({ deck }: { deck: CatalogDeckSnapshot }) {
+  const groups = useMemo(() => groupDeckCardsByType(deck.cards), [deck.cards]);
   return (
     <section className={styles.loadedDeck} aria-label={`${deck.side} decklist`}>
       <header className={styles.loadedDeckHeader}>
@@ -53,17 +55,33 @@ function DeckCards({ deck }: { deck: CatalogDeckSnapshot }) {
       ) : (
         <>
           <table className={styles.cardTable}>
+            <colgroup>
+              <col className={styles.colQuantity} />
+              <col />
+              <col className={styles.colInfluence} />
+            </colgroup>
             <tbody>
-              {deck.cards.map((card, index) => (
-                <tr key={`${card.id ?? card.title}-${index}`}>
-                  <td className={styles.quantity}>{card.quantity}x</td>
-                  <td>{card.title}</td>
-                  <td className={styles.influence}>
-                    {card.influence == null || card.influence === 0
-                      ? ""
-                      : card.influence}
-                  </td>
-                </tr>
+              {groups.map((group, groupIndex) => (
+                <Fragment key={`${group.type ?? "other"}-${groupIndex}`}>
+                  <tr className={styles.cardTypeRow}>
+                    <td className={styles.cardTypeCell} colSpan={3}>
+                      <div className={styles.cardTypeHeader}>
+                        {group.label} ({group.quantity})
+                      </div>
+                    </td>
+                  </tr>
+                  {group.cards.map((card, index) => (
+                    <tr key={`${card.id ?? card.title}-${index}`}>
+                      <td className={styles.quantity}>{card.quantity}x</td>
+                      <td>{card.title}</td>
+                      <td className={styles.influence}>
+                        {card.influence == null || card.influence === 0
+                          ? ""
+                          : card.influence}
+                      </td>
+                    </tr>
+                  ))}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -92,22 +110,17 @@ function DeckCell({
   return (
     <div className={styles.deckCell}>
       <span className={styles.deckIdentity}>{identity}</span>
-      {deck?.id ? (
-        <div className={styles.deckCellActions}>
-          <span className={styles.listAvailable}>{deck.cardCount} cards</span>
-          {deck.nrdbUrl && (
-            <a
-              className={styles.nrdbLink}
-              href={deck.nrdbUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label={`View ${side} deck on NetrunnerDB`}
-            >
-              NRDB <IconExternalLink size={10} aria-hidden="true" />
-            </a>
-          )}
-        </div>
-      ) : (
+      {deck?.nrdbUrl ? (
+        <a
+          className={styles.nrdbLink}
+          href={deck.nrdbUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          aria-label={`View ${side} deck on NetrunnerDB`}
+        >
+          NRDB <IconExternalLink size={10} aria-hidden="true" />
+        </a>
+      ) : deck?.id ? null : (
         <span className={styles.noList}>No list</span>
       )}
     </div>

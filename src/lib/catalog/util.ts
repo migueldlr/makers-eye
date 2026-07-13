@@ -63,6 +63,86 @@ export function catalogEntrantMatchesSearch(
   return normalizeCatalogText(entrant.name).includes(normalizedQuery);
 }
 
+// Canonical Netrunner card-type ordering, mirroring the classifier's
+// DecklistDisplay. Cards with an unknown or missing type sort last.
+const CARD_TYPE_ORDER = [
+  "identity",
+  "agenda",
+  "asset",
+  "operation",
+  "upgrade",
+  "ice",
+  "event",
+  "hardware",
+  "resource",
+  "program",
+];
+
+function cardTypeRank(type: string | undefined): number {
+  const index = type ? CARD_TYPE_ORDER.indexOf(type) : -1;
+  return index === -1 ? CARD_TYPE_ORDER.length : index;
+}
+
+// Sorts a decklist by card type, then by quantity (descending), then by title.
+// Returns a new array; the input is not mutated.
+export function sortDeckCards(cards: DeckCardRow[]): DeckCardRow[] {
+  return [...cards].sort((a, b) => {
+    const typeDelta = cardTypeRank(a.type) - cardTypeRank(b.type);
+    if (typeDelta !== 0) return typeDelta;
+    if (a.quantity !== b.quantity) return b.quantity - a.quantity;
+    return a.title.localeCompare(b.title);
+  });
+}
+
+// NRDB card-type codes render lowercase; most just capitalize, ICE is an
+// acronym. Unknown or missing types fall back to a generic label.
+const CARD_TYPE_LABELS: Record<string, string> = {
+  identity: "Identity",
+  agenda: "Agenda",
+  asset: "Asset",
+  operation: "Operation",
+  upgrade: "Upgrade",
+  ice: "ICE",
+  event: "Event",
+  hardware: "Hardware",
+  resource: "Resource",
+  program: "Program",
+};
+
+export function cardTypeLabel(type: string | undefined): string {
+  if (!type) return "Other";
+  return CARD_TYPE_LABELS[type] ?? type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+export type DeckCardGroup = {
+  type: string | undefined;
+  label: string;
+  quantity: number;
+  cards: DeckCardRow[];
+};
+
+// Sorts the deck, then groups consecutive cards of the same type into
+// labelled sections for divider headers. Every known type sorts into its
+// canonical slot, so consecutive grouping keeps each type in one section.
+export function groupDeckCardsByType(cards: DeckCardRow[]): DeckCardGroup[] {
+  const groups: DeckCardGroup[] = [];
+  for (const card of sortDeckCards(cards)) {
+    const last = groups[groups.length - 1];
+    if (last && last.type === card.type) {
+      last.cards.push(card);
+      last.quantity += card.quantity;
+    } else {
+      groups.push({
+        type: card.type,
+        label: cardTypeLabel(card.type),
+        quantity: card.quantity,
+        cards: [card],
+      });
+    }
+  }
+  return groups;
+}
+
 export function canonicalDeck(
   cards: DeckCardRow[],
   useIds = cards.every((card) => Boolean(card.id))

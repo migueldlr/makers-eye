@@ -30,7 +30,7 @@ const events: CatalogEventSummary[] = [
           corp: {
             id: 301,
             side: "corp",
-            nrdbUrl: null,
+            nrdbUrl: "https://netrunnerdb.com/en/decklist/abc/yellow-cards",
             title: "Yellow cards",
             identity: "NBN: Reality Plus",
             cardCount: 44,
@@ -97,6 +97,13 @@ describe("CatalogClient", () => {
     expect(screen.queryByText(/Cobra ID/)).toBeNull();
     expect(screen.getByText("R+")).toBeVisible();
     expect(screen.getAllByRole("columnheader", { name: "Corp" })).toHaveLength(2);
+    expect(screen.queryByText(/\d+ cards/)).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "View corp deck on NetrunnerDB" })
+    ).toHaveAttribute(
+      "href",
+      "https://netrunnerdb.com/en/decklist/abc/yellow-cards"
+    );
     fireEvent.change(screen.getByLabelText("Search tournament entrants"), {
       target: { value: "rene" },
     });
@@ -127,6 +134,7 @@ describe("CatalogClient", () => {
             {
               title: runner ? "Sure Gamble" : "Hedge Fund",
               quantity: 3,
+              type: runner ? "event" : "operation",
             },
           ],
           cardCount: runner ? 45 : 44,
@@ -150,6 +158,8 @@ describe("CatalogClient", () => {
     );
     expect(await screen.findByText("Hedge Fund")).toBeVisible();
     expect(await screen.findByText("Sure Gamble")).toBeVisible();
+    expect(screen.getByText("Operation (3)")).toBeVisible();
+    expect(screen.getByText("Event (3)")).toBeVisible();
     expect(fetchMock).toHaveBeenCalledWith("/decklists/decks/301");
     expect(fetchMock).toHaveBeenCalledWith("/decklists/decks/302");
   });

@@ -5,8 +5,11 @@ import {
   compareDecks,
   extractAbrTournamentId,
   extractNrdbDeckId,
+  cardTypeLabel,
   formatCatalogDate,
+  groupDeckCardsByType,
   normalizeCatalogText,
+  sortDeckCards,
   validateExternalUrl,
 } from "./util";
 import type { CatalogEventSummary } from "./types";
@@ -89,6 +92,66 @@ describe("deck comparison", () => {
         [{ id: "30030", title: "Localized title", quantity: 3 }]
       )
     ).toBe("identical");
+  });
+});
+
+describe("deck card ordering", () => {
+  it("sorts by card type, then quantity descending, then title", () => {
+    const cards = [
+      { title: "Sure Gamble", quantity: 3, type: "event" },
+      { title: "Corroder", quantity: 1, type: "program" },
+      { title: "The Maker's Eye", quantity: 2, type: "event" },
+      { title: "Diesel", quantity: 3, type: "event" },
+      { title: "Daily Casts", quantity: 3, type: "resource" },
+    ];
+    expect(sortDeckCards(cards).map((card) => card.title)).toEqual([
+      "Diesel",
+      "Sure Gamble",
+      "The Maker's Eye",
+      "Daily Casts",
+      "Corroder",
+    ]);
+  });
+
+  it("orders known types ahead of unknown or missing types and leaves input intact", () => {
+    const cards = [
+      { title: "Mystery Card", quantity: 2 },
+      { title: "Hedge Fund", quantity: 3, type: "operation" },
+      { title: "Legacy Card", quantity: 2, type: "console" },
+    ];
+    expect(sortDeckCards(cards).map((card) => card.title)).toEqual([
+      "Hedge Fund",
+      "Legacy Card",
+      "Mystery Card",
+    ]);
+    expect(cards[0].title).toBe("Mystery Card");
+  });
+});
+
+describe("deck card grouping", () => {
+  it("labels NRDB type codes, treating ICE as an acronym", () => {
+    expect(cardTypeLabel("ice")).toBe("ICE");
+    expect(cardTypeLabel("operation")).toBe("Operation");
+    expect(cardTypeLabel("console")).toBe("Console");
+    expect(cardTypeLabel(undefined)).toBe("Other");
+  });
+
+  it("groups cards into canonical type sections with summed quantities", () => {
+    const cards = [
+      { title: "Corroder", quantity: 1, type: "program" },
+      { title: "Sure Gamble", quantity: 3, type: "event" },
+      { title: "Diesel", quantity: 3, type: "event" },
+    ];
+    expect(
+      groupDeckCardsByType(cards).map((group) => ({
+        label: group.label,
+        quantity: group.quantity,
+        titles: group.cards.map((card) => card.title),
+      }))
+    ).toEqual([
+      { label: "Event", quantity: 6, titles: ["Diesel", "Sure Gamble"] },
+      { label: "Program", quantity: 1, titles: ["Corroder"] },
+    ]);
   });
 });
 
