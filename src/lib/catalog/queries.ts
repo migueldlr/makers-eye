@@ -53,6 +53,7 @@ async function getEventSummaries(
     deck_count: number;
     cobra_deck_count: number;
     format: string | null;
+    meta: string | null;
     id: number | string;
     last_modified_at: string | null;
     location: string | null;
@@ -69,6 +70,7 @@ async function getEventSummaries(
       t.region,
       t.format,
       t.cardpool,
+      t.meta,
       case
         when t.url like 'https://tournaments.nullsignal.games/%' then t.url
         else null
@@ -107,6 +109,7 @@ async function getEventSummaries(
       region: event.region,
       format: event.format,
       cardpool: event.cardpool,
+      banlist: event.meta || null,
       cobraUrl: event.cobra_url,
       abrUrl: event.abr_url,
       cutSize: event.cut_size,
@@ -222,7 +225,9 @@ export async function getCatalogEventSummaries(): Promise<
 
 export const getCachedCatalogEventSummaries = unstable_cache(
   getCatalogEventSummaries,
-  ["catalog-event-summaries"],
+  // Bump the version suffix when the cached summary shape changes (e.g. the
+  // added banlist field) so stale entries from the old shape are dropped.
+  ["catalog-event-summaries-v3"],
   { tags: ["catalog-events"] }
 );
 

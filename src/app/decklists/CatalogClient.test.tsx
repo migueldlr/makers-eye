@@ -9,11 +9,12 @@ const events: CatalogEventSummary[] = [
     id: 10,
     name: "Méliès Megacity",
     date: "2026-07-04",
-    displayDate: "July 4, 2026",
+    displayDate: "4 July 2026",
     location: "Montréal",
     region: "Americas",
     format: "standard",
     cardpool: "Standard",
+    banlist: "26.05",
     cobraUrl: "https://tournaments.nullsignal.games/tournaments/10",
     abrUrl: "https://alwaysberunning.net/tournaments/10/example",
     cutSize: 8,
@@ -62,11 +63,12 @@ const events: CatalogEventSummary[] = [
     id: 11,
     name: "London District",
     date: "2026-06-01",
-    displayDate: "June 1, 2026",
+    displayDate: "1 June 2026",
     location: "London",
     region: "Europe",
     format: "standard",
     cardpool: "Standard",
+    banlist: "26.05",
     cobraUrl: null,
     abrUrl: null,
     cutSize: 4,
@@ -90,11 +92,12 @@ const emptyEvent: CatalogEventSummary = {
   id: 20,
   name: "Ghost Cut Open",
   date: "2026-05-01",
-  displayDate: "May 1, 2026",
-  location: "Berlin",
+  displayDate: "1 May 2026",
+  location: "Online",
   region: "Europe",
   format: "standard",
   cardpool: "Standard",
+  banlist: "26.05",
   cobraUrl: "https://tournaments.nullsignal.games/tournaments/20",
   abrUrl: null,
   cutSize: 4,
@@ -144,6 +147,10 @@ describe("CatalogClient", () => {
     expect(screen.queryByText(/Cobra ID/)).toBeNull();
     expect(screen.getByText("R+")).toBeVisible();
     expect(screen.getAllByRole("columnheader", { name: "Corp" })).toHaveLength(2);
+    expect(
+      screen.getByText("4 July 2026 · Montréal · 26.05")
+    ).toBeVisible();
+    expect(screen.queryByText(/Standard/)).toBeNull();
     expect(
       screen.queryByRole("button", {
         name: "Cut lists were not made public on Cobra :(",
@@ -249,6 +256,8 @@ describe("CatalogClient", () => {
       })
     ).toBeVisible();
     expect(screen.getByText("Top 4 cut")).toBeVisible();
+    expect(screen.getByText("1 May 2026 · 26.05")).toBeVisible();
+    expect(screen.queryByText(/Online/)).toBeNull();
     expect(screen.queryByText(/lists$/)).toBeNull();
     expect(
       screen.getByRole("link", { name: "View corp deck on NetrunnerDB" })

@@ -363,7 +363,13 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
                     )}
                   </div>
                   <div className={styles.eventMeta}>
-                    {[event.displayDate, event.location, event.cardpool ?? event.format]
+                    {[
+                      event.displayDate,
+                      event.location?.toLowerCase() === "online"
+                        ? null
+                        : event.location,
+                      event.banlist,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </div>

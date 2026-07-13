@@ -65,6 +65,7 @@ type CatalogEventBaseSummary = {
   region: string | null;
   format: string | null;
   cardpool: string | null;
+  banlist: string | null;
   cobraUrl: string | null;
   abrUrl: string | null;
   cutSize: number;

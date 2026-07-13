@@ -18,11 +18,12 @@ const event: CatalogEventSummary = {
   id: 1,
   name: "Méliès Megacity Championship",
   date: "2026-07-04",
-  displayDate: "July 4, 2026",
+  displayDate: "4 July 2026",
   location: "Montréal",
   region: "Americas",
   format: "standard",
   cardpool: "Standard",
+  banlist: "26.05",
   cobraUrl: "https://tournaments.nullsignal.games/tournaments/1",
   abrUrl: null,
   cutSize: 8,
@@ -54,7 +55,7 @@ describe("catalog text and search", () => {
     expect(normalizeCatalogText("  “MÉLIÈS”   René  ")).toBe("melies rene");
   });
 
-  it.each(["melies", "RENE", "2026-07-04", "July 4", "matusz"])(
+  it.each(["melies", "RENE", "2026-07-04", "4 July", "matusz"])(
     "matches %s in the client-side event index",
     (query) => {
       expect(catalogEventMatchesSearch(event, query)).toBe(true);
@@ -62,7 +63,7 @@ describe("catalog text and search", () => {
   );
 
   it("formats stored dates without a timezone shift", () => {
-    expect(formatCatalogDate("2026-07-04")).toBe("July 4, 2026");
+    expect(formatCatalogDate("2026-07-04")).toBe("4 July 2026");
   });
 });
 

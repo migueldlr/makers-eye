@@ -19,7 +19,8 @@ export function normalizeCatalogText(value: string): string {
 
 export function formatCatalogDate(value: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  return new Intl.DateTimeFormat("en-US", {
+  // en-GB gives "day month year" with no comma, e.g. "10 February 2026".
+  return new Intl.DateTimeFormat("en-GB", {
     year: "numeric",
     month: "long",
     day: "numeric",
