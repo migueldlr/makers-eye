@@ -77,7 +77,7 @@ async function getEventSummaries(
       t.last_modified_at,
       count(distinct s.id)::int as cut_size,
       count(distinct d.id) filter (
-        where d.card_count > 0 and d.source_kind = 'cobra'
+        where d.card_count > 0 and d.source_kind in ('cobra', 'nrdb')
       )::int as deck_count,
       coalesce(
         jsonb_agg(distinct s.name) filter (where s.id is not null),
@@ -349,7 +349,7 @@ export async function getPublishedCatalogDeck(
     .where(
       and(
         eq(tournamentDecklists.id, deckId),
-        eq(tournamentDecklists.sourceKind, "cobra"),
+        inArray(tournamentDecklists.sourceKind, ["cobra", "nrdb"]),
         eq(tournaments.catalogPublished, true)
       )
     )

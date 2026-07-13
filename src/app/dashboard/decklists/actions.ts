@@ -144,12 +144,14 @@ async function buildDeckSnapshot({
   sourceUrl,
   cobraDeck,
   nrdbUrl,
+  standingIdentity,
 }: {
   standingId: number;
   side: DeckSide;
   sourceUrl: string | null;
   cobraDeck?: Awaited<ReturnType<typeof fetchCobraDeckPage>>[DeckSide];
   nrdbUrl: string | null;
+  standingIdentity: string;
 }): Promise<{ deck?: CatalogDeckSnapshot; warnings: string[] }> {
   const warnings: string[] = [];
   let acceptedNrdbUrl = nrdbUrl;
@@ -206,9 +208,28 @@ async function buildDeckSnapshot({
 
   if (!cobraDeck) {
     if (nrdbDeck) {
-      warnings.push(
-        `${side === "corp" ? "Corp" : "Runner"} has an NRDB link but no Cobra submission, so no list will be imported.`
-      );
+      // No Cobra submission, but the NRDB link resolved to a matching-side
+      // deck, so import its cards directly as an NRDB-sourced list.
+      const nrdbHash = hashCards(nrdbDeck.cards);
+      return {
+        warnings,
+        deck: {
+          standingId,
+          side,
+          sourceKind: "nrdb",
+          sourceUrl,
+          nrdbUrl: acceptedNrdbUrl,
+          title: nrdbDeck.title,
+          identity: standingIdentity || nrdbDeck.identity,
+          cards: nrdbDeck.cards,
+          cardCount: nrdbDeck.cardCount,
+          influenceTotal: nrdbDeck.influenceTotal,
+          sourceHash: nrdbHash,
+          nrdbHash,
+          comparisonStatus: "unverified",
+          lastVerifiedAt: new Date().toISOString(),
+        },
+      };
     }
     return { warnings };
   }
@@ -417,6 +438,7 @@ export async function previewCatalogRefresh(
           sourceUrl,
           cobraDeck: cobraDecks.corp,
           nrdbUrl: corpNrdbUrl,
+          standingIdentity: player.corpIdentity,
         }),
         buildDeckSnapshot({
           standingId: player.id,
@@ -424,6 +446,7 @@ export async function previewCatalogRefresh(
           sourceUrl,
           cobraDeck: cobraDecks.runner,
           nrdbUrl: runnerNrdbUrl,
+          standingIdentity: player.runnerIdentity,
         }),
       ]);
       playerWarnings.push(...corpResult.warnings, ...runnerResult.warnings);
