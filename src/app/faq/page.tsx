@@ -62,6 +62,10 @@ export default async function FaqPage() {
         <Text>
           <Anchor href="/wrapped">Here</Anchor>.
         </Text>
+        <Title order={3}>Where did the scoop go?</Title>
+        <Text>
+          <Anchor href="https://console.makers-eye.com/">Here</Anchor>.
+        </Text>
       </Stack>
       <Center mt="lg">
         <HexGrid rows={3} cols={4} hexSize={35} gap={0} />

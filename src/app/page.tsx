@@ -109,11 +109,8 @@ export default function HomePage() {
             </Stack>
             <Divider label="or" mx="xl" />
             <Stack align="center" gap="xs">
-              <FancyLink href="https://console.makers-eye.com/" isScoop>
-                Scoop
-              </FancyLink>
               <FancyLink href="/stats">Meta analysis</FancyLink>
-              {/* <FancyLink href="/decklists">Tournament decklists</FancyLink> */}
+              <FancyLink href="/decklists">Decklists</FancyLink>
               <FancyLink href="/faq">FAQ</FancyLink>
               <FancyLink href="/credits">Credits</FancyLink>
             </Stack>
