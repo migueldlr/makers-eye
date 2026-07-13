@@ -378,6 +378,25 @@ export const factionToColor = (faction?: string) => {
   return FACTION_COLORS[faction as keyof typeof FACTION_COLORS] ?? faction;
 };
 
+// Private-use glyphs in the bundled `netrunner` font (see styles/fonts.ts),
+// keyed by faction name. Render inside an element using netrunnerFont.className.
+const FACTION_GLYPHS: Record<string, string> = {
+  Anarch: "",
+  Criminal: "",
+  Shaper: "",
+  HB: "",
+  Jinteki: "",
+  NBN: "",
+  Weyland: "",
+  Adam: "",
+  Apex: "",
+  Sunny: "",
+  _Neutral: "",
+};
+
+export const factionToGlyph = (faction?: string): string =>
+  (faction && FACTION_GLYPHS[faction]) || "";
+
 export function mergeObjects<T>(
   a: Record<string, T[]>,
   b: Record<string, T[]>,

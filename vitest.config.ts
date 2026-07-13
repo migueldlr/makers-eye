@@ -6,9 +6,15 @@ export default defineConfig({
     jsx: "automatic",
   },
   resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
-    },
+    // Match the app's tsconfig paths, where "@/*" resolves to both the repo
+    // root and src. Root-level entries (e.g. "@/styles/*") come first.
+    alias: [
+      {
+        find: "@/styles",
+        replacement: fileURLToPath(new URL("./styles", import.meta.url)),
+      },
+      { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },
+    ],
   },
   test: {
     environment: "jsdom",

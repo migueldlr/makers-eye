@@ -21,7 +21,8 @@ import {
   groupDeckCardsByType,
   normalizeCatalogText,
 } from "@/lib/catalog/util";
-import { shortenId } from "@/lib/util";
+import { factionToColor, factionToGlyph, idToFaction, shortenId } from "@/lib/util";
+import { netrunnerFont } from "@/styles/fonts";
 import styles from "./catalog.module.css";
 
 type LoadedDecks = Partial<Record<DeckSide, CatalogDeckSnapshot>>;
@@ -29,6 +30,22 @@ type DeckErrors = Partial<Record<DeckSide, string>>;
 
 function identityLabel(identity: string): string {
   return identity ? shortenId(identity) : "Identity unavailable";
+}
+
+function FactionGlyph({ identity }: { identity: string }) {
+  if (!identity) return null;
+  const faction = idToFaction(shortenId(identity));
+  const glyph = factionToGlyph(faction);
+  if (!glyph) return null;
+  return (
+    <span
+      className={`${netrunnerFont.className} ${styles.factionGlyph}`}
+      style={{ color: factionToColor(faction) }}
+      aria-hidden="true"
+    >
+      {glyph}
+    </span>
+  );
 }
 
 function DeckCards({ deck }: { deck: CatalogDeckSnapshot }) {
@@ -41,7 +58,10 @@ function DeckCards({ deck }: { deck: CatalogDeckSnapshot }) {
             {deck.side === "corp" ? "Corp" : "Runner"}
           </div>
           <div className={styles.deckTitle}>{deck.title || "Submitted deck"}</div>
-          <div className={styles.identity}>{identityLabel(deck.identity)}</div>
+          <div className={styles.identity}>
+            <FactionGlyph identity={deck.identity} />
+            {identityLabel(deck.identity)}
+          </div>
         </div>
         <div className={styles.deckLinks}>
           {deck.sourceKind === "cobra" && deck.sourceUrl && (
@@ -122,10 +142,14 @@ function DeckCell({
   fallbackIdentity: string;
   side: DeckSide;
 }) {
-  const identity = identityLabel(deck?.identity || fallbackIdentity);
+  const rawIdentity = deck?.identity || fallbackIdentity;
+  const identity = identityLabel(rawIdentity);
   return (
     <div className={styles.deckCell}>
-      <span className={styles.deckIdentity}>{identity}</span>
+      <span className={styles.deckIdentity}>
+        <FactionGlyph identity={rawIdentity} />
+        {identity}
+      </span>
       {deck?.nrdbUrl ? (
         <a
           className={styles.nrdbLink}
@@ -149,7 +173,10 @@ function MissingDeck({ side, identity }: { side: DeckSide; identity: string }) {
       <div className={styles.sideLabel}>
         {side === "corp" ? "Corp" : "Runner"}
       </div>
-      <div className={styles.identity}>{identityLabel(identity)}</div>
+      <div className={styles.identity}>
+        <FactionGlyph identity={identity} />
+        {identityLabel(identity)}
+      </div>
       <div className={styles.missingDeck}>No decklist saved.</div>
     </section>
   );

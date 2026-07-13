@@ -252,6 +252,12 @@
   white-space: nowrap;
 }
 
+.factionGlyph {
+  margin-right: 5px;
+  font-size: 1.05em;
+  line-height: 1;
+}
+
 .nrdbLink {
   font-size: 0.8rem;
 }
