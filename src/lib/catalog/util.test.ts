@@ -27,6 +27,7 @@ const event: CatalogEventSummary = {
   abrUrl: null,
   cutSize: 8,
   deckCount: 16,
+  cobraDeckCount: 16,
   playerNames: ["René", "Matuszczak"],
   entrants: [
     {

@@ -1,8 +1,12 @@
 "use client";
 
 import { Fragment, useMemo, useState, type MouseEvent } from "react";
-import { IconExternalLink, IconSearch } from "@tabler/icons-react";
-import { Text, TextInput } from "@mantine/core";
+import {
+  IconExclamationCircleFilled,
+  IconExternalLink,
+  IconSearch,
+} from "@tabler/icons-react";
+import { ActionIcon, Text, TextInput, Tooltip } from "@mantine/core";
 import type {
   CatalogDeckSnapshot,
   CatalogDeckSummary,
@@ -325,7 +329,27 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
             <section className={styles.eventLedger} key={event.id}>
               <header className={styles.eventHeader}>
                 <div>
-                  <h2 className={styles.eventName}>{event.name}</h2>
+                  <div className={styles.eventTitleRow}>
+                    <h2 className={styles.eventName}>{event.name}</h2>
+                    {event.cobraDeckCount === 0 && (
+                      <Tooltip
+                        label="Cut lists were not made public on Cobra :("
+                        events={{ hover: true, focus: true, touch: true }}
+                        multiline
+                        w={220}
+                        withArrow
+                      >
+                        <ActionIcon
+                          variant="transparent"
+                          color="gray"
+                          size="sm"
+                          aria-label="Cut lists were not made public on Cobra :("
+                        >
+                          <IconExclamationCircleFilled size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
+                  </div>
                   <div className={styles.eventMeta}>
                     {[event.displayDate, event.location, event.cardpool ?? event.format]
                       .filter(Boolean)
@@ -362,11 +386,6 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
                   </div>
                 </div>
               </header>
-              {event.deckCount === 0 && (
-                <p className={styles.listsNote}>
-                  Top-cut lists were not made public on Cobra.
-                </p>
-              )}
               <div className={styles.ledgerScroll}>
                 <table className={styles.entrantTable}>
                   <thead>

@@ -51,6 +51,7 @@ async function getEventSummaries(
     cut_size: number;
     date: string | null;
     deck_count: number;
+    cobra_deck_count: number;
     format: string | null;
     id: number | string;
     last_modified_at: string | null;
@@ -79,6 +80,9 @@ async function getEventSummaries(
       count(distinct d.id) filter (
         where d.card_count > 0 and d.source_kind in ('cobra', 'nrdb')
       )::int as deck_count,
+      count(distinct d.id) filter (
+        where d.card_count > 0 and d.source_kind = 'cobra'
+      )::int as cobra_deck_count,
       coalesce(
         jsonb_agg(distinct s.name) filter (where s.id is not null),
         '[]'::jsonb
@@ -107,6 +111,7 @@ async function getEventSummaries(
       abrUrl: event.abr_url,
       cutSize: event.cut_size,
       deckCount: event.deck_count,
+      cobraDeckCount: event.cobra_deck_count,
       playerNames: event.player_names,
       published: event.catalog_published,
       lastModifiedAt: event.last_modified_at,

@@ -18,6 +18,7 @@ const events: CatalogEventSummary[] = [
     abrUrl: "https://alwaysberunning.net/tournaments/10/example",
     cutSize: 8,
     deckCount: 16,
+    cobraDeckCount: 16,
     playerNames: ["René", "Matuszczak"],
     entrants: [
       {
@@ -70,6 +71,7 @@ const events: CatalogEventSummary[] = [
     abrUrl: null,
     cutSize: 4,
     deckCount: 6,
+    cobraDeckCount: 6,
     playerNames: ["Alice"],
     entrants: [
       {
@@ -97,6 +99,7 @@ const emptyEvent: CatalogEventSummary = {
   abrUrl: null,
   cutSize: 4,
   deckCount: 0,
+  cobraDeckCount: 0,
   playerNames: ["Nadia"],
   entrants: [
     {
@@ -120,6 +123,14 @@ const emptyEvent: CatalogEventSummary = {
   ],
 };
 
+const nrdbOnlyEvent: CatalogEventSummary = {
+  ...emptyEvent,
+  id: 21,
+  name: "Imported From NRDB Open",
+  deckCount: 2,
+  cobraDeckCount: 0,
+};
+
 describe("CatalogClient", () => {
   afterEach(() => vi.unstubAllGlobals());
 
@@ -133,6 +144,11 @@ describe("CatalogClient", () => {
     expect(screen.queryByText(/Cobra ID/)).toBeNull();
     expect(screen.getByText("R+")).toBeVisible();
     expect(screen.getAllByRole("columnheader", { name: "Corp" })).toHaveLength(2);
+    expect(
+      screen.queryByRole("button", {
+        name: "Cut lists were not made public on Cobra :(",
+      })
+    ).toBeNull();
     expect(screen.queryByText(/\d+ cards/)).toBeNull();
     expect(
       screen.getByRole("link", { name: "View corp deck on NetrunnerDB" })
@@ -221,7 +237,9 @@ describe("CatalogClient", () => {
       </MantineProvider>
     );
     expect(
-      screen.getByText("Top-cut lists were not made public on Cobra.")
+      screen.getByRole("button", {
+        name: "Cut lists were not made public on Cobra :(",
+      })
     ).toBeVisible();
     expect(screen.getByText("Top 4 cut")).toBeVisible();
     expect(screen.queryByText(/lists$/)).toBeNull();
@@ -235,5 +253,19 @@ describe("CatalogClient", () => {
       screen.getByRole("button", { name: "Open decklists for Nadia" })
     );
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps the Cobra disclaimer when lists came from NRDB, not Cobra", () => {
+    render(
+      <MantineProvider>
+        <CatalogClient events={[nrdbOnlyEvent]} />
+      </MantineProvider>
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Cut lists were not made public on Cobra :(",
+      })
+    ).toBeVisible();
+    expect(screen.getByText("Top 4 cut · 2 lists")).toBeVisible();
   });
 });
