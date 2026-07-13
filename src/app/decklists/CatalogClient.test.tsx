@@ -84,6 +84,42 @@ const events: CatalogEventSummary[] = [
   },
 ];
 
+const emptyEvent: CatalogEventSummary = {
+  id: 20,
+  name: "Ghost Cut Open",
+  date: "2026-05-01",
+  displayDate: "May 1, 2026",
+  location: "Berlin",
+  region: "Europe",
+  format: "standard",
+  cardpool: "Standard",
+  cobraUrl: "https://tournaments.nullsignal.games/tournaments/20",
+  abrUrl: null,
+  cutSize: 4,
+  deckCount: 0,
+  playerNames: ["Nadia"],
+  entrants: [
+    {
+      name: "Nadia",
+      swissRank: 1,
+      topCutRank: 1,
+      corpIdentity: "NBN: Reality Plus",
+      runnerIdentity: "The Catalyst",
+      decks: {
+        corp: {
+          id: 501,
+          side: "corp",
+          nrdbUrl: "https://netrunnerdb.com/en/decklist/xyz/nadia-corp",
+          title: "",
+          identity: "",
+          cardCount: 0,
+          influenceTotal: null,
+        },
+      },
+    },
+  ],
+};
+
 describe("CatalogClient", () => {
   afterEach(() => vi.unstubAllGlobals());
 
@@ -174,5 +210,30 @@ describe("CatalogClient", () => {
       target: { value: "not a real event" },
     });
     expect(screen.getByText("No events or entrants match this search.")).toBeVisible();
+  });
+
+  it("notes missing Cobra lists but still shows NRDB links for empty events", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <MantineProvider>
+        <CatalogClient events={[emptyEvent]} />
+      </MantineProvider>
+    );
+    expect(
+      screen.getByText("Top-cut lists were not made public on Cobra.")
+    ).toBeVisible();
+    expect(screen.getByText("Top 4 cut")).toBeVisible();
+    expect(screen.queryByText(/lists$/)).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "View corp deck on NetrunnerDB" })
+    ).toHaveAttribute(
+      "href",
+      "https://netrunnerdb.com/en/decklist/xyz/nadia-corp"
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open decklists for Nadia" })
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

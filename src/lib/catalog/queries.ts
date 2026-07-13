@@ -1,7 +1,7 @@
 import { db } from "@/utils/drizzle/client";
 import { unstable_cache } from "next/cache";
 import { standings, tournamentDecklists, tournaments } from "@/db/schema";
-import { and, asc, eq, gt, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNotNull, or, sql } from "drizzle-orm";
 import {
   jsonToDeckCards,
   type CatalogAdminEventSummary,
@@ -161,7 +161,13 @@ export async function getCatalogEventSummaries(): Promise<
         and(
           inArray(standings.tournamentId, eventIds),
           gt(standings.topCutRank, 0),
-          eq(tournamentDecklists.sourceKind, "cobra")
+          // Cobra lists (with cards) plus any deck carrying an NRDB link, so
+          // manually-added NRDB-only links surface. Empty manual rows (no
+          // cards, no link) stay hidden and keep rendering as "No list".
+          or(
+            eq(tournamentDecklists.sourceKind, "cobra"),
+            isNotNull(tournamentDecklists.nrdbUrl)
+          )
         )
       ),
   ]);

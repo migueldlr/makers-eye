@@ -697,29 +697,20 @@ export async function saveCatalogEvent(input: SaveCatalogEventInput) {
   if (!current) throw new Error("Tournament not found.");
   if (input.published) {
     if (!name || !date) throw new Error("Published events need a name and date.");
+    // Events can be published with top-cut players but no imported Cobra lists
+    // (e.g. lists were never made public on Cobra); NRDB links can be added
+    // afterwards. Only require that top-cut players exist.
     const [eligibility] = await db.execute<{
-      has_decks: boolean;
       has_players: boolean;
     }>(sql`
       select
         exists (
           select 1 from standings s
           where s.tournament_id = ${input.id} and s.top_cut_rank > 0
-        ) as has_players,
-        exists (
-          select 1
-          from tournament_decklists d
-          join standings s on s.id = d.standing_id
-          where s.tournament_id = ${input.id}
-            and d.card_count > 0
-            and d.source_kind = 'cobra'
-        ) as has_decks
+        ) as has_players
     `);
     if (!eligibility.has_players) {
       throw new Error("Published events need at least one top-cut player.");
-    }
-    if (!eligibility.has_decks) {
-      throw new Error("Import at least one submitted deck before publishing.");
     }
   }
 

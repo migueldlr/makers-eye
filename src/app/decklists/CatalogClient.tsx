@@ -159,7 +159,10 @@ function EntrantRows({
     setExpanded(true);
     const sides = ["corp", "runner"] as const;
     const sidesToLoad = sides.filter(
-      (side) => entrant.decks[side]?.id && !loaded[side]
+      (side) =>
+        entrant.decks[side]?.id &&
+        (entrant.decks[side]?.cardCount ?? 0) > 0 &&
+        !loaded[side]
     );
     if (sidesToLoad.length === 0) return;
 
@@ -253,7 +256,9 @@ function EntrantRows({
                   </div>
                 ) : loaded[side] ? (
                   <DeckCards deck={loaded[side]} key={side} />
-                ) : loading && entrant.decks[side]?.id ? (
+                ) : loading &&
+                  entrant.decks[side]?.id &&
+                  (entrant.decks[side]?.cardCount ?? 0) > 0 ? (
                   <div className={styles.deckStatus} role="status" key={side}>
                     Loading decklist…
                   </div>
@@ -329,7 +334,9 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
                 </div>
                 <div className={styles.eventActions}>
                   <div className={styles.coverage}>
-                    Top {event.cutSize} cut · {event.deckCount} lists
+                    {event.deckCount === 0
+                      ? `Top ${event.cutSize} cut`
+                      : `Top ${event.cutSize} cut · ${event.deckCount} lists`}
                   </div>
                   <div className={styles.eventLinks}>
                     {event.cobraUrl && (
@@ -355,6 +362,11 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
                   </div>
                 </div>
               </header>
+              {event.deckCount === 0 && (
+                <p className={styles.listsNote}>
+                  Top-cut lists were not made public on Cobra.
+                </p>
+              )}
               <div className={styles.ledgerScroll}>
                 <table className={styles.entrantTable}>
                   <thead>

@@ -534,9 +534,13 @@ export function AdminCatalogClient({
                         >
                           {eventForm.published ? "Import updates" : "Import and publish"}
                         </Button>
-                        {eventForm.published && (
+                        {eventForm.published ? (
                           <Button variant="subtle" color="gray" loading={pending} onClick={togglePublished}>
                             Unpublish
+                          </Button>
+                        ) : (
+                          <Button variant="subtle" color="gray" loading={pending} onClick={togglePublished}>
+                            Publish without lists
                           </Button>
                         )}
                       </Group>
