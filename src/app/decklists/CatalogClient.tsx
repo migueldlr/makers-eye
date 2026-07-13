@@ -325,14 +325,14 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
         value={query}
         onChange={(event) => setQuery(event.currentTarget.value)}
         leftSection={<IconSearch size={18} aria-hidden="true" />}
-        placeholder="Search player, event, or date"
+        placeholder="Search player, event, or identity"
         aria-label="Search tournament entrants"
       />
       {filteredEvents.length === 0 ? (
         <div className={styles.empty}>
           <Text fw={600}>No events or entrants match this search.</Text>
           <Text size="sm" mt={6}>
-            Try a player, tournament, or date.
+            Try a player, tournament, or identity.
           </Text>
         </div>
       ) : (
@@ -377,8 +377,8 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
                 <div className={styles.eventActions}>
                   <div className={styles.coverage}>
                     {event.deckCount === 0
-                      ? `Top ${event.cutSize} cut`
-                      : `Top ${event.cutSize} cut · ${event.deckCount} lists`}
+                      ? `Top ${event.cutSize}`
+                      : `Top ${event.cutSize} · ${event.deckCount} lists`}
                   </div>
                   <div className={styles.eventLinks}>
                     {event.cobraUrl && (

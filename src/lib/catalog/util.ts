@@ -3,6 +3,7 @@ import type {
   CatalogEventSummary,
   DeckCardRow,
 } from "./types";
+import { shortenId } from "@/lib/util";
 
 export function normalizeCatalogText(value: string): string {
   return value
@@ -48,11 +49,7 @@ export function catalogEventMetadataMatchesSearch(
 ): boolean {
   const normalizedQuery = normalizeCatalogText(query);
   if (!normalizedQuery) return true;
-  return normalizeCatalogText(
-    [event.name, event.date, event.displayDate, event.location, event.region]
-      .filter(Boolean)
-      .join(" ")
-  ).includes(normalizedQuery);
+  return normalizeCatalogText(event.name).includes(normalizedQuery);
 }
 
 export function catalogEntrantMatchesSearch(
@@ -61,7 +58,14 @@ export function catalogEntrantMatchesSearch(
 ): boolean {
   const normalizedQuery = normalizeCatalogText(query);
   if (!normalizedQuery) return true;
-  return normalizeCatalogText(entrant.name).includes(normalizedQuery);
+  const identities = [entrant.corpIdentity, entrant.runnerIdentity].filter(
+    Boolean
+  );
+  return normalizeCatalogText(
+    [entrant.name, ...identities, ...identities.map((id) => shortenId(id))]
+      .filter(Boolean)
+      .join(" ")
+  ).includes(normalizedQuery);
 }
 
 // Canonical Netrunner card-type ordering, mirroring the classifier's

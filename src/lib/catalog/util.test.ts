@@ -35,16 +35,16 @@ const event: CatalogEventSummary = {
       name: "René",
       swissRank: 1,
       topCutRank: 2,
-      corpIdentity: "Corp",
-      runnerIdentity: "Runner",
+      corpIdentity: "NBN: Reality Plus",
+      runnerIdentity: "The Catalyst",
       decks: {},
     },
     {
       name: "Matuszczak",
       swissRank: 2,
       topCutRank: 4,
-      corpIdentity: "Corp",
-      runnerIdentity: "Runner",
+      corpIdentity: "Haas-Bioroid: Precision Design",
+      runnerIdentity: "Arissana Rocha Nahu: Delta Vector",
       decks: {},
     },
   ],
@@ -55,10 +55,20 @@ describe("catalog text and search", () => {
     expect(normalizeCatalogText("  “MÉLIÈS”   René  ")).toBe("melies rene");
   });
 
-  it.each(["melies", "RENE", "2026-07-04", "4 July", "matusz"])(
-    "matches %s in the client-side event index",
+  it.each([
+    "melies", // event name
+    "RENE", // player name
+    "matusz", // player name
+    "reality plus", // full identity name
+    "R+", // shortened identity name
+  ])("matches %s by event name, player, or identity", (query) => {
+    expect(catalogEventMatchesSearch(event, query)).toBe(true);
+  });
+
+  it.each(["2026-07-04", "4 July", "Montréal"])(
+    "no longer matches on %s (date and location removed)",
     (query) => {
-      expect(catalogEventMatchesSearch(event, query)).toBe(true);
+      expect(catalogEventMatchesSearch(event, query)).toBe(false);
     }
   );
 

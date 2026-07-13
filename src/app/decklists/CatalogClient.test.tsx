@@ -230,6 +230,21 @@ describe("CatalogClient", () => {
     expect(fetchMock).toHaveBeenCalledWith("/decklists/decks/302");
   });
 
+  it("filters by shortened identity name", () => {
+    render(
+      <MantineProvider>
+        <CatalogClient events={events} />
+      </MantineProvider>
+    );
+    fireEvent.change(screen.getByLabelText("Search tournament entrants"), {
+      target: { value: "R+" },
+    });
+    expect(screen.getByRole("heading", { name: "Méliès Megacity" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "London District" })).toBeNull();
+    expect(screen.getByText("René")).toBeVisible();
+    expect(screen.queryByText("Matuszczak")).toBeNull();
+  });
+
   it("shows a directed no-results state", () => {
     render(
       <MantineProvider>
@@ -255,7 +270,7 @@ describe("CatalogClient", () => {
         name: "Cut lists were not made public on Cobra :(",
       })
     ).toBeVisible();
-    expect(screen.getByText("Top 4 cut")).toBeVisible();
+    expect(screen.getByText("Top 4")).toBeVisible();
     expect(screen.getByText("1 May 2026 · 26.05")).toBeVisible();
     expect(screen.queryByText(/Online/)).toBeNull();
     expect(screen.queryByText(/lists$/)).toBeNull();
@@ -282,6 +297,6 @@ describe("CatalogClient", () => {
         name: "Cut lists were not made public on Cobra :(",
       })
     ).toBeVisible();
-    expect(screen.getByText("Top 4 cut · 2 lists")).toBeVisible();
+    expect(screen.getByText("Top 4 · 2 lists")).toBeVisible();
   });
 });
