@@ -1,6 +1,7 @@
 "use server";
 
 import { RawMatch, StandingResult, TournamentRow } from "@/lib/localtypes";
+import { detectAbrTournament } from "@/lib/abr";
 import { Database } from "@/lib/supabase";
 import { Tournament } from "@/lib/types";
 import { createClient } from "@/utils/supabase/server";
@@ -62,6 +63,7 @@ export async function uploadStandings(
           corp_identity: standing.corpIdentity,
           runner_identity: standing.runnerIdentity,
           top_cut_rank: standing.topCutRank,
+          source_player_id: standing.sourcePlayerId,
         };
         return out;
       }),
@@ -101,6 +103,19 @@ export async function proxyFetch(url: string) {
     throw new Error("Failed to fetch data");
   }
   return await res.json();
+}
+
+export async function detectAbrUrl(tournament: Tournament) {
+  if (!tournament.name || !tournament.date) return null;
+  const result = await detectAbrTournament({
+    name: tournament.name,
+    date: tournament.date,
+    city: tournament.city,
+    country: tournament.country,
+    playerCount: tournament.players?.length,
+    cutSize: tournament.cutToTop,
+  });
+  return result.status === "matched" ? result.tournament?.url ?? null : null;
 }
 
 export async function doesTournamentExist(name: string) {

@@ -113,6 +113,7 @@ export default function HomePage() {
                 Scoop
               </FancyLink>
               <FancyLink href="/stats">Meta analysis</FancyLink>
+              {/* <FancyLink href="/decklists">Tournament decklists</FancyLink> */}
               <FancyLink href="/faq">FAQ</FancyLink>
               <FancyLink href="/credits">Credits</FancyLink>
             </Stack>

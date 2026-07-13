@@ -193,6 +193,7 @@ export type Database = {
           runner_losses: number
           runner_wins: number
           sos: number
+          source_player_id: string | null
           swiss_rank: number
           top_cut_rank: number | null
           tournament_id: number
@@ -214,6 +215,7 @@ export type Database = {
           runner_losses?: number
           runner_wins?: number
           sos: number
+          source_player_id?: string | null
           swiss_rank?: number
           top_cut_rank?: number | null
           tournament_id: number
@@ -235,6 +237,7 @@ export type Database = {
           runner_losses?: number
           runner_wins?: number
           sos?: number
+          source_player_id?: string | null
           swiss_rank?: number
           top_cut_rank?: number | null
           tournament_id?: number
@@ -256,10 +259,83 @@ export type Database = {
           },
         ]
       }
+      tournament_decklists: {
+        Row: {
+          card_count: number
+          cards: Json
+          comparison_status: string
+          created_at: string
+          id: number
+          identity: string
+          imported_at: string
+          influence_total: number | null
+          last_verified_at: string | null
+          nrdb_hash: string | null
+          nrdb_url: string | null
+          side: string
+          source_hash: string | null
+          source_kind: string
+          source_url: string | null
+          standing_id: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          card_count?: number
+          cards?: Json
+          comparison_status?: string
+          created_at?: string
+          id?: number
+          identity?: string
+          imported_at?: string
+          influence_total?: number | null
+          last_verified_at?: string | null
+          nrdb_hash?: string | null
+          nrdb_url?: string | null
+          side: string
+          source_hash?: string | null
+          source_kind?: string
+          source_url?: string | null
+          standing_id: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          card_count?: number
+          cards?: Json
+          comparison_status?: string
+          created_at?: string
+          id?: number
+          identity?: string
+          imported_at?: string
+          influence_total?: number | null
+          last_verified_at?: string | null
+          nrdb_hash?: string | null
+          nrdb_url?: string | null
+          side?: string
+          source_hash?: string | null
+          source_kind?: string
+          source_url?: string | null
+          standing_id?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_decklists_standing_id_fkey"
+            columns: ["standing_id"]
+            isOneToOne: false
+            referencedRelation: "standings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           abr_url: string | null
           cardpool: string | null
+          catalog_published: boolean
+          catalog_published_at: string | null
           created_at: string
           date: string | null
           format: string | null
@@ -274,6 +350,8 @@ export type Database = {
         Insert: {
           abr_url?: string | null
           cardpool?: string | null
+          catalog_published?: boolean
+          catalog_published_at?: string | null
           created_at?: string
           date?: string | null
           format?: string | null
@@ -288,6 +366,8 @@ export type Database = {
         Update: {
           abr_url?: string | null
           cardpool?: string | null
+          catalog_published?: boolean
+          catalog_published_at?: string | null
           created_at?: string
           date?: string | null
           format?: string | null
@@ -403,6 +483,10 @@ export type Database = {
       }
       tournaments_with_player_count: {
         Row: {
+          abr_url: string | null
+          cardpool: string | null
+          catalog_published: boolean | null
+          catalog_published_at: string | null
           created_at: string | null
           date: string | null
           format: string | null

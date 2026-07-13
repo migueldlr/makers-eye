@@ -2,6 +2,7 @@ import { Database } from "./supabase";
 
 export type StandingResult = {
   tournament: number;
+  sourcePlayerId?: string;
   topCutRank?: number;
   swissRank: number;
   name: string;

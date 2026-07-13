@@ -1,0 +1,462 @@
+.page {
+  --archive-ink: var(--mantine-color-body);
+  --archive-panel: var(--mantine-color-dark-6);
+  --archive-raised: var(--mantine-color-dark-5);
+  --archive-deep: var(--mantine-color-dark-7);
+  --archive-line: var(--mantine-color-dark-4);
+  --archive-text: var(--mantine-color-white);
+  --archive-muted: var(--mantine-color-dark-1);
+  --archive-amber: #f59f00;
+  min-height: 100vh;
+  color: var(--archive-text);
+  background: var(--archive-ink);
+}
+
+.shell {
+  width: min(100% - 32px, 1380px);
+  margin: 0 auto;
+  padding: 32px 0 72px;
+}
+
+.hero {
+  position: relative;
+  padding: 42px 0 34px;
+  border-bottom: 1px solid var(--archive-line);
+}
+
+.hero::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  width: min(38vw, 340px);
+  height: 3px;
+  background: var(--archive-amber);
+  content: "";
+}
+
+.eyebrow,
+.coverage,
+.eventMeta,
+.noList,
+.listAvailable,
+.nrdbLink,
+.sideLabel,
+.deckFooter,
+.deckStatus,
+.deckError {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.eyebrow {
+  color: var(--archive-amber);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 940px;
+  margin-top: 12px;
+  font-size: clamp(2.4rem, 7vw, 5.8rem);
+  font-weight: 780;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+}
+
+.lede {
+  max-width: 720px;
+  margin-top: 20px;
+  color: var(--archive-muted);
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.6;
+}
+
+.search {
+  margin: 30px 0 22px;
+}
+
+.search input {
+  min-height: 50px;
+  border-color: var(--archive-line);
+  background: var(--archive-panel);
+  color: var(--archive-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.search input:focus {
+  border-color: var(--archive-amber);
+  box-shadow: 0 0 0 1px var(--archive-amber);
+}
+
+.eventList {
+  display: grid;
+  gap: 20px;
+}
+
+.eventLedger {
+  overflow: hidden;
+  border: 1px solid var(--archive-line);
+  border-left: 3px solid var(--archive-amber);
+  border-radius: 4px;
+  background: var(--archive-panel);
+}
+
+.eventHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--archive-line);
+}
+
+.eventName {
+  margin: 0;
+  color: var(--archive-text);
+  font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+  font-weight: 680;
+  line-height: 1.2;
+}
+
+.eventMeta,
+.coverage {
+  color: var(--archive-muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.eventMeta {
+  margin-top: 5px;
+}
+
+.eventActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+}
+
+.eventLinks {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.externalLink,
+.nrdbLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--archive-amber);
+  text-decoration: none;
+}
+
+.externalLink {
+  font-size: 0.78rem;
+}
+
+.ledgerScroll {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.entrantTable {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.entrantTable th {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--archive-line);
+  background: var(--archive-deep);
+  color: var(--archive-muted);
+  font: 600 0.65rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.entrantTable th:nth-child(1),
+.entrantTable th:nth-child(2) {
+  width: 62px;
+  text-align: center;
+}
+
+.entrantTable th:nth-child(3) {
+  width: 25%;
+}
+
+.entrantTable th:nth-child(4),
+.entrantTable th:nth-child(5) {
+  width: calc((75% - 124px) / 2);
+}
+
+.entrantRow > td {
+  padding: 9px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--archive-line) 70%, transparent);
+  vertical-align: middle;
+}
+
+.entrantRow {
+  cursor: pointer;
+}
+
+.entrantRow:hover > td {
+  background: var(--archive-raised);
+}
+
+.rankCell,
+.cutCell {
+  color: var(--archive-muted);
+  font: 0.82rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: center;
+}
+
+.cutCell {
+  color: var(--archive-amber);
+  font-weight: 700;
+}
+
+.playerName {
+  display: block;
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entrantToggle {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.deckCell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.deckIdentity {
+  overflow: hidden;
+  color: var(--archive-muted);
+  font-size: 0.76rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deckCellActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.listAvailable {
+  color: var(--archive-amber);
+  font-size: 0.65rem;
+  line-height: 1.1;
+}
+
+.nrdbLink,
+.noList {
+  font-size: 0.61rem;
+  line-height: 1.2;
+}
+
+.noList {
+  color: var(--archive-muted);
+}
+
+.deckDetailRow > td {
+  padding: 0;
+  border-bottom: 1px solid var(--archive-line);
+  background: var(--archive-deep);
+}
+
+.expandedDeckGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+}
+
+.loadedDeck {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--archive-line);
+  border-radius: 3px;
+  background: var(--archive-panel);
+}
+
+.loadedDeckHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px;
+  border-bottom: 1px solid var(--archive-line);
+}
+
+.sideLabel {
+  color: var(--archive-amber);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.deckTitle {
+  margin-top: 7px;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.identity {
+  margin-top: 4px;
+  color: var(--archive-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.cardTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  table-layout: fixed;
+}
+
+.cardTable td {
+  padding: 6px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--archive-line) 60%, transparent);
+  vertical-align: top;
+}
+
+.quantity,
+.influence {
+  width: 42px;
+  color: var(--archive-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: right;
+}
+
+.cardTable td:nth-child(2) {
+  overflow-wrap: anywhere;
+}
+
+.deckFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--archive-line);
+  color: var(--archive-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.deckStatus,
+.deckError,
+.missingDeck {
+  padding: 24px;
+  color: var(--archive-muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.deckStatus,
+.deckError,
+.missingDeckPanel {
+  min-height: 120px;
+  border: 1px solid var(--archive-line);
+  border-radius: 3px;
+  background: var(--archive-panel);
+}
+
+.missingDeckPanel {
+  padding: 18px;
+}
+
+.missingDeckPanel .missingDeck {
+  min-height: 0;
+  margin-top: 12px;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--archive-line);
+  background: transparent;
+  text-align: left;
+}
+
+.deckError {
+  color: var(--mantine-color-red-3);
+}
+
+.empty {
+  padding: 54px 24px;
+  border: 1px dashed var(--archive-line);
+  color: var(--archive-muted);
+  text-align: center;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--archive-muted);
+  font: 0.78rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.externalLink:focus-visible,
+.nrdbLink:focus-visible,
+.backLink:focus-visible,
+.entrantToggle:focus-visible {
+  outline: 2px solid var(--archive-amber);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .shell {
+    width: min(100% - 24px, 1380px);
+    padding-top: 18px;
+  }
+
+  .hero {
+    padding-top: 28px;
+  }
+
+  .eventHeader {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .eventActions {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .eventLinks {
+    justify-content: flex-start;
+  }
+
+  .expandedDeckGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -33,6 +33,7 @@ import {
   URLS,
 } from "@/lib/util";
 import {
+  detectAbrUrl,
   doesTournamentExist,
   getTournaments,
   proxyFetch,
@@ -213,6 +214,11 @@ export default function Dashboard() {
     )) as unknown as Tournament;
 
     setData(tournament);
+    try {
+      setAbrUrl((await detectAbrUrl(tournament)) ?? "");
+    } catch {
+      setAbrUrl("");
+    }
   }
 
   async function submitTournament() {
@@ -410,6 +416,9 @@ export default function Dashboard() {
     <Container mt="lg">
       <Stack>
         <Title order={3}>Upload</Title>
+        <Button component="a" href="/dashboard/decklists" variant="light" color="orange" w="fit-content">
+          Manage top cut decklists
+        </Button>
         <Stack align="start">
           <UrlInput url={url} setUrl={setUrl} />
           <VerificationChip tournament={data!} />

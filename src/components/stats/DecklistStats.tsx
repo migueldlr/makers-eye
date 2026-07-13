@@ -4,6 +4,7 @@ import { updateAbrUrls } from "@/app/stats/actions";
 import { TournamentRow } from "@/lib/localtypes";
 import { Box, Button, Group } from "@mantine/core";
 import { useCallback, useState } from "react";
+import type { AbrEntry } from "@/lib/abr";
 
 const UPLOAD_PARTIAL = false;
 

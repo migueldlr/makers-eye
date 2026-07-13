@@ -1,0 +1,199 @@
+.page {
+  min-height: 100vh;
+  background: var(--mantine-color-body);
+}
+
+.shell {
+  width: min(100% - 32px, 1180px);
+  margin: 0 auto;
+  padding: 28px 0 72px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 24px 0;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--mantine-color-dark-4);
+}
+
+.eyebrow {
+  color: #f59f00;
+  font: 600 0.7rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.eventList {
+  display: flex;
+  height: 340px;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 10px;
+  overflow-y: auto;
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: 4px;
+  background: var(--mantine-color-dark-8);
+  scrollbar-color: var(--mantine-color-dark-3) var(--mantine-color-dark-8);
+}
+
+.eventCard {
+  flex: 0 0 auto;
+  padding: 15px;
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: 4px;
+  background: var(--mantine-color-dark-6);
+  color: var(--mantine-color-white);
+  text-decoration: none;
+}
+
+.eventCard:hover,
+.eventCard:focus-visible,
+.selected {
+  border-color: #f59f00;
+  outline: none;
+}
+
+.editor {
+  scroll-margin-top: 24px;
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: 4px;
+  background: var(--mantine-color-dark-6);
+}
+
+.sourceLinks {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--mantine-color-dark-4);
+}
+
+.workflow {
+  display: grid;
+  gap: 14px;
+}
+
+.workflowStep {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.workflowStep:not(:last-child)::before {
+  position: absolute;
+  top: 36px;
+  bottom: -18px;
+  left: 17px;
+  width: 1px;
+  background: var(--mantine-color-dark-3);
+  content: "";
+}
+
+.stepMarker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #f59f00;
+  border-radius: 50%;
+  background: var(--mantine-color-dark-6);
+  color: #f59f00;
+  font: 700 0.8rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.stepContent {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: 4px;
+  background: var(--mantine-color-dark-7);
+}
+
+.stepHeader {
+  gap: 16px;
+}
+
+.advancedSettings {
+  margin-top: 4px;
+}
+
+.advancedSettings :global(.mantine-Accordion-item) {
+  border-color: var(--mantine-color-dark-4);
+  background: var(--mantine-color-dark-7);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.playerTable {
+  overflow-x: auto;
+  margin-top: 14px;
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: 4px;
+}
+
+.playerTable table {
+  min-width: 920px;
+}
+
+.previewPlayer {
+  padding: 16px;
+  border: 1px solid var(--mantine-color-dark-4);
+  border-radius: 4px;
+  background: var(--mantine-color-dark-7);
+}
+
+.warning {
+  color: #ffd8a8;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 700px) {
+  .shell {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .wide {
+    grid-column: auto;
+  }
+
+  .workflowStep {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .workflowStep:not(:last-child)::before {
+    left: 14px;
+  }
+
+  .stepMarker {
+    width: 30px;
+    height: 30px;
+  }
+
+  .stepContent {
+    padding: 14px;
+  }
+}

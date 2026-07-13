@@ -577,6 +577,7 @@ export function tournamentToStandings(
     const topCutRank = topCutIndex !== undefined ? topCutIndex + 1 : undefined;
     const out: Omit<StandingResult, "tournament"> = {
       name: player.name,
+      sourcePlayerId: player.id == null ? undefined : String(player.id),
       corpWins: corpResults.wins,
       corpLosses: corpResults.losses,
       corpDraws: corpResults.draws,

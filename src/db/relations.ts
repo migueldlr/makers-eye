@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { tournaments, standings, matches } from "./schema";
+import { tournaments, standings, matches, tournamentDecklists } from "./schema";
 
 export const standingsRelations = relations(standings, ({one, many}) => ({
 	tournament: one(tournaments, {
@@ -11,6 +11,14 @@ export const standingsRelations = relations(standings, ({one, many}) => ({
 	}),
 	matches_runnerId: many(matches, {
 		relationName: "matches_runnerId_standings_id"
+	}),
+	tournamentDecklists: many(tournamentDecklists),
+}));
+
+export const tournamentDecklistsRelations = relations(tournamentDecklists, ({one}) => ({
+	standing: one(standings, {
+		fields: [tournamentDecklists.standingId],
+		references: [standings.id]
 	}),
 }));
 
