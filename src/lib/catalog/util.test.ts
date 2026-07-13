@@ -27,6 +27,7 @@ const event: CatalogEventSummary = {
   cobraUrl: "https://tournaments.nullsignal.games/tournaments/1",
   abrUrl: null,
   cutSize: 8,
+  playerCount: 42,
   deckCount: 16,
   cobraDeckCount: 16,
   playerNames: ["René", "Matuszczak"],

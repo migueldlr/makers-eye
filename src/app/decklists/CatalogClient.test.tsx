@@ -18,6 +18,7 @@ const events: CatalogEventSummary[] = [
     cobraUrl: "https://tournaments.nullsignal.games/tournaments/10",
     abrUrl: "https://alwaysberunning.net/tournaments/10/example",
     cutSize: 8,
+    playerCount: 42,
     deckCount: 16,
     cobraDeckCount: 16,
     playerNames: ["René", "Matuszczak"],
@@ -72,6 +73,7 @@ const events: CatalogEventSummary[] = [
     cobraUrl: null,
     abrUrl: null,
     cutSize: 4,
+    playerCount: 20,
     deckCount: 6,
     cobraDeckCount: 6,
     playerNames: ["Alice"],
@@ -101,6 +103,7 @@ const emptyEvent: CatalogEventSummary = {
   cobraUrl: "https://tournaments.nullsignal.games/tournaments/20",
   abrUrl: null,
   cutSize: 4,
+  playerCount: 12,
   deckCount: 0,
   cobraDeckCount: 0,
   playerNames: ["Nadia"],
@@ -270,7 +273,7 @@ describe("CatalogClient", () => {
         name: "Cut lists were not made public on Cobra :(",
       })
     ).toBeVisible();
-    expect(screen.getByText("Top 4")).toBeVisible();
+    expect(screen.getByText("Top 4 · 12 players")).toBeVisible();
     expect(screen.getByText("1 May 2026 · 26.05")).toBeVisible();
     expect(screen.queryByText(/Online/)).toBeNull();
     expect(screen.queryByText(/lists$/)).toBeNull();
@@ -297,6 +300,6 @@ describe("CatalogClient", () => {
         name: "Cut lists were not made public on Cobra :(",
       })
     ).toBeVisible();
-    expect(screen.getByText("Top 4 · 2 lists")).toBeVisible();
+    expect(screen.getByText("Top 4 · 12 players · 2 lists")).toBeVisible();
   });
 });

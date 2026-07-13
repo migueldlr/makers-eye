@@ -376,9 +376,15 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
                 </div>
                 <div className={styles.eventActions}>
                   <div className={styles.coverage}>
-                    {event.deckCount === 0
-                      ? `Top ${event.cutSize}`
-                      : `Top ${event.cutSize} · ${event.deckCount} lists`}
+                    {[
+                      `Top ${event.cutSize}`,
+                      event.playerCount > 0
+                        ? `${event.playerCount} players`
+                        : null,
+                      event.deckCount > 0 ? `${event.deckCount} lists` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </div>
                   <div className={styles.eventLinks}>
                     {event.cobraUrl && (

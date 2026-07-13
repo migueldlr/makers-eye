@@ -69,6 +69,7 @@ type CatalogEventBaseSummary = {
   cobraUrl: string | null;
   abrUrl: string | null;
   cutSize: number;
+  playerCount: number;
   deckCount: number;
   cobraDeckCount: number;
   playerNames: string[];
