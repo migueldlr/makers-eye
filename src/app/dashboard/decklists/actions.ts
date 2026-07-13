@@ -1,7 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { standings, tournamentDecklists, tournaments } from "@/db/schema";
 import { detectAbrTournament, getAbrDeckUrls, type AbrEntry } from "@/lib/abr";
@@ -69,7 +69,6 @@ async function requireUser() {
 }
 
 function revalidateCatalog(tournamentId: number) {
-  revalidateTag("catalog-events");
   revalidatePath("/decklists");
   revalidatePath("/dashboard/decklists");
 }

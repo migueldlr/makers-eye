@@ -1,5 +1,4 @@
 import { db } from "@/utils/drizzle/client";
-import { unstable_cache } from "next/cache";
 import { standings, tournamentDecklists, tournaments } from "@/db/schema";
 import { and, asc, eq, gt, inArray, isNotNull, or, sql } from "drizzle-orm";
 import {
@@ -222,14 +221,6 @@ export async function getCatalogEventSummaries(): Promise<
     })
   );
 }
-
-export const getCachedCatalogEventSummaries = unstable_cache(
-  getCatalogEventSummaries,
-  // Bump the version suffix when the cached summary shape changes (e.g. the
-  // added banlist field) so stale entries from the old shape are dropped.
-  ["catalog-event-summaries-v3"],
-  { tags: ["catalog-events"] }
-);
 
 export async function getCatalogAdminEventSummaries(): Promise<
   CatalogAdminEventSummary[]

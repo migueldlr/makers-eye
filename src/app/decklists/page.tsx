@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { IconChevronLeft } from "@tabler/icons-react";
 import { Text } from "@mantine/core";
-import { getCachedCatalogEventSummaries } from "@/lib/catalog/queries";
+import { getCatalogEventSummaries } from "@/lib/catalog/queries";
 import { CatalogClient } from "./CatalogClient";
 import styles from "./catalog.module.css";
 
@@ -10,8 +10,12 @@ export const metadata = {
   description: "Tournament top cuts, standings, and submitted Netrunner decklists.",
 };
 
+// Render on every request so newly imported/published events show up
+// immediately, without a cache to invalidate.
+export const dynamic = "force-dynamic";
+
 export default async function DecklistCatalogPage() {
-  const events = await getCachedCatalogEventSummaries();
+  const events = await getCatalogEventSummaries();
 
   return (
     <main className={styles.page}>
