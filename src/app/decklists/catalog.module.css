@@ -57,6 +57,16 @@
   border-color: var(--accent);
 }
 
+.resultCount {
+  width: 100%;
+  padding-right: 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .eventList {
   display: grid;
   gap: 16px;

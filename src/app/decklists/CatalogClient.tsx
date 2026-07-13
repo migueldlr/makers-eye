@@ -317,6 +317,11 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
     () => visibleEvents(events, query),
     [events, query]
   );
+  const resultCount = useMemo(
+    () =>
+      filteredEvents.reduce((total, event) => total + event.entrants.length, 0),
+    [filteredEvents]
+  );
 
   return (
     <>
@@ -325,6 +330,13 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
         value={query}
         onChange={(event) => setQuery(event.currentTarget.value)}
         leftSection={<IconSearch size={18} aria-hidden="true" />}
+        rightSection={
+          <Text span className={styles.resultCount} aria-live="polite">
+            {resultCount} {resultCount === 1 ? "result" : "results"}
+          </Text>
+        }
+        rightSectionWidth={92}
+        rightSectionPointerEvents="none"
         placeholder="Search player, event, or identity"
         aria-label="Search tournament entrants"
       />

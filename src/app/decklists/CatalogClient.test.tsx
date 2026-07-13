@@ -147,6 +147,7 @@ describe("CatalogClient", () => {
       </MantineProvider>
     );
     expect(screen.getByText("Matuszczak")).toBeVisible();
+    expect(screen.getByText("3 results")).toBeVisible();
     expect(screen.queryByText(/Cobra ID/)).toBeNull();
     expect(screen.getByText("R+")).toBeVisible();
     expect(screen.getAllByRole("columnheader", { name: "Corp" })).toHaveLength(2);
@@ -173,6 +174,7 @@ describe("CatalogClient", () => {
     expect(screen.queryByRole("heading", { name: "London District" })).toBeNull();
     expect(screen.getByText("René")).toBeVisible();
     expect(screen.queryByText("Matuszczak")).toBeNull();
+    expect(screen.getByText("1 result")).toBeVisible();
     expect(screen.getByRole("link", { name: /Cobra/ })).toHaveAttribute(
       "href",
       "https://tournaments.nullsignal.games/tournaments/10"
