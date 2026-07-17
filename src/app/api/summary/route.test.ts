@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const getLatestBanlistWins = vi.fn();
+const { getLatestBanlistWins } = vi.hoisted(() => ({
+  getLatestBanlistWins: vi.fn(),
+}));
 
 vi.mock("@/lib/latestBanlistWins", () => ({
   getLatestBanlistWins,
@@ -13,10 +15,11 @@ describe("GET /api/summary", () => {
     getLatestBanlistWins.mockReset();
   });
 
-  it("returns only the Runner and Corp win totals", async () => {
+  it("returns the Runner wins, Corp wins, and draws", async () => {
     getLatestBanlistWins.mockResolvedValue({
       runnerWins: 42,
       corpWins: 39,
+      draws: 7,
     });
 
     const response = await GET();
@@ -25,6 +28,7 @@ describe("GET /api/summary", () => {
     await expect(response.json()).resolves.toEqual({
       runnerWins: 42,
       corpWins: 39,
+      draws: 7,
     });
   });
 });

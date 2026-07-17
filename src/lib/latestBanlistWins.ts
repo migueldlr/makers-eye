@@ -5,6 +5,7 @@ import { db } from "@/utils/drizzle/client";
 export type LatestBanlistWins = {
   runnerWins: number;
   corpWins: number;
+  draws: number;
 };
 
 export async function getLatestBanlistWins(): Promise<LatestBanlistWins> {
@@ -26,10 +27,14 @@ export async function getLatestBanlistWins(): Promise<LatestBanlistWins> {
         sql<number>`count(*) filter (where ${matches.result} = 'corpWin')`.mapWith(
           Number
         ),
+      draws:
+        sql<number>`count(*) filter (where ${matches.result} = 'draw')`.mapWith(
+          Number
+        ),
     })
     .from(matches)
     .innerJoin(tournaments, eq(matches.tournamentId, tournaments.id))
     .innerJoin(latestBanlist, eq(tournaments.meta, latestBanlist.banlist));
 
-  return totals ?? { runnerWins: 0, corpWins: 0 };
+  return totals ?? { runnerWins: 0, corpWins: 0, draws: 0 };
 }
