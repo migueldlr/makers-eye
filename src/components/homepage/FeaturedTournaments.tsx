@@ -8,6 +8,11 @@ const featuredTournaments = [
     href: "/cobra/4470",
     date: "2026-01-24",
   },
+  {
+    name: "Cascadia",
+    href: "/cobra/4965",
+    date: "2026-08-01",
+  },
 ];
 
 export default function FeaturedTournaments() {
@@ -24,7 +29,7 @@ export default function FeaturedTournaments() {
               <Anchor href={tournament.href} key={tournament.href} c="orange">
                 {tournament.name}
               </Anchor>
-              {i < featuredTournaments.length - 1 && (
+              {i < activeTournaments.length - 1 && (
                 <Flex align="center" key={i}>
                   <IconPointFilled size={12} color="orange" />
                 </Flex>
