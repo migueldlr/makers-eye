@@ -446,7 +446,7 @@ export const REGION_OPTIONS = ["Americas", "EMEA", "APAC"];
 
 export const LOCATION_OPTIONS = ["Online", "Paper"];
 
-export const DEFAULT_META = "26.05";
+export const DEFAULT_META = "26.08";
 export const DEFAULT_STARTUP_META = "26.03";
 export const DEFAULT_FORMAT = "Standard";
 
