@@ -30,6 +30,7 @@ import {
   normalizeUrl,
   parseUrl,
   REGION_OPTIONS,
+  shortenId,
   URLS,
 } from "@/lib/util";
 import {
@@ -41,7 +42,11 @@ import {
   uploadStandings,
   uploadTournament,
 } from "./actions";
-import { tournamentToMatches, tournamentToStandings } from "@/lib/tournament";
+import {
+  resolveCobraTopCut,
+  tournamentToMatches,
+  tournamentToStandings,
+} from "@/lib/tournament";
 import { SearchableSelect } from "@/components/common/SearchableSelect";
 import TournamentTable from "@/components/stats/TournamentTable";
 import { TournamentRow } from "@/lib/localtypes";
@@ -299,45 +304,40 @@ export default function Dashboard() {
       )) as unknown as Tournament;
       setCobraDeckTournament(tournament);
 
-      const eliminationPlayers = tournament.eliminationPlayers ?? [];
-      if (eliminationPlayers.length === 0) {
-        setCobraDeckError("No elimination players found in this tournament.");
-        return;
-      }
+      const { players, missingPlayerCount } = resolveCobraTopCut(tournament);
 
-      const sortedEliminationPlayers = [...eliminationPlayers].sort(
-        (a, b) =>
-          (a.rank ?? Number.POSITIVE_INFINITY) -
-          (b.rank ?? Number.POSITIVE_INFINITY)
-      );
-
-      const links = sortedEliminationPlayers
-        .filter((player) => player.id != null)
-        .map((player) => {
-          const playerName = player.name?.trim() || `Player ${player.id}`;
-          const deckUrl = `${URLS.cobra}${tournamentId}/players/${player.id}/view_decks`;
-          return `- [${playerName}](${deckUrl})`;
-        });
-
-      const skippedCount = sortedEliminationPlayers.filter(
-        (player) => player.id == null
-      ).length;
-
-      if (links.length === 0) {
+      if (players.length === 0) {
         setCobraDeckError(
-          "Top-cut players were found, but none had a valid player ID for deck links."
+          missingPlayerCount > 0
+            ? "Top-cut players were found, but none had a valid player ID for deck links."
+            : "No elimination players found in this tournament."
         );
         return;
       }
+
+      const links = players.map((player) => {
+        const deckUrl = `${URLS.cobra}${tournamentId}/players/${player.id}/view_decks`;
+        const identities = [
+          player.corpIdentity,
+          player.runnerIdentity,
+        ].flatMap((identity) =>
+          identity === undefined ? [] : [shortenId(identity)]
+        );
+        const identityText =
+          identities.length > 0
+            ? ` (${identities.join(", ")})`
+            : "";
+        return `- [${player.name}](${deckUrl})${identityText}`;
+      });
 
       const tournamentName = tournament.name?.trim() || `Tournament ${tournamentId}`;
       const standingsUrl = normalizeUrl(cobraDeckUrl.trim());
       const markdown = `## ${tournamentName}\n\n[Standings](${standingsUrl})\n\n${links.join("\n")}`;
 
       setCobraDeckMarkdown(markdown);
-      if (skippedCount > 0) {
+      if (missingPlayerCount > 0) {
         setCobraDeckMessage(
-          `Generated ${links.length} links. Skipped ${skippedCount} elimination player(s) with missing IDs.`
+          `Generated ${links.length} links. Skipped ${missingPlayerCount} elimination player(s) with missing IDs.`
         );
       } else {
         setCobraDeckMessage(`Generated ${links.length} elimination deck link(s).`);

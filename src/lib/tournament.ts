@@ -18,6 +18,22 @@ import { RawMatch, Standing, StandingResult } from "./localtypes";
 export type Result = "corpWin" | "runnerWin" | "draw" | "bye" | "unknown";
 export type PlayerResult = "win" | "loss" | "draw" | "bye" | "unknown";
 
+export interface ResolvedCobraTopCutPlayer {
+  readonly id: number;
+  readonly name: string;
+  readonly corpIdentity: string | undefined;
+  readonly runnerIdentity: string | undefined;
+}
+
+export interface CobraTopCutResolution {
+  readonly players: readonly ResolvedCobraTopCutPlayer[];
+  readonly missingPlayerCount: number;
+}
+
+interface CobraTopCutCandidate extends ResolvedCobraTopCutPlayer {
+  readonly swissRank: number;
+}
+
 export type AugmentedGame = CobraGame & {
   runner: Player;
   corp: Player;
@@ -26,6 +42,141 @@ export type AugmentedGame = CobraGame & {
 };
 
 export type AugmentedRound = AugmentedGame[];
+
+function isPositiveSafeInteger(value: unknown): value is number {
+  return (
+    typeof value === "number" && Number.isSafeInteger(value) && value > 0
+  );
+}
+
+function getCompleteFinalRanking(
+  tournament: Tournament,
+  candidates: readonly CobraTopCutCandidate[]
+): readonly CobraTopCutCandidate[] | undefined {
+  const ranksByPlayerId = new Map<number, Set<number>>();
+
+  for (const player of tournament.eliminationPlayers ?? []) {
+    if (
+      !isPositiveSafeInteger(player.id) ||
+      !candidates.some((candidate) => candidate.id === player.id) ||
+      typeof player.rank !== "number" ||
+      !Number.isFinite(player.rank)
+    ) {
+      continue;
+    }
+
+    const ranks = ranksByPlayerId.get(player.id) ?? new Set<number>();
+    ranks.add(player.rank);
+    ranksByPlayerId.set(player.id, ranks);
+  }
+
+  const uniqueRanks = new Set<number>();
+  const rankedCandidates: Array<{
+    candidate: CobraTopCutCandidate;
+    rank: number;
+  }> = [];
+  for (const candidate of candidates) {
+    const ranks = ranksByPlayerId.get(candidate.id);
+    if (ranks?.size !== 1) return undefined;
+
+    const rank = Array.from(ranks)[0];
+    if (uniqueRanks.has(rank)) return undefined;
+
+    rankedCandidates.push({ candidate, rank });
+    uniqueRanks.add(rank);
+  }
+
+  return rankedCandidates
+    .sort(
+      (left, right) =>
+        left.rank - right.rank || left.candidate.id - right.candidate.id
+    )
+    .map(({ candidate }) => candidate);
+}
+
+export function resolveCobraTopCut(
+  tournament: Tournament
+): CobraTopCutResolution {
+  const eliminationPlayers = tournament.eliminationPlayers ?? [];
+  const evidencedPlayerIds = new Set<number>();
+  const eliminationRanks = new Set<number>();
+
+  for (const player of eliminationPlayers) {
+    if (isPositiveSafeInteger(player.id)) {
+      evidencedPlayerIds.add(player.id);
+    }
+    if (isPositiveSafeInteger(player.rank)) {
+      eliminationRanks.add(player.rank);
+    }
+  }
+
+  for (const round of tournament.rounds ?? []) {
+    for (const game of round) {
+      if (!game.eliminationGame) continue;
+
+      if (isPositiveSafeInteger(game.player1?.id)) {
+        evidencedPlayerIds.add(game.player1.id);
+      }
+      if (isPositiveSafeInteger(game.player2?.id)) {
+        evidencedPlayerIds.add(game.player2.id);
+      }
+    }
+  }
+
+  const candidatesById = new Map<number, CobraTopCutCandidate>();
+  (tournament.players ?? []).forEach((player, index) => {
+    if (
+      !isPositiveSafeInteger(player.id) ||
+      !evidencedPlayerIds.has(player.id) ||
+      candidatesById.has(player.id)
+    ) {
+      return;
+    }
+
+    candidatesById.set(player.id, {
+      id: player.id,
+      name: player.name?.trim() || `Player ${player.id}`,
+      corpIdentity: player.corpIdentity?.trim() || undefined,
+      runnerIdentity: player.runnerIdentity?.trim() || undefined,
+      swissRank:
+        typeof player.rank === "number" && Number.isFinite(player.rank)
+          ? player.rank
+          : index + 1,
+    });
+  });
+
+  const candidates = Array.from(candidatesById.values());
+  const sortedCandidates =
+    getCompleteFinalRanking(tournament, candidates) ??
+    candidates.sort(
+      (left, right) =>
+        left.swissRank - right.swissRank || left.id - right.id
+    );
+
+  const cutToTop = isPositiveSafeInteger(tournament.cutToTop)
+    ? tournament.cutToTop
+    : 0;
+  const expectedPlayerCount = Math.max(
+    cutToTop,
+    eliminationRanks.size,
+    evidencedPlayerIds.size
+  );
+
+  return {
+    players: sortedCandidates.map(
+      ({ id, name, corpIdentity, runnerIdentity }) => ({
+        id,
+        name,
+        corpIdentity,
+        runnerIdentity,
+      })
+    ),
+    missingPlayerCount: Math.max(
+      expectedPlayerCount - sortedCandidates.length,
+      0
+    ),
+  };
+}
 
 export function getGameResult(game: CobraGame): Result {
   const { player1, player2 } = game;
