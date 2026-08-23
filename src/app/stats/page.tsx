@@ -21,18 +21,15 @@ import {
   SITE_TITLE,
 } from "@/lib/util";
 import SummaryStats from "@/components/stats/SummaryStats";
-import MatchupSummary from "@/components/stats/wrappers/MatchupSummary";
-import RepresentationChart from "@/components/stats/wrappers/RepresentationChart";
 import { BackButton } from "@/components/common/BackButton";
 import TournamentFilter from "@/components/stats/TournamentFilter";
 import GameResultsSummary from "@/components/stats/charts/GameResultsSummary";
-import WinrateSummary from "@/components/stats/wrappers/WinrateSummary";
-import CutSwissComparison from "@/components/stats/wrappers/CutSwissComparison";
-import TitleWithAnchor from "@/components/common/TitleWithAnchor";
+import ChartSection from "@/components/stats/ChartSection";
+import SideSections from "@/components/stats/SideSections";
+import SideTabs from "@/components/stats/SideTabs";
 import { parseTournamentParams } from "@/lib/params";
 import { createClient } from "@/utils/supabase/server";
 import { TournamentRow } from "@/lib/localtypes";
-import WinrateDistributionChart from "@/src/components/stats/wrappers/WinrateDistributionChart";
 import MarkovAnalysis from "@/components/stats/wrappers/MarkovAnalysis";
 
 export async function generateMetadata({
@@ -95,7 +92,7 @@ export default async function StatsPage({
 
         <Space h="md" />
 
-        <Accordion variant="separated">
+        <Accordion variant="separated" mb="lg">
           <AccordionItem value="tournaments">
             <AccordionControl>
               <Title id="tournaments" order={3}>
@@ -120,108 +117,48 @@ export default async function StatsPage({
           </AccordionItem>
         </Accordion>
 
-        <TitleWithAnchor id="game-results">
-          Game results summary
-        </TitleWithAnchor>
-        <GameResultsSummary
-          tournamentIds={tournamentIds}
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
+        <ChartSection id="game-results" title="Game results summary">
+          <GameResultsSummary
+            tournamentIds={tournamentIds}
+            includeCut={includeCut}
+            includeSwiss={includeSwiss}
+          />
+        </ChartSection>
+
+        <SideTabs
+          corp={
+            <SideSections
+              side="corp"
+              tournamentIds={tournamentIds}
+              includeCut={includeCut}
+              includeSwiss={includeSwiss}
+            />
+          }
+          runner={
+            <SideSections
+              side="runner"
+              tournamentIds={tournamentIds}
+              includeCut={includeCut}
+              includeSwiss={includeSwiss}
+            />
+          }
         />
 
-        <TitleWithAnchor id="corp-representation">
-          Corp representation
-        </TitleWithAnchor>
-        <RepresentationChart
-          tournamentIds={tournamentIds}
-          side="corp"
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
+        <ChartSection id="matchup-spread" title="Matchup spread">
+          <MatchupTable
+            tournamentIds={tournamentIds}
+            includeCut={includeCut}
+            includeSwiss={includeSwiss}
+          />
+        </ChartSection>
 
-        <TitleWithAnchor id="corp-winrates">Corp winrates</TitleWithAnchor>
-        <WinrateSummary
-          tournamentIds={tournamentIds}
-          side="corp"
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
-
-        <TitleWithAnchor id="corp-swiss-comparison">
-          Corp swiss comparison
-        </TitleWithAnchor>
-        <CutSwissComparison tournamentIds={tournamentIds} side="corp" />
-        <TitleWithAnchor id="corp-winrate-distribution">
-          Corp winrate distribution
-        </TitleWithAnchor>
-        <WinrateDistributionChart
-          tournamentIds={tournamentIds}
-          side="corp"
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
-
-        <TitleWithAnchor id="corp-matchups">Corp matchups</TitleWithAnchor>
-        <MatchupSummary
-          tournamentIds={tournamentIds}
-          side="corp"
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
-
-        <TitleWithAnchor id="runner-representation">
-          Runner representation
-        </TitleWithAnchor>
-        <RepresentationChart
-          tournamentIds={tournamentIds}
-          side="runner"
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
-
-        <TitleWithAnchor id="runner-winrates">Runner winrates</TitleWithAnchor>
-        <WinrateSummary
-          tournamentIds={tournamentIds}
-          side="runner"
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
-
-        <TitleWithAnchor id="runner-swiss-comparison">
-          Runner swiss comparison
-        </TitleWithAnchor>
-        <CutSwissComparison tournamentIds={tournamentIds} side="runner" />
-        <TitleWithAnchor id="runner-winrate-distribution">
-          Runner winrate distribution
-        </TitleWithAnchor>
-        <WinrateDistributionChart
-          tournamentIds={tournamentIds}
-          side="runner"
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
-
-        <TitleWithAnchor id="runner-matchups">Runner matchups</TitleWithAnchor>
-        <MatchupSummary
-          tournamentIds={tournamentIds}
-          side="runner"
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
-
-        <TitleWithAnchor id="matchup-spread">Matchup spread</TitleWithAnchor>
-        <MatchupTable
-          tournamentIds={tournamentIds}
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
-
-        <TitleWithAnchor id="markov">Markov Chain Rankings</TitleWithAnchor>
-        <MarkovAnalysis
-          tournamentIds={tournamentIds}
-          includeCut={includeCut}
-          includeSwiss={includeSwiss}
-        />
+        <ChartSection id="markov" title="Markov Chain Rankings">
+          <MarkovAnalysis
+            tournamentIds={tournamentIds}
+            includeCut={includeCut}
+            includeSwiss={includeSwiss}
+          />
+        </ChartSection>
 
         <Space h="xl" />
         <BackButton />

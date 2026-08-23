@@ -1,0 +1,5 @@
+.tab {
+  font-size: var(--mantine-font-size-xl);
+  font-weight: 700;
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-xl);
+}

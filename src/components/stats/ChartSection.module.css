@@ -1,0 +1,12 @@
+.section {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-6)
+  );
+}
+
+/* Space the title row off the chart below it, without touching the
+   collapsible description that can sit between the two. */
+.heading > :first-child {
+  margin-bottom: var(--mantine-spacing-md);
+}
