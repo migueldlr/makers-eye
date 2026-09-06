@@ -184,17 +184,17 @@
   cursor: pointer;
 }
 
-.entrantRow > td {
+.entrantRow>td {
   padding: 10px 14px;
   border-bottom: 1px solid color-mix(in srgb, var(--line) 65%, transparent);
   vertical-align: middle;
 }
 
-.eventLedger .entrantTable tbody tr:last-child > td {
+.eventLedger .entrantTable tbody tr:last-child>td {
   border-bottom: 0;
 }
 
-.entrantRow:hover > td {
+.entrantRow:hover>td {
   background: var(--surface-raised);
 }
 
@@ -267,7 +267,7 @@
   font-size: 0.8rem;
 }
 
-.deckDetailRow > td {
+.deckDetailRow>td {
   padding: 0;
   border-top: 1px solid var(--line);
   border-bottom: 0;
@@ -466,5 +466,20 @@
 
   .expandedDeckGrid {
     grid-template-columns: 1fr;
+  }
+
+  /* The Corp/Runner columns force the table to a 720px min-width, which makes
+     the expanded deck grid (a colSpan=5 cell) wider than the viewport. Hide
+     them on small screens; the identities and NRDB links are shown in the
+     expanded deck panels instead. */
+  .entrantTable {
+    min-width: 0;
+  }
+
+  .entrantTable th:nth-child(4),
+  .entrantTable th:nth-child(5),
+  .entrantTable tr>td:nth-child(4),
+  .entrantTable tr>td:nth-child(5) {
+    display: none;
   }
 }
