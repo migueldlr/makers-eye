@@ -26,6 +26,7 @@ const event: CatalogEventSummary = {
   banlist: "26.05",
   cobraUrl: "https://tournaments.nullsignal.games/tournaments/1",
   abrUrl: null,
+  makersEyeUrl: "/cobra/1",
   cutSize: 8,
   playerCount: 42,
   deckCount: 16,

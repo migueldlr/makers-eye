@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Fragment, useMemo, useState, type MouseEvent } from "react";
 import {
   IconExclamationCircleFilled,
@@ -426,6 +427,11 @@ export function CatalogClient({ events }: { events: CatalogEventSummary[] }) {
                       .join(" · ")}
                   </div>
                   <div className={styles.eventLinks}>
+                    {event.makersEyeUrl && (
+                      <Link className={styles.internalLink} href={event.makersEyeUrl}>
+                        Maker&apos;s Eye
+                      </Link>
+                    )}
                     {event.cobraUrl && (
                       <a
                         className={styles.externalLink}

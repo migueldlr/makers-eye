@@ -68,6 +68,7 @@ type CatalogEventBaseSummary = {
   banlist: string | null;
   cobraUrl: string | null;
   abrUrl: string | null;
+  makersEyeUrl: string | null;
   cutSize: number;
   playerCount: number;
   deckCount: number;

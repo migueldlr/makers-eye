@@ -130,6 +130,7 @@
 }
 
 .externalLink,
+.internalLink,
 .nrdbLink {
   display: inline-flex;
   align-items: center;
@@ -140,6 +141,7 @@
 }
 
 .externalLink:hover,
+.internalLink:hover,
 .nrdbLink:hover {
   text-decoration: underline;
 }
@@ -441,6 +443,7 @@
 }
 
 .externalLink:focus-visible,
+.internalLink:focus-visible,
 .nrdbLink:focus-visible,
 .backLink:focus-visible,
 .entrantToggle:focus-visible {

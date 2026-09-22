@@ -17,6 +17,7 @@ const events: CatalogEventSummary[] = [
     banlist: "26.05",
     cobraUrl: "https://tournaments.nullsignal.games/tournaments/10",
     abrUrl: "https://alwaysberunning.net/tournaments/10/example",
+    makersEyeUrl: "/cobra/10",
     cutSize: 8,
     playerCount: 42,
     deckCount: 16,
@@ -72,6 +73,7 @@ const events: CatalogEventSummary[] = [
     banlist: "26.05",
     cobraUrl: null,
     abrUrl: null,
+    makersEyeUrl: null,
     cutSize: 4,
     playerCount: 20,
     deckCount: 6,
@@ -102,6 +104,7 @@ const emptyEvent: CatalogEventSummary = {
   banlist: "26.05",
   cobraUrl: "https://tournaments.nullsignal.games/tournaments/20",
   abrUrl: null,
+  makersEyeUrl: "/cobra/20",
   cutSize: 4,
   playerCount: 12,
   deckCount: 0,
@@ -178,6 +181,14 @@ describe("CatalogClient", () => {
     expect(screen.getByRole("link", { name: /Cobra/ })).toHaveAttribute(
       "href",
       "https://tournaments.nullsignal.games/tournaments/10"
+    );
+    expect(screen.getByRole("link", { name: /ABR/ })).toHaveAttribute(
+      "href",
+      "https://alwaysberunning.net/tournaments/10/example"
+    );
+    expect(screen.getByRole("link", { name: /Maker's Eye/ })).toHaveAttribute(
+      "href",
+      "/cobra/10"
     );
   });
 

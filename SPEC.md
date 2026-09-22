@@ -12,7 +12,7 @@ Cobra's tournament data and submitted deck pages are the authoritative entrant a
 - List published events newest first and expose a searchable client-side event index.
 - Show every top-cut player with their Swiss placement and final cut placement. Keep Cobra player IDs internal.
 - Render complete stored Cobra Corp and Runner lists inline through accessible, lazy-loaded expanders.
-- Link events to Cobra and Always Be Running, and decks to NetrunnerDB, when those links exist.
+- Link events to their Maker's Eye analysis page, Cobra, and Always Be Running, and decks to NetrunnerDB, when those links exist.
 - Auto-detect an event-level ABR tournament through the public tournament API when date and available event metadata produce one unambiguous match. Keep the ABR URL editable and require manual selection when detection is ambiguous.
 - Make event metadata, publication state, player source mappings, and deck links manageable in the authenticated dashboard.
 - Preserve submitted tournament lists independently of later upstream changes.
@@ -69,7 +69,7 @@ Cobra's tournament data and submitted deck pages are the authoritative entrant a
 ### Public Catalog
 
 - Add a homepage link labeled `Tournament decklists`.
-- `/decklists` displays published events newest first. Each event includes its name, date, location, format, cut size, deck coverage, and Cobra and ABR links when available.
+- `/decklists` displays published events newest first. Each event includes its name, date, location, format, cut size, deck coverage, and Maker's Eye, Cobra, and ABR links when available.
 - Provide one client-side search input. Normalize case and diacritics, and match event name, top-cut player name, stored ISO date, and the displayed date.
 - Event-level matches retain the complete top cut. Player-level matches retain the containing event and narrow it to matching top-cut players.
 - Do not paginate the initial catalog. Do not include deck contents in its hydrated search payload.
@@ -134,7 +134,7 @@ Cobra's tournament data and submitted deck pages are the authoritative entrant a
 - A visitor can reach the catalog from the homepage and find a published event by event name, top-cut player name, or event date.
 - The single catalog page exposes every top-cut player's name, Swiss placement, and final placement without a follow-up request, while Cobra player IDs remain private.
 - Submitted Cobra decklists render fully after an on-demand request to the application's stored snapshot endpoint, without a live Cobra or NRDB request.
-- ABR and NRDB links appear only when saved and available.
+- ABR and NRDB links appear only when saved and available. The Maker's Eye link appears when the saved tournament source URL maps to a known site.
 - An authenticated administrator can preview, resolve, apply, publish, update, and unpublish catalog data without editing imported placements.
 - Unpublished or incomplete events never appear in the public catalog.
 

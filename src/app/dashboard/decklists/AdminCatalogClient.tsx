@@ -33,6 +33,7 @@ import {
   saveCatalogEvent,
   saveCatalogPlayerLinks,
 } from "./actions";
+import { makersEyePath } from "@/lib/util";
 import styles from "./admin.module.css";
 
 type LinkState = Record<
@@ -85,6 +86,7 @@ export function AdminCatalogClient({
   const sourceLinkLabel = eventForm.sourceUrl.includes("tournaments.nullsignal.games")
     ? "Open Cobra"
     : "Open tournament source";
+  const makersEyeHref = makersEyePath(eventForm.sourceUrl);
   const abrEventUrl = preview?.abrUrl ?? selectedEvent?.abrUrl ?? null;
 
   const sourceOptions = useMemo(
@@ -330,6 +332,16 @@ export function AdminCatalogClient({
           <section className={styles.editor} id="catalog-editor" tabIndex={-1}>
             <Title order={2}>{selectedEvent.name}</Title>
             <Group gap="sm" mt="sm" className={styles.sourceLinks}>
+              {makersEyeHref && (
+                <Button
+                  component={Link}
+                  href={makersEyeHref}
+                  variant="light"
+                  size="compact-sm"
+                >
+                  Open Maker&apos;s Eye
+                </Button>
+              )}
               {eventForm.sourceUrl ? (
                 <Button
                   component="a"

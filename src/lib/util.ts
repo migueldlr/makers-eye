@@ -440,6 +440,18 @@ export function normalizeUrl(url: string) {
   return `${URLS[site as keyof typeof URLS]}${id}`;
 }
 
+export function makersEyePath(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = parseUrl(url);
+    if (!parsed?.[1]) return null;
+    const [site, id] = parsed;
+    return `/${site}/${id}`;
+  } catch {
+    return null;
+  }
+}
+
 export const DEFAULT_NONE = "<none>";
 
 export const REGION_OPTIONS = ["Americas", "EMEA", "APAC"];

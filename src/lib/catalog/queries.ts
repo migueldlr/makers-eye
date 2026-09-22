@@ -13,6 +13,7 @@ import {
   type DeckSourceKind,
 } from "./types";
 import { formatCatalogDate } from "./util";
+import { makersEyePath } from "@/lib/util";
 
 type DeckRow = typeof tournamentDecklists.$inferSelect;
 
@@ -60,6 +61,7 @@ async function getEventSummaries(
     name: string | null;
     player_names: string[];
     region: string | null;
+    url: string | null;
   };
   const eventRows = await db.execute<SummaryRow>(sql`
     select
@@ -75,6 +77,7 @@ async function getEventSummaries(
         when t.url like 'https://tournaments.nullsignal.games/%' then t.url
         else null
       end as cobra_url,
+      t.url,
       t.abr_url,
       t.catalog_published,
       t.last_modified_at,
@@ -116,6 +119,7 @@ async function getEventSummaries(
       banlist: event.meta || null,
       cobraUrl: event.cobra_url,
       abrUrl: event.abr_url,
+      makersEyeUrl: makersEyePath(event.url),
       cutSize: event.cut_size,
       playerCount: event.player_count,
       deckCount: event.deck_count,
