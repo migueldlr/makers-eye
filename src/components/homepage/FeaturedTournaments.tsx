@@ -13,6 +13,11 @@ const featuredTournaments = [
     href: "/cobra/4965",
     date: "2026-08-01",
   },
+  {
+    name: "Worlds",
+    href: "/cobra/5132",
+    date: "2026-10-03",
+  },
 ];
 
 export default function FeaturedTournaments() {
